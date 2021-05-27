@@ -1,6 +1,6 @@
-Package: Splicemutr
+Package: splicemute
 Type: Package
-Title: splicemutr
+Title: splicemute
 Version: 0.1.0
 Author: Theron Palmer
 Maintainer: Theron Palmer <theropalm@gmail.com>
