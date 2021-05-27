@@ -1,0 +1,527 @@
+#!/usr/bin/env Rscript
+
+# created: 05/15/2021
+
+# The purpose of this script is to modify transcript cds regions only
+
+#------------------------------------------------------------------------------------------------------------------------------------------------#
+# loading libraries
+
+library(GenomicRanges)
+library(rtracklayer)
+library(annotate)
+library(org.Hs.eg.db)
+library(ensembldb)
+library(biomaRt)
+library(DataCombine)
+library(stringi)
+library(stringr)
+library(optparse)
+library(dplyr)
+library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
+library(rlist)
+
+#------------------------------------------------------------------------------------------------------------------------------------------------#
+# handling command line input
+# add leafcutter flag
+# add splicemutr_tx input
+
+arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups_file",
+  description="form transcripts per junction for the given input junction file",
+  option_list=list(
+   make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
+   make_option(c("-g","--gtf"), default=NULL, help="The gtf file used to create the txdb object"),
+   make_option(c("-b","--bsgenome"), default=NULL, help="The bsgenome library name used for extracting sequencing information"),
+   make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
+   make_option(c("-c","--cases"), default=c("cryptic_threeprime","cryptic_fiveprime","cryptic_unanchored","cryptic","annotated","novel annotated pair","unknown_strand","error"), help="The possible verdicts that the junctions can take on"),
+   make_option(c("-n","--num"), default="", help="The file number output for the data"),
+   make_option(c("-f","--fun"), default="", help="The file containing the functions"))))
+
+opt=arguments
+
+out_dir<-opt$output_directory
+gtf_file<-opt$gtf
+file_num<-opt$num
+
+junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
+introns<-readRDS(junc_file) # loading in the introns data
+
+cases<-opt$cases # currently, cases must follow this format; leafcutter format
+funcs<-opt$fun
+leafcutter<-T
+
+#------------------------------------------------------------------------------#
+# txdb play
+
+gtf_file<-"/media/theron/My_Passport/reference_genomes/GTF_GFF/GENCODE/gencode.v35.annotation.gtf"
+leaf_file<-'/media/theron/My_Passport/head_and_neck_DARIA/data/leafcutter_10_21_2020/data.Rdata'
+# leaf_file <- "/media/theron/My_Passport/TCGA_junctions/BRCA/data.Rdata"
+splicemutr_tx_file<-"/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr/splicemutr_transcripts"
+funcs<-"/media/theron/My_Passport/splicemutr/functions.R"
+load(leaf_file)
+leafcutter<-T
+
+#------------------------------------------------------------------------------#
+# loading in the internal functions
+
+source(funcs)
+
+#------------------------------------------------------------------------------#
+# preparing the references for transcript formation and kmerization
+
+txdb<-makeTxDbFromGFF(gtf_file) # making the txdb from gtf
+all_genes<-genes(txdb)
+exons_by_gene<-exonsBy(txdb,by="gene")
+exons_by_tx<-exonsBy(txdb,by=c("tx"),use.names=T)
+tx_by_gene<-transcriptsBy(txdb,by="gene")
+five_by_tx<-fiveUTRsByTranscript(txdb,use.names=T)
+three_by_tx<-threeUTRsByTranscript(txdb,use.names=T)
+cds_by_tx <- cdsBy(txdb,by="tx",use.names=T)
+bsgenome<-BSgenome.Hsapiens.GENCODE.GRCh38.p13
+
+#------------------------------------------------------------------------------#
+# performing transcript formation
+
+data_canon<-data.frame()
+sequences<-c()
+cds_storage <- list()
+intron_length<-nrow(introns)
+for (i in seq(intron_length)){
+  print(sprintf("%d introns out of %d total introns",i,intron_length))
+  curr_introns<-introns[i,]
+  if (leafcutter) {
+    target_junc<-unname(as.character(introns[i,c(4,1,5,6)])) # extracting the target junction to look for from leafcutter input
+    target_junc[2]<-str_split(target_junc[2],"[_]")[[1]][3] # formatting the strand information
+  } else {
+    target_junc<-unname(as.character(introns[i,c(1,2,3,4)])) # extracting the target junction to look for from leafcutter input
+  }
+  if (!(target_junc[2] %in% c("+","-"))){next}
+  genes<-find_genes(target_junc,all_genes)
+  all_tx<-extract_transcripts(genes, tx_by_gene) # the genes and transcripts associated with the junction
+
+  if (length(genes$cis) != 0){
+    # form cis and intragene trans-splcing events if they exist
+    for (gene in genes$cis){
+      # find the exons that are associated with the junction start and junction end, handles cryptic junctions
+      exons<-choose_exons(target_junc,exons_by_gene,gene)
+      if (length(exons$exons_start) == 0 | length(exons$exons_end) == 0){next}
+      # find the transcripts per exon for start and end splice sites associated with each exon
+      tx_starts_ends<-choose_transcripts(exons,all_tx$cis[[gene]],c(),exons_by_tx)
+      # iterate through all exons for start and all exons for end
+      for (start_exon in names(tx_starts_ends$starts)){
+        for (end_exon in names(tx_starts_ends$ends)){
+            # pair transcripts together
+          start_trans<-tx_starts_ends$starts[[start_exon]]
+          end_trans<-tx_starts_ends$ends[[end_exon]]
+          trans_combos<-data.frame(expand.grid(start_trans,end_trans))
+          names(trans_combos)<-c("start_trans","end_trans")
+          trans_combos$start_trans<-as.character(trans_combos$start_trans)
+          trans_combos$end_trans<-as.character(trans_combos$end_trans)
+          trans_combos <- trans_combos %>% dplyr::filter(start_trans == end_trans)
+          if (nrow(trans_combos)==0){next}
+          trans_combos<-unique(trans_combos)
+          # iterate through every combination and pair the transcript GRanges object together
+          for (pair in seq(nrow(trans_combos))){
+            protein_coding <- "No"
+            data_canon_fill<-data.frame()
+
+            trans_fir<-as.character(trans_combos[pair,1])
+            trans_sec<-as.character(trans_combos[pair,2])
+            trans_pair<-unique(c(trans_fir,trans_sec))
+            start_exons<-sort(exons_by_tx[[trans_fir]])
+            end_exons<-sort(exons_by_tx[[trans_sec]])
+
+            start_exon_split<-str_split(start_exon,"[-]")[[1]]
+            end_exon_split<-str_split(end_exon,"[-]")[[1]]
+
+            start_loc<-which(start(ranges(start_exons))==start_exon_split[1]
+                             & end(ranges(start_exons))==start_exon_split[2])
+
+            end_loc<- which(start(ranges(end_exons))==end_exon_split[1]
+                            & end(ranges(end_exons))==end_exon_split[2])
+
+            combo_exons<-c(start_exons[1:start_loc],
+                           end_exons[end_loc:length(end_exons)])
+            tx_junc<-start_loc
+            junc<-c(start_loc,start_loc+1)
+
+            # create transcript CDS
+            if (!(trans_fir %in% names(five_by_tx) & trans_fir %in% names(three_by_tx)) |
+                !(trans_sec %in% names(three_by_tx) & trans_sec %in% names(five_by_tx))){
+              cds_mod_info <- list()
+              cds_mod_info[[1]] <- data.frame(combo_exons)
+              cds_mod_info[[2]] <- junc
+              cds_mod<-cds_mod_info[[1]]
+              tx_junc_loc<-cds_mod_info[[2]]
+              if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+              }
+              sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+              junction<-paste(as.character(junc), collapse=",")
+              sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+              orf_dat<-find_orfs(sequ,tx_junc_loc)
+              names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                   gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+              sequences<-c(sequences, sequ)
+              mod<-mod_made(data.frame(combo_exons), cds_mod)
+              if (leafcutter){
+                verdict<-curr_introns$verdict # verdict
+                deltapsi<-curr_introns$deltapsi # deltapsi
+              } else{
+                verdict<-NA
+                deltapsi<-NA
+              }
+              next_row<-c(curr_introns$clusterID,
+                          curr_introns$chr,
+                          curr_introns$start,
+                          curr_introns$end,
+                          gene,
+                          paste(unique(trans_pair),collapse="-"),
+                          mod,
+                          junction,
+                          paste(tx_junc_loc,collapse=","),
+                          orf_dat[4],
+                          verdict,
+                          deltapsi,
+                          orf_dat[1],
+                          orf_dat[3],
+                          orf_dat[5],
+                          orf_dat[6],
+                          1,
+                          protein_coding)
+            } else {
+              protein_coding <- "Yes"
+              if (any(as.character(strand(combo_exons)) == "-")) {
+                UTR5<-sort(five_by_tx[[trans_sec]])
+                UTR3<-sort(three_by_tx[[trans_fir]])
+              } else {
+                UTR5<-sort(five_by_tx[[trans_fir]])
+                UTR3<-sort(three_by_tx[[trans_sec]])
+              }
+              junc<-is_UTR(target_junc,UTR5,UTR3,junc)
+              if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]!=junc[2]){
+                cds_mod_info <- list()
+                cds_mod_info[[1]] <- data.frame(combo_exons)
+                cds_mod_info[[2]] <- junc
+                cds_mod<-cds_mod_info[[1]]
+                tx_junc_loc<-cds_mod_info[[2]]
+                if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                  cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+                }
+                sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+                junction<-paste(as.character(junc), collapse=",")
+                sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+                if (!check_tx(sequ)){protein_coding<-"tx_error"}
+                orf_dat<-find_orfs(sequ,tx_junc_loc)
+                names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                sequences<-c(sequences, sequ)
+                mod<-mod_made(data.frame(combo_cds), cds_mod)
+              } else if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]==junc[2]) {
+                combo_cds<-create_cds(combo_exons,UTR5,UTR3,tx_junc)
+                cds_mod_info <- list()
+                cds_mod_info[[1]] <- combo_cds
+                cds_mod_info[[2]] <- junc
+                cds_mod<-cds_mod_info[[1]]
+                tx_junc_loc<-cds_mod_info[[2]]
+                if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                  cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+                }
+                sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+                junction<-paste(as.character(junc), collapse=",")
+                sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+                orf_dat<-find_orfs(sequ,tx_junc_loc)
+                names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                sequences<-c(sequences,sequ)
+                mod<-mod_made(data.frame(combo_cds), cds_mod)
+              } else {
+                combo_cds<-create_cds(combo_exons,UTR5,UTR3,tx_junc)
+                cds_mod_info<-modify_cds(combo_cds, target_junc, junc, start_exon, end_exon)
+                cds_mod<-cds_mod_info[[1]]
+                tx_junc_loc<-cds_mod_info[[2]]
+                if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                  cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+                  combo_cds<-combo_cds[order(combo_cds[,2],decreasing=TRUE),]
+                }
+                sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+                junction<-paste(as.character(junc), collapse=",")
+                sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+                orf_dat<-find_orfs(sequ,tx_junc_loc)
+                names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                sequences<-c(sequences,sequ)
+                mod<-mod_made(data.frame(combo_cds), cds_mod)
+              }
+              # modify the joined cds using the junction
+              if (leafcutter){
+                verdict<-curr_introns$verdict # verdict
+                deltapsi<-curr_introns$deltapsi # deltapsi
+              } else {
+                verdict<-NA
+                deltapsi<-NA
+              }
+              next_row<-c(curr_introns$clusterID,
+                          curr_introns$chr,
+                          curr_introns$start,
+                          curr_introns$end,
+                          gene,
+                          paste(unique(trans_pair),collapse="-"),
+                          mod,
+                          junction,
+                          paste(tx_junc_loc,collapse=","),
+                          orf_dat[4],
+                          verdict,
+                          deltapsi,
+                          orf_dat[1],
+                          orf_dat[3],
+                          orf_dat[5],
+                          orf_dat[6],
+                          1,
+                          protein_coding)
+            }
+
+            # for (r in seq(3)){
+            # filling the data_canon dataframe with the junction information
+            col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
+                         "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
+                         "error","peptide","tx_length","start_stop","orf","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
+            if (nrow(data_canon_fill)==0){
+              data_canon_fill<-rbind(data_canon_fill,next_row)
+              colnames(data_canon_fill)<-col_names
+            } else {
+              data_canon_fill<-rbind(data_canon_fill,next_row)
+            }
+            # }
+            data_canon_fill<-unique(data_canon_fill)
+            data_canon<-rbind(data_canon,data_canon_fill)
+            cds_mod_dat <- list(cds_mod$start,cds_mod$end)
+            names(cds_mod_dat) <- c("start","end")
+            cds_storage<-list.append(cds_storage,cds_mod_dat)          }
+        }
+      }
+    }
+  }
+
+  gene_combos<-data.frame(expand.grid(genes$trans$start,genes$trans$end))
+  colnames(gene_combos)<-c("start_gene","end_gene")
+  gene_combos$start_gene<-as.character(gene_combos$start_gene)
+  gene_combos$end_gene<-as.character(gene_combos$end_gene)
+  gene_combos<-gene_combos %>% dplyr::filter(start_gene != end_gene)
+  if (length(genes$trans$start) != 0 & length(genes$trans$end) != 0){
+    for (pair in seq(nrow(gene_combos))){
+      gene_pair<-as.character(unname(gene_combos[pair,]))
+      # find the exons that are associated with the junction start and junction end, handles cryptic junctions
+      exons<-choose_exons(target_junc,exons_by_gene,gene_pair)
+      if (length(exons$exons_start) == 0 | length(exons$exons_start == 0)){next}
+      # find the transcripts per exon for start and end splice sites associated with each exon
+      tx_starts_ends<-choose_transcripts(exons,all_tx$trans$start[[gene_pair[1]]],
+                                         all_tx$trans$end[[gene_pair[2]]],exons_by_tx)
+      # iterate through all exons for start and all exons for end
+      for (start_exon in names(tx_starts_ends$starts)){
+        for (end_exon in names(tx_starts_ends$ends)){
+          # pair transcripts together
+          start_trans<-tx_starts_ends$starts[[start_exon]]
+          end_trans<-tx_starts_ends$ends[[end_exon]]
+          trans_combos<-data.frame(expand.grid(start_trans,end_trans))
+          names(trans_combos)<-c("start_trans","end_trans")
+          trans_combos$start_trans<-as.character(trans_combos$start_trans)
+          trans_combos$end_trans<-as.character(trans_combos$end_trans)
+          trans_combos <- trans_combos %>% dplyr::filter(start_trans != end_trans)
+          if (nrow(trans_combos)==0){next}
+          trans_combos<-unique(trans_combos)
+          # iterate through every combination and pair the transcript GRanges object together
+          for (pair in seq(nrow(trans_combos))){
+            protein_coding <- "No"
+            data_canon_fill<-data.frame()
+
+            trans_fir<-as.character(trans_combos[pair,1])
+            trans_sec<-as.character(trans_combos[pair,2])
+            trans_pair<-unique(c(trans_fir,trans_sec))
+            start_exons<-sort(exons_by_tx[[trans_fir]])
+            end_exons<-sort(exons_by_tx[[trans_sec]])
+
+            start_exon_split<-str_split(start_exon,"[-]")[[1]]
+            end_exon_split<-str_split(end_exon,"[-]")[[1]]
+
+            start_loc<-which(start(ranges(start_exons))==start_exon_split[1]
+                             & end(ranges(start_exons))==start_exon_split[2])
+
+            end_loc<- which(start(ranges(end_exons))==end_exon_split[1]
+                            & end(ranges(end_exons))==end_exon_split[2])
+
+            combo_exons<-c(start_exons[1:start_loc],
+                           end_exons[end_loc:length(end_exons)])
+            tx_junc<-start_loc
+            junc<-c(start_loc,start_loc+1)
+
+            # create transcript CDS
+            if (!(trans_fir %in% names(five_by_tx) & trans_fir %in% names(three_by_tx)) |
+                !(trans_sec %in% names(three_by_tx) & trans_sec %in% names(five_by_tx))){
+              cds_mod_info <- list()
+              cds_mod_info[[1]] <- data.frame(combo_exons)
+              cds_mod_info[[2]] <- junc
+              cds_mod<-cds_mod_info[[1]]
+              tx_junc_loc<-cds_mod_info[[2]]
+              if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+              }
+              sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+              junction<-paste(as.character(junc), collapse=",")
+              sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+              orf_dat<-find_orfs(sequ,tx_junc_loc)
+              names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                   gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+              sequences<-c(sequences, sequ)
+              mod<-mod_made(data.frame(combo_exons), cds_mod)
+              if (leafcutter){
+                verdict<-curr_introns$verdict # verdict
+                deltapsi<-curr_introns$deltapsi # deltapsi
+              } else{
+                verdict<-NA
+                deltapsi<-NA
+              }
+              next_row<-c(curr_introns$clusterID,
+                          curr_introns$chr,
+                          curr_introns$start,
+                          curr_introns$end,
+                          paste(gene_pair,collapse="-"),
+                          paste(unique(trans_pair),collapse="-"),
+                          mod,
+                          junction,
+                          paste(tx_junc_loc,collapse=","),
+                          orf_dat[4],
+                          verdict,
+                          deltapsi,
+                          orf_dat[1],
+                          orf_dat[3],
+                          orf_dat[5],
+                          orf_dat[6],
+                          1,
+                          protein_coding)
+            } else {
+              protein_coding <- "Yes"
+              if (any(as.character(strand(combo_exons)) == "-")) {
+                UTR5<-sort(five_by_tx[[trans_sec]])
+                UTR3<-sort(three_by_tx[[trans_fir]])
+              } else {
+                UTR5<-sort(five_by_tx[[trans_fir]])
+                UTR3<-sort(three_by_tx[[trans_sec]])
+              }
+              junc<-is_UTR(target_junc,UTR5,UTR3,junc)
+              if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]!=junc[2]){
+                cds_mod_info <- list()
+                cds_mod_info[[1]] <- data.frame(combo_exons)
+                cds_mod_info[[2]] <- junc
+                cds_mod<-cds_mod_info[[1]]
+                tx_junc_loc<-cds_mod_info[[2]]
+                if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                  cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+                }
+                sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+                junction<-paste(as.character(junc), collapse=",")
+                sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+                orf_dat<-find_orfs(sequ,tx_junc_loc)
+                names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                sequences<-c(sequences, sequ)
+                mod<-mod_made(data.frame(combo_cds), cds_mod)
+              } else if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]==junc[2]) {
+                combo_cds<-create_cds(combo_exons,UTR5,UTR3,tx_junc)
+                cds_mod_info <- list()
+                cds_mod_info[[1]] <- combo_cds
+                cds_mod_info[[2]] <- junc
+                cds_mod<-cds_mod_info[[1]]
+                tx_junc_loc<-cds_mod_info[[2]]
+                if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                  cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+                }
+                sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+                junction<-paste(as.character(junc), collapse=",")
+                sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+                orf_dat<-find_orfs(sequ,tx_junc_loc)
+                names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                sequences<-c(sequences,sequ)
+                mod<-mod_made(data.frame(combo_cds), cds_mod)
+              } else {
+                combo_cds<-create_cds(combo_exons,UTR5,UTR3,tx_junc)
+                cds_mod_info<-modify_cds(combo_cds, target_junc, junc, start_exon, end_exon)
+                cds_mod<-cds_mod_info[[1]]
+                tx_junc_loc<-cds_mod_info[[2]]
+                if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+                  cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
+                  combo_cds<-combo_cds[order(combo_cds[,2],decreasing=TRUE),]
+                }
+                sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
+                junction<-paste(as.character(junc), collapse=",")
+                sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+                if (!check_tx(sequ)){protein_coding<-"tx_error"}
+                orf_dat<-find_orfs(sequ,tx_junc_loc)
+                names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
+                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                sequences<-c(sequences,sequ)
+                mod<-mod_made(data.frame(combo_cds), cds_mod)
+              }
+              # modify the joined cds using the junction
+              if (leafcutter){
+                verdict<-curr_introns$verdict # verdict
+                deltapsi<-curr_introns$deltapsi # deltapsi
+              } else {
+                verdict<-NA
+                deltapsi<-NA
+              }
+              next_row<-c(curr_introns$clusterID,
+                          curr_introns$chr,
+                          curr_introns$start,
+                          curr_introns$end,
+                          paste(gene_pair,collapse="-"),
+                          paste(unique(trans_pair),collapse="-"),
+                          mod,
+                          junction,
+                          paste(tx_junc_loc,collapse=","),
+                          orf_dat[4],
+                          verdict,
+                          deltapsi,
+                          orf_dat[1],
+                          orf_dat[3],
+                          orf_dat[5],
+                          orf_dat[6],
+                          1,
+                          protein_coding)
+            }
+
+            # for (r in seq(3)){
+            # filling the data_canon dataframe with the junction information
+            col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
+                         "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
+                         "error","peptide","tx_length","start_stop","orf","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
+            if (nrow(data_canon_fill)==0){
+              data_canon_fill<-rbind(data_canon_fill,next_row)
+              colnames(data_canon_fill)<-col_names
+            } else {
+              data_canon_fill<-rbind(data_canon_fill,next_row)
+            }
+            # }
+            data_canon_fill<-unique(data_canon_fill)
+            data_canon<-rbind(data_canon,data_canon_fill)
+            cds_mod_dat <- list(cds_mod$start,cds_mod$end)
+            names(cds_mod_dat) <- c("start","end")
+            cds_storage<-list.append(cds_storage,cds_mod_dat)
+          }
+        }
+      }
+    }
+  }
+}
+
+#------------------------------------------------------------------------------------------------------------------------------------------------#
+# saving data
+
+out<-sprintf("%s/%s%s%s",out_dir,"data_splicemutr",file_num,".txt")
+out_fasta<-sprintf("%s/%s%s%s",out_dir,"sequences",file_num,".fa")
+out_cds <- sprintf("%s/cds_stored_%s.rds",out_dir,file_num)
+write.table(data_canon,file=out,col.names=T)
+sequences<-DNAStringSet(sequences)
+writeXStringSet(sequences,out_fasta)
+saveRDS(cds_stored,file=out_cds)

@@ -1,0 +1,11 @@
+Package: Splicemutr
+Type: Package
+Title: splicemutr
+Version: 0.1.0
+Author: Theron Palmer
+Maintainer: Theron Palmer <theropalm@gmail.com>
+Description: This package contains functions for analyzing novel splice junctions and the modificatios they make to coding sequences
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
