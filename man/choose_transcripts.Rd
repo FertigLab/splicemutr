@@ -13,7 +13,7 @@ choose_transcripts(exons, transcripts_1, transcripts_2 = c(), exons_by_tx)
 
 \item{transcripts_2}{the character vector of transcripts for the end gene}
 
-\item{exons_by_transcript}{the exons per transcript}
+\item{exons_by_tx}{the exons per transcript}
 }
 \value{
 a list of start junction and end junction transcripts that can be paired

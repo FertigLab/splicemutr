@@ -53,13 +53,13 @@ leafcutter<-T
 #------------------------------------------------------------------------------#
 # txdb play
 
-gtf_file<-"/media/theron/My_Passport/reference_genomes/GTF_GFF/GENCODE/gencode.v35.annotation.gtf"
-leaf_file<-'/media/theron/My_Passport/head_and_neck_DARIA/data/leafcutter_10_21_2020/data.Rdata'
-# leaf_file <- "/media/theron/My_Passport/TCGA_junctions/BRCA/data.Rdata"
-splicemutr_tx_file<-"/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr/splicemutr_transcripts"
-funcs<-"/media/theron/My_Passport/splicemutr/functions.R"
-load(leaf_file)
-leafcutter<-T
+# gtf_file<-"/media/theron/My_Passport/reference_genomes/GTF_GFF/GENCODE/gencode.v35.annotation.gtf"
+# leaf_file<-'/media/theron/My_Passport/head_and_neck_DARIA/data/leafcutter_10_21_2020/data.Rdata'
+# # leaf_file <- "/media/theron/My_Passport/TCGA_junctions/BRCA/data.Rdata"
+# splicemutr_tx_file<-"/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr/splicemutr_transcripts"
+# funcs<-"/media/theron/My_Passport/splicemutr/functions.R"
+# load(leaf_file)
+# leafcutter<-T
 
 #------------------------------------------------------------------------------#
 # loading in the internal functions

@@ -7,11 +7,18 @@
 modify_cds(combo_cds, target_junc, junc, start_exon, end_exon)
 }
 \arguments{
+\item{combo_cds}{the combined cds output from create_cds()}
+
+\item{target_junc}{the intron coordinates used for modifying the cds}
+
 \item{junc}{the junction location information output from is_UTR}
 
-\item{cds}{the combined cds to be modified}
+\item{start_exon}{start exon (relative to junction) coordinates as character in form start-end}
 
-\item{intron}{the intron coordinates used for modifying the cds}
+\item{end_exon}{end exon (relative to junction) coordinates as character in form start-end}
+}
+\value{
+a list containing the modified cds and the junction location in the cds cds_mod junc_loc
 }
 \description{
 modifying the combined cds using the junction

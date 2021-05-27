@@ -13,7 +13,7 @@ create_cds(combo_exons, UTR5, UTR3, tx_junc)
 
 \item{UTR3}{the 3' UTR for the final transcript}
 
-\item{target_junc}{the target junction character vector in form c(chr,strand,start,end)}
+\item{tx_junc}{the junction block coordinates in the transcript}
 }
 \description{
 creating the combination cds for the junction

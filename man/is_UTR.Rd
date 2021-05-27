@@ -12,6 +12,8 @@ is_UTR(target_junc, UTR5, UTR3, junc)
 \item{UTR5}{the 5' UTR}
 
 \item{UTR3}{the 3' UTR}
+
+\item{junc}{the original junc call}
 }
 \value{
 two logicals indicating whether the junction is UTR or not
