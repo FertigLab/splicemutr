@@ -705,3 +705,44 @@ split_kmers<-function(kmers,save_dir){
     return(nrow(kmers_test))
   },numeric(1))
 }
+
+#' Taking the star .out.tab file and converting it to the junctions extract format for leafcutter
+#' SJ.out.tab format
+#' column 1: chromosome
+#' column 2: first base of the intron (1-based)
+#' column 3: last base of the intron (1-based)
+#' column 4: strand (0: undefined, 1: +, 2: -)
+#' column 5: intron motif: 0: non-canonical; 1: GT/AG, 2: CT/AC, 3: GC/AG, 4: CT/GC, 5: AT/AC, 6: GT/AT
+#' column 6: 0: unannotated, 1: annotated (only if splice junctions database is used)
+#' column 7: number of uniquely mapping reads crossing the junction
+#' column 8: number of multi-mapping reads crossing the junction
+#' column 9: maximum spliced alignment overhang
+#'
+#' JUNC file format
+#' chrom	The name of the chromosome.
+#' chromStart	The starting position of the junction-anchor. This includes the maximum overhang for the junction on the left. For the exact junction start add blockSizes[0].
+#' chromEnd	The ending position of the junction-anchor. This includes the maximum overhang for the juncion on the left. For the exact junction end subtract blockSizes[1].
+#' name	The name of the junctions, the junctions are just numbered JUNC1 to JUNCn.
+#' score	The number of reads supporting the junction.
+#' strand	Defines the strand - either '+' or '-'. This is calculated using the XS tag in the BAM file.
+#'
+#' @param STAR_file The star file to be converted
+#'
+star_to_leaf <- function(STAR_file){
+  star_dat <- read.table(star_file,header=F)
+  chrom <- star_dat[,1]
+  chromStart <- star_dat[,2]
+  chromEnd <- star_dat[,3]
+  name <- sprintf("%s%d",rep("JUNC",nrow(star_dat)),seq(nrow(star_dat)))
+  score <- star_dat[,7]
+  strand <- vapply(star_dat[,4],function(val){
+    if (val == 0){
+      return("*")
+    } else if (val == 1){
+      return("+")
+    } else {
+      return("-")
+    }
+  },character(1))
+  junc_dat <- data.frame(chrom,chromStart,chromEnd,name,score,strand)
+}
