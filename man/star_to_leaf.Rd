@@ -19,6 +19,9 @@ star_to_leaf(STAR_file)
 \arguments{
 \item{STAR_file}{The star file to be converted}
 }
+\value{
+converted junc_dat dataframe
+}
 \description{
 JUNC file format
 chrom	The name of the chromosome.

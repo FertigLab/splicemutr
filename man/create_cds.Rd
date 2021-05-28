@@ -15,6 +15,9 @@ create_cds(combo_exons, UTR5, UTR3, tx_junc)
 
 \item{tx_junc}{the junction block coordinates in the transcript}
 }
+\value{
+created cds
+}
 \description{
 creating the combination cds for the junction
 }

@@ -4,6 +4,7 @@
 #' @param target_junc the target junction c(chr, strand, start, end)
 #' @param all_genes he GRanges object of genes
 #' @return  list of cis, trans_start, and trans_end genes associated with the junction
+#' @export
 #'
 find_genes<-function(target_junc,all_genes){
 
@@ -29,6 +30,7 @@ find_genes<-function(target_junc,all_genes){
 #' @param genes character vector containing genes the target junction can exist in
 #' @param tx_by_gene GRanges object containing introns per for a specified transcript
 #' @return  list containing genes and transcripts
+#' @export
 #'
 extract_transcripts<-function(genes,tx_by_gene){
 
@@ -64,6 +66,7 @@ extract_transcripts<-function(genes,tx_by_gene){
 #' @param tx_introns GRanges object containing introns per for a specified transcript
 #' @param exact logical indicating whether the junction should exactly match a reference intron or not
 #' @return  chracter vector indicating the intron range the target junction overlaps with
+#' @export
 #'
 find_introns<-function(target_junc,tx_introns,exact=FALSE){
   # finds the introns per transcript that the target junction overlaps with
@@ -91,6 +94,7 @@ find_introns<-function(target_junc,tx_introns,exact=FALSE){
 #'
 #' @param curr_introns a list of junctions corresponding to the current gene being analyzed
 #' @return  a list of non-overlapping junctions for the gene with row indeces dictating the associated row index of the curr_introns list
+#' @export
 #'
 which_junctions_overlap<-function(curr_introns){
 
@@ -113,6 +117,7 @@ which_junctions_overlap<-function(curr_introns){
 #'
 #' @param cds A cds dataframe with vectors of numeric widths, ends, and starts
 #' @return  The cds data with an adjusted width
+#' @export
 #'
 adjust_width<-function(cds){
   # adjusts the width column of a cds dataframe
@@ -130,6 +135,7 @@ adjust_width<-function(cds){
 #'
 #' @param vector The vector of numbers
 #' @return  the vector modified to reflect the incremented sum
+#' @export
 #'
 running_sum<-function(vector){
   # translates genomic relative coordinates to transcript relative coordinates
@@ -154,6 +160,7 @@ running_sum<-function(vector){
 #' @param start_exon start exon (relative to junction) coordinates as character in form start-end
 #' @param end_exon end exon (relative to junction) coordinates as character in form start-end
 #' @return  a list containing the modified cds and the junction location in the cds cds_mod junc_loc
+#' @export
 #'
 modify_cds <- function(combo_cds, target_junc, junc, start_exon, end_exon){
   # are either junction in a UTR?
@@ -247,6 +254,7 @@ modify_cds <- function(combo_cds, target_junc, junc, start_exon, end_exon){
 #' @param cds reference cds as sorted dataframe
 #' @param cds_mod junction-modified cds as sorted dataframe
 #' @return "changed" if the starts and ends are different, "normal" if the starts and ends are the same, "add_reg" if more elements in cds_mod than cds, sub_reg if less elements in cds_mod than cds
+#' @export
 #'
 mod_made<-function(cds,cds_mod){
   # determines whether there is a difference between two cds dataframes
@@ -282,6 +290,7 @@ mod_made<-function(cds,cds_mod){
 #' @param start_loc start codon location in peptide coordinates relative to whole transcript
 #' @param stop_loc stop codon location in peptide coordinates relative to whole transcript
 #' @return junction location in translated protein coordinates or tx_junc_loc if in UTR
+#' @export
 #'
 which_codon<-function(cod,tx_junc_loc,start_loc,stop_loc){
 
@@ -338,6 +347,7 @@ junc_loc_pep<-function(tx_junc_loc,tx,start_loc,stop_loc){ #write
 #' @param sequ The DNA sequence in character form to analyze
 #' @param tx_junc_loc The junction location in the transcript
 #' @return a vector of error type, protein if translatable or DNA sequence, ensembl transcript name , junction location relative to peptide start, modified transcript length, start and stop codon locations
+#' @export
 #'
 find_orfs<-function(sequ,tx_junc_loc){
   start_codon<-"ATG"
@@ -406,6 +416,7 @@ find_orfs<-function(sequ,tx_junc_loc){
 #'
 #' @param seq The DNA sequence in character form to analyze
 #' @return TRUE or FALSE dependent upon whether the transcript has start codon at first codon and stop codon at last codon
+#' @export
 #'
 check_tx<-function(seq){
   # This function takes as input a DNA sequence, and tests to see whether it contains a start and stop codon.
@@ -434,6 +445,7 @@ check_tx<-function(seq){
 #' @param exons_by_gene the exons per gene in the genome
 #' @param gene_tar a vector pair of gene targets, left is first or only gene, right is second gene. Single element vector if only one gene.
 #' @return the unique start and end junction exons
+#' @export
 #'
 choose_exons<-function(target_junc, exons_by_gene, gene_tar){
   junc_start<-GRanges(seqnames = c(target_junc[1]), strand = target_junc[2],
@@ -489,6 +501,7 @@ choose_exons<-function(target_junc, exons_by_gene, gene_tar){
 #' @param transcripts_2 the character vector of transcripts for the end gene
 #' @param exons_by_tx the exons per transcript
 #' @return a list of start junction and end junction transcripts that can be paired
+#' @export
 #'
 choose_transcripts<-function(exons, transcripts_1, transcripts_2=c(), exons_by_tx){
   transcripts<-transcripts_1
@@ -535,6 +548,8 @@ choose_transcripts<-function(exons, transcripts_1, transcripts_2=c(), exons_by_t
 #' @param UTR5 the 5' UTR for the first transcript
 #' @param UTR3 the 3' UTR for the final transcript
 #' @param tx_junc the junction block coordinates in the transcript
+#' @return created cds
+#' @export
 #'
 create_cds<-function(combo_exons,UTR5,UTR3,tx_junc){
   combo_start<-combo_exons[1:tx_junc]
@@ -601,6 +616,7 @@ create_cds<-function(combo_exons,UTR5,UTR3,tx_junc){
 #' @param UTR3 the 3' UTR
 #' @param junc the original junc call
 #' @return two logicals indicating whether the junction is UTR or not
+#' @export
 #'
 is_UTR<-function(target_junc, UTR5, UTR3, junc){
   if (target_junc[2] == "-"){
@@ -656,6 +672,7 @@ is_UTR<-function(target_junc, UTR5, UTR3, junc){
 #'
 #' @param seqs_vec vector of sequences (i.e. data_canon[,2])
 #' @return a list of integer vectors with kmer character vectors as names
+#' @export
 #'
 countKmers <- function(seqs_vec, K){
 
@@ -727,6 +744,8 @@ split_kmers<-function(kmers,save_dir){
 #' strand	Defines the strand - either '+' or '-'. This is calculated using the XS tag in the BAM file.
 #'
 #' @param STAR_file The star file to be converted
+#' @return converted junc_dat dataframe
+#' @export
 #'
 star_to_leaf <- function(STAR_file){
   star_dat <- read.table(star_file,header=F)
@@ -745,4 +764,5 @@ star_to_leaf <- function(STAR_file){
     }
   },character(1))
   junc_dat <- data.frame(chrom,chromStart,chromEnd,name,score,strand)
+  return(junc_dat)
 }
