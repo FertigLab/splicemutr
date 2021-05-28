@@ -7,6 +7,6 @@ R: 4.0.2
 
 # STAR Alignment of RNAseq data
 
----
+
 STAR --genomeDir $GENOME_DIR --readFilesIn ${fastq1} ${fastq2} --twopassMode Basic --outSAMstrandField intronMotif --outFileNamePrefix $outprefix --runThreadN 6 --readFilesCommand zcat --outSAMtype BAM Unsorted
----
+
