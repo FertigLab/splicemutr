@@ -750,10 +750,10 @@ split_kmers<-function(kmers,save_dir){
 star_to_leaf <- function(STAR_file){
   star_dat <- read.table(star_file,header=F)
   chrom <- star_dat[,1]
-  chromStart <- star_dat[,2]-1
-  chromEnd <- star_dat[,3]+1
+  chromStart <- as.numeric(star_dat[,2]-1)
+  chromEnd <- as.numeric(star_dat[,3]+1)
   name <- sprintf("%s%d",rep("JUNC",nrow(star_dat)),seq(nrow(star_dat)))
-  score <- star_dat[,7]
+  score <- as.numeric(star_dat[,7])
   strand <- vapply(star_dat[,4],function(val){
     if (val == 0){
       return("*")
