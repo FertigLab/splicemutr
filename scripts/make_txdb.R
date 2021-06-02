@@ -8,6 +8,7 @@
 # loading libraries
 
 library(ensembldb)
+library(optparse)
 
 #------------------------------------------------------------------------------#
 # handling command line input
