@@ -9,6 +9,7 @@
 
 library(ensembldb)
 library(optparse)
+library(AnnotationDbi)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -32,4 +33,4 @@ txdb<-makeTxDbFromGFF(gtf_file) # making the txdb from gtf
 #------------------------------------------------------------------------------#
 # saving the txdb
 
-saveRDS(txdb,file=out_file)
+saveDb(txdb,file=out_file)

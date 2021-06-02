@@ -22,6 +22,7 @@ library(dplyr)
 library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
 library(rlist)
 library(splicemute)
+library(AnnotationDbi)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -48,7 +49,8 @@ leafcutter<-T
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
 
-txdb<-readRDS(txdb_file) # making the txdb from gtf
+print("reading in txdb")
+txdb<-loadDb(txdb_file) # making the txdb from gtf
 all_genes<-genes(txdb)
 exons_by_gene<-exonsBy(txdb,by="gene")
 exons_by_tx<-exonsBy(txdb,by=c("tx"),use.names=T)
