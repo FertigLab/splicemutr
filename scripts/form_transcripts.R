@@ -2,9 +2,10 @@
 
 # created: 05/15/2021
 
-# The purpose of this script is to modify transcript cds regions only
+# The purpose of this script is to modify reference transcripts using
+# reference transcript information
 
-#------------------------------------------------------------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 # loading libraries
 
 library(GenomicRanges)
@@ -20,56 +21,34 @@ library(optparse)
 library(dplyr)
 library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
 library(rlist)
+library(splicemute)
 
-#------------------------------------------------------------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 # handling command line input
-# add leafcutter flag
-# add splicemutr_tx input
 
 arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups_file",
   description="form transcripts per junction for the given input junction file",
   option_list=list(
    make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
-   make_option(c("-g","--gtf"), default=NULL, help="The gtf file used to create the txdb object"),
-   make_option(c("-b","--bsgenome"), default=NULL, help="The bsgenome library name used for extracting sequencing information"),
+   make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
-   make_option(c("-c","--cases"), default=c("cryptic_threeprime","cryptic_fiveprime","cryptic_unanchored","cryptic","annotated","novel annotated pair","unknown_strand","error"), help="The possible verdicts that the junctions can take on"),
-   make_option(c("-n","--num"), default="", help="The file number output for the data"),
-   make_option(c("-f","--fun"), default="", help="The file containing the functions"))))
+   make_option(c("-n","--num"), default="", help="The file number output for the data"))))
 
 opt=arguments
 
 out_dir<-opt$output_directory
-gtf_file<-opt$gtf
+txdb_file<-opt$txdb
 file_num<-opt$num
 
 junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
-introns<-readRDS(junc_file) # loading in the introns data
-
-cases<-opt$cases # currently, cases must follow this format; leafcutter format
-funcs<-opt$fun
+introns <-readRDS(junc_file) # loading in the introns data
+introns$chr <- str_replace(introns$chr,"chr","")
 leafcutter<-T
-
-#------------------------------------------------------------------------------#
-# txdb play
-
-# gtf_file<-"/media/theron/My_Passport/reference_genomes/GTF_GFF/GENCODE/gencode.v35.annotation.gtf"
-# leaf_file<-'/media/theron/My_Passport/head_and_neck_DARIA/data/leafcutter_10_21_2020/data.Rdata'
-# # leaf_file <- "/media/theron/My_Passport/TCGA_junctions/BRCA/data.Rdata"
-# splicemutr_tx_file<-"/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr/splicemutr_transcripts"
-# funcs<-"/media/theron/My_Passport/splicemutr/functions.R"
-# load(leaf_file)
-# leafcutter<-T
-
-#------------------------------------------------------------------------------#
-# loading in the internal functions
-
-source(funcs)
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
 
-txdb<-makeTxDbFromGFF(gtf_file) # making the txdb from gtf
+txdb<-readRDS(txdb_file) # making the txdb from gtf
 all_genes<-genes(txdb)
 exons_by_gene<-exonsBy(txdb,by="gene")
 exons_by_tx<-exonsBy(txdb,by=c("tx"),use.names=T)
@@ -187,7 +166,6 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          1,
                           protein_coding)
             } else {
               protein_coding <- "Yes"
@@ -277,7 +255,6 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          1,
                           protein_coding)
             }
 
@@ -285,7 +262,7 @@ for (i in seq(intron_length)){
             # filling the data_canon dataframe with the junction information
             col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
-                         "error","peptide","tx_length","start_stop","orf","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
+                         "error","peptide","tx_length","start_stop","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names
@@ -397,7 +374,6 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          1,
                           protein_coding)
             } else {
               protein_coding <- "Yes"
@@ -487,22 +463,19 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          1,
                           protein_coding)
             }
 
-            # for (r in seq(3)){
             # filling the data_canon dataframe with the junction information
             col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
-                         "error","peptide","tx_length","start_stop","orf","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
+                         "error","peptide","tx_length","start_stop","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names
             } else {
               data_canon_fill<-rbind(data_canon_fill,next_row)
             }
-            # }
             data_canon_fill<-unique(data_canon_fill)
             data_canon<-rbind(data_canon,data_canon_fill)
             cds_mod_dat <- list(cds_mod$start,cds_mod$end)
