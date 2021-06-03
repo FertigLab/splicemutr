@@ -42,6 +42,9 @@ mhcnuggets_format <- function(genotype_list){
       alleles_mhcnuggets <- sprintf("HLA-%s:%s",splits[1],splits[2])
     })
   })
+  DP_pairs <- c()
+  DQ_pairs <- c()
+  DR_pairs <- c()
   names(mhcnuggets_allele_list)<-allele_types
   if (all(c("DPA1","DPB1") %in% allele_types)){
     pairs <- data.frame(expand.grid(unlist(mhcnuggets_allele_list[["DPA1"]]),unlist(mhcnuggets_allele_list[["DPB1"]])))
