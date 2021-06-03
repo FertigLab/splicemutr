@@ -76,4 +76,12 @@ genotype_vecs<-lapply(seq(nrow(genotypes)),function(i){
 })
 
 saveRDS(genotype_vecs,file=sprintf("%s/genotype_vecs.rds",out_dir))
-write.table(data.frame(unique(unlist(genotype_vecs))),file=sprintf("%s/allele_data.txt",out_dir),col.names = F, row.names = F, quote=F)
+genotypes <- data.frame(unique(unlist(genotype_vecs)))
+colnames(genotypes)<-"alleles"
+class2<- str_detect(genotypes$alleles,"[D]")
+class2_genotypes<-genotypes[class2,]
+class1_genotypes<-genotypes[!class2,]
+
+write.table(class1_genotypes,file=sprintf("%s/allele_data_class1.txt",out_dir),col.names = F, row.names = F, quote=F)
+write.table(class2_genotypes,file=sprintf("%s/allele_data_class2.txt",out_dir),col.names = F, row.names = F, quote=F)
+
