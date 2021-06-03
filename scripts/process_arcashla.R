@@ -67,7 +67,7 @@ genotypes <- read.table(genotype_file)
 genotype_vecs<-lapply(seq(nrow(genotypes)),function(i){
   json_file <- genotypes[i,]
   json_base <- str_split(basename(json_file),"[.]")[[1]][1]
-  json_base_file <- sprintf("%s/%s.genotype.json",dirname(json_file),json_base)
+  json_base_file <- sprintf("%s_dir/%s.genotype.json",json_file,json_base)
   genotype <- fromJSON(file=json_base_file)
   genotype_vec <- mhcnuggets_format(genotype)
 })
