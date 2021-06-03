@@ -24,7 +24,7 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
 opt=arguments
 
 out_dir<-opt$output_directory
-geneotype_file<-opt$genotypes
+genotype_file<-opt$genotypes
 
 #------------------------------------------------------------------------------#
 # internal functions
@@ -65,10 +65,9 @@ mhcnuggets_format <- function(genotype_list){
 genotypes <- read.table(genotype_file)
 
 genotype_vecs<-lapply(seq(nrow(genotypes)),function(i){
-  #i<-1
-  #json_file <- genotypes[i,]
-  #json_base <- str_split(basename(json_file),"[.]")[[1]][1]
-  #json_base_file <- sprintf("%s/%s.genotype.json",dirname(json_file),json_base)
+  json_file <- genotypes[i,]
+  json_base <- str_split(basename(json_file),"[.]")[[1]][1]
+  json_base_file <- sprintf("%s/%s.genotype.json",dirname(json_file),json_base)
   genotype <- fromJSON(file=json_base_file)
   genotype_vec <- mhcnuggets_format(genotype)
 })
