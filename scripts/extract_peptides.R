@@ -33,7 +33,7 @@ for (i in seq(nrow(data_files))){
   if (i == 1){
     data <- read.table(data_files[i,])
   } else {
-    data <- rbind(data,read.table(data_files))
+    data <- rbind(data,read.table(data_files[i,]))
   }
 }
 
