@@ -44,6 +44,7 @@ file_num<-opt$num
 junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
 introns <-readRDS(junc_file) # loading in the introns data
 introns$chr <- str_replace(introns$chr,"chr","")
+introns <- introns %>% dplyr::filter(verdict != "unkown_strand")
 leafcutter<-T
 
 #------------------------------------------------------------------------------#

@@ -441,7 +441,7 @@ check_tx<-function(seq){
 }
 
 #' finding the exons that are associated with start and end of the junction
-#' @param target_junction the target junction to use for analysis
+#' @param target_junc the target junction to use for analysis
 #' @param exons_by_gene the exons per gene in the genome
 #' @param gene_tar a vector pair of gene targets, left is first or only gene, right is second gene. Single element vector if only one gene.
 #' @return the unique start and end junction exons
@@ -671,6 +671,7 @@ is_UTR<-function(target_junc, UTR5, UTR3, junc){
 #' return a list with index in seqs_vec as list access index in returned list
 #'
 #' @param seqs_vec vector of sequences (i.e. data_canon[,2])
+#' @param K the kmer length
 #' @return a list of integer vectors with kmer character vectors as names
 #' @export
 #'

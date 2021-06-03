@@ -4,8 +4,24 @@ Title: splicemute
 Version: 0.1.0
 Author: Theron Palmer
 Maintainer: Theron Palmer <theropalm@gmail.com>
-Description: This package contains functions for analyzing novel splice junctions and the modificatios they make to coding sequences
-License: What license is it under?
+Description: This package contains functions for analyzing novel splice junctions and the modificatios they make to coding sequences.
+License: ?
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+Imports: 
+    annotate,
+    AnnotationDbi,
+    biomaRt,
+    BSgenome.Hsapiens.GENCODE.GRCh38.p13,
+    DataCombine,
+    dplyr,
+    ensembldb,
+    GenomicRanges,
+    optparse,
+    org.Hs.eg.db,
+    rlist,
+    rtracklayer,
+    splicemute,
+    stringi,
+    stringr
