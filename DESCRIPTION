@@ -22,6 +22,5 @@ Imports:
     org.Hs.eg.db,
     rlist,
     rtracklayer,
-    splicemute,
     stringi,
     stringr
