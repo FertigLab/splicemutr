@@ -76,4 +76,4 @@ genotype_vecs<-lapply(seq(nrow(genotypes)),function(i){
 })
 
 saveRDS(genotype_vecs,file=sprintf("%s/genotype_vecs.rds",out_dir))
-write.table(data.frame(unique(unlist(genotype_vecs))),file=sprintf("%s/allele_data.txt"),col.names = F, row.names = F, quote=F)
+write.table(data.frame(unique(unlist(genotype_vecs))),file=sprintf("%s/allele_data.txt",out_dir),col.names = F, row.names = F, quote=F)
