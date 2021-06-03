@@ -21,7 +21,7 @@ library(optparse)
 library(dplyr)
 library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
 library(rlist)
-library(splicemute)
+# library(splicemute)
 library(AnnotationDbi)
 
 #------------------------------------------------------------------------------#
@@ -33,18 +33,21 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
    make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
    make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
-   make_option(c("-n","--num"), default="", help="The file number output for the data"))))
+   make_option(c("-n","--num"), default="", help="The file number output for the data"),
+   make_option(c("-f","--funcs"), default="", help="The functions file"))))
 
 opt=arguments
 
 out_dir<-opt$output_directory
 txdb_file<-opt$txdb
 file_num<-opt$num
+funcs <- opt$funcs
+source(funcs)
 
 junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
 introns <-readRDS(junc_file) # loading in the introns data
 introns$chr <- str_replace(introns$chr,"chr","")
-introns <- introns %>% dplyr::filter(verdict != "unkown_strand")
+introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
 leafcutter<-T
 
 #------------------------------------------------------------------------------#

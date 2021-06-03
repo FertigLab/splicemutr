@@ -11,6 +11,8 @@ countKmers(seqs_vec, K)
 }
 \arguments{
 \item{seqs_vec}{vector of sequences (i.e. data_canon[,2])}
+
+\item{K}{the kmer length}
 }
 \value{
 a list of integer vectors with kmer character vectors as names

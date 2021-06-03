@@ -7,11 +7,11 @@
 choose_exons(target_junc, exons_by_gene, gene_tar)
 }
 \arguments{
+\item{target_junc}{the target junction to use for analysis}
+
 \item{exons_by_gene}{the exons per gene in the genome}
 
 \item{gene_tar}{a vector pair of gene targets, left is first or only gene, right is second gene. Single element vector if only one gene.}
-
-\item{target_junction}{the target junction to use for analysis}
 }
 \value{
 the unique start and end junction exons
