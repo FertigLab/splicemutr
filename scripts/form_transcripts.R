@@ -500,7 +500,7 @@ for (i in seq(intron_length)){
 out<-sprintf("%s/%s%s%s",out_dir,"data_splicemutr",file_num,".txt")
 out_fasta<-sprintf("%s/%s%s%s",out_dir,"sequences",file_num,".fa")
 out_cds <- sprintf("%s/cds_stored_%s.rds",out_dir,file_num)
-write.table(data_canon,file=out,col.names=T)
+write.table(data_canon,file=out,col.names=T,row.names=F,quote=F)
 sequences<-DNAStringSet(sequences)
 writeXStringSet(sequences,out_fasta)
 saveRDS(cds_storage,file=out_cds)
