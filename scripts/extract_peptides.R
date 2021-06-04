@@ -47,5 +47,5 @@ protein_df <- data.frame(proteins)
 write.table(proteins, file=sprintf("%s/proteins.txt",out_dir),
             col.names = F, row.names = F, quote = F)
 write.table(data_protein_coding, file=sprintf("%s/data_splicemutr_protein_coding.txt",out_dir),
-            col.names = F,row.names = F,quote = F)
+            col.names = F,row.names = F,quote = F,sep="\t")
 
