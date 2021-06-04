@@ -44,9 +44,10 @@ def main(options):
             for i in range(num_peps):
                 row_scores[i]=(data[i][1])/100
                 kmers[i]=str(BytesIntEncoder.decode(data[i][0]).decode())
-            SB_scores = [str(score) for score in row_scores if score <= 50]
-            WB_scores = [str(score) for score in row_scores if score <= 500 and score > 50]
-            pickle_txt.write("%s\t%s\t%s\t%s\n"%(str(row),":".join(kmers),":".join(SB_scores),":".join(WB_scores)))
+            scores = [str(score) for score in row_scores]
+            #SB_scores = [str(score) for score in row_scores if score <= 50]
+            #WB_scores = [str(score) for score in row_scores if score <= 500 and score > 50]
+            pickle_txt.write("%s\t%s\t%s\t%s\n"%(str(row),":".join(kmers),":".join(scores)))
 
 if __name__ == "__main__":
 
