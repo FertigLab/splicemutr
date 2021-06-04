@@ -40,21 +40,13 @@ def main(options):
             data = tx_dict_all[row]
             num_peps = len(data)
             row_scores=[None]*num_peps
+            kmers=[None]*num_peps
             for i in range(num_peps):
                 row_scores[i]=(data[i][1])/100
-            SB_scores = [score for score in row_scores if score <= 50]
-            WB_scores = [score for score in row_scores if score <= 500 and score > 50]
-            SB_NUM = len(SB_scores)
-            WB_NUM = len(WB_scores)
-            if SB_NUM==0:
-                SB_AV=0
-            else:
-                SB_AV=sum(SB_scores)/SB_NUM
-            if WB_NUM==0:
-                WB_AV=0
-            else:
-                WB_AV=sum(WB_scores)/WB_NUM
-            pickle_txt.write("%s\t%s\t%s\t%s\t%s\n"%(row,str(SB_AV),str(SB_NUM),str(WB_AV),str(WB_NUM)))
+                kmers[i]=str(BytesIntEncoder.decode(data[i][0]).decode())
+            SB_scores = [str(score) for score in row_scores if score <= 50]
+            WB_scores = [str(score) for score in row_scores if score <= 500 and score > 50]
+            pickle_txt.write("%s\t%s\t%s\t%s\t%s\n"%(row,":".join(kmers),":".join(SB_scores),":".join(WB_SCORES)))
 
 if __name__ == "__main__":
 
