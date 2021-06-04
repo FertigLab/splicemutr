@@ -46,7 +46,7 @@ def main(options):
                 kmers[i]=str(BytesIntEncoder.decode(data[i][0]).decode())
             SB_scores = [str(score) for score in row_scores if score <= 50]
             WB_scores = [str(score) for score in row_scores if score <= 500 and score > 50]
-            pickle_txt.write("%s\t%s\t%s\t%s\t%s\n"%(row,":".join(kmers),":".join(SB_scores),":".join(WB_SCORES)))
+            pickle_txt.write("%s\t%s\t%s\t%s\t%s\n"%(row,":".join(kmers),":".join(SB_scores),":".join(WB_scores)))
 
 if __name__ == "__main__":
 
