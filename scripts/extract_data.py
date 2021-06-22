@@ -55,14 +55,14 @@ if __name__ == "__main__":
 
     parser = OptionParser()
 
-    parser.add_option("-a", "--allele", dest="hla_allele",
-                      help="the pickle HLA allele")
-    parser.add_option("-p", "--pickle_dir", dest="pickle_dir",
-                      help="the pickle directory")
-    parser.add_option("-b", "--kmer_beg", dest="kmer_beg",
-                      help="the lowest value in kmer range")
-    parser.add_option("-e", "--kmer_end", dest="kmer_end",
-                      help="the highest value in kmer range")
+    parser.add_argument("gentype_log_file", dest="genotype_log_file",
+                      help="The genotype log file for the current sample",
+                      type=str)
+    parser.add_option("-t", "--top_alleles", dest="top_alleles",
+                      help="The top # alleles to select", type=int)
+    parser.add_option("-s", "--top_alleles", dest="top_alleles",
+                      help="The top # alleles to select", type=int)
+
     (options, args) = parser.parse_args()
 
     main(options)
