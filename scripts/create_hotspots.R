@@ -19,7 +19,7 @@ arguments <- parse_args(OptionParser(usage = "",
                  description="turning peptide binding affinity scores into peptide hotspot scores",
                  option_list=list(
                    make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
-                   make_option(c("-h","--hla_file"), default=NULL, help="The hla binding summary file"),
+                   make_option(c("-m","--hla_file"), default=NULL, help="The hla binding summary file"),
                    make_option(c("-s","--splicemutr_file"), default=NULL, help="The splicemutr file containing the peptides"))))
 
 opt=arguments
