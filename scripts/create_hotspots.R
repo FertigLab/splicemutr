@@ -37,8 +37,11 @@ has_binders <- as.numeric(hla_dat[,1])+1
 proteins <- splicemutr_dat[has_binders,14]
 
 # start_time <- Sys.time()
-hotspots<-lapply(seq(length(proteins)),function(row_val){
+hotspots<-lapply(seq(length(proteins))[seq(100)],function(row_val){
   row_val<<-row_val
+  if (is.na(proteins[row_val])){
+    return(NA)
+  }
   filler <<- rep(0,nchar(proteins[row_val]))
   peps <- unique(str_replace_all(str_split(hla_dat[row_val,2],":")[[1]],"Z",""))
   locations<<-str_locate_all(proteins[row_val],peps)
@@ -50,7 +53,7 @@ hotspots<-lapply(seq(length(proteins)),function(row_val){
   },logical(1))
   return(filler)
 })
-names(hotspots) <- hla_dat[seq(1000),1]
+names(hotspots) <- hla_dat[seq(100),1]
 # end_time <- Sys.time()
 # duration <- end_time - start_time
 
