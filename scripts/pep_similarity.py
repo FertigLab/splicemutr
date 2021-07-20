@@ -25,7 +25,7 @@ def main(option,args,b62):
     
     similarity_IEDB =[]
     with open(output,"w") as out:
-        for pep in peps[0:10]:
+        for pep in peps:
             alignment_scores = np.array([sum([b62[(pep[i],pep_IEDB[i])] for i in range(9)]) for pep_IEDB in peps_IEDB])
             similarity_IEDB=(calculate_similarity(alignment_scores))
             out_string = "{peptide:s}\t{sim:.10e}"
