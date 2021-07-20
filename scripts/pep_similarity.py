@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import timeit
 
 def calculate_similarity(counts_list):
     counts_np = np.array(counts_list)
@@ -15,7 +16,7 @@ def calculate_similarity(counts_list):
 def main(option,args,b62):
     pep_file = args[0]
     IEDB_peps = args[1]
-    output = options.output
+    output = pep_file.replace(".txt","_IEDB.txt")
     with open(pep_file) as file:
         peps = file.read().splitlines()
     with open(IEDB_peps) as file:
@@ -24,7 +25,7 @@ def main(option,args,b62):
     
     similarity_IEDB =[]
     with open(output,"w") as out:
-        for pep in peps:
+        for pep in peps[0:10]:
             alignment_scores = np.array([sum([b62[(pep[i],pep_IEDB[i])] for i in range(9)]) for pep_IEDB in peps_IEDB])
             similarity_IEDB=(calculate_similarity(alignment_scores))
             out_string = "{peptide:s}\t{sim:.10e}"
@@ -39,9 +40,6 @@ if __name__ == "__main__":
     b62 = substitution_matrices.load("BLOSUM62")
     
     parser = OptionParser()
-    
-    parser.add_option("-o", "--output", dest= "output",
-                  help= "the output file")
 
     (options, args) = parser.parse_args()
 
