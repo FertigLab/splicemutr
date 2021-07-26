@@ -62,7 +62,7 @@ tx_by_gene<-transcriptsBy(txdb,by="gene")
 five_by_tx<-fiveUTRsByTranscript(txdb,use.names=T)
 three_by_tx<-threeUTRsByTranscript(txdb,use.names=T)
 cds_by_tx <- cdsBy(txdb,by="tx",use.names=T)
-bsgenome<-BSgenome.Hsapiens.GENCODE.GRCh38.p13
+bsgenome<-BSgenome.Hsapiens.GENCODE.GRCh38.p10
 
 #------------------------------------------------------------------------------#
 # performing transcript formation
