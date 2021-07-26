@@ -358,7 +358,7 @@ for (i in seq(intron_length)){
               sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
               orf_dat<-find_orfs(sequ,tx_junc_loc)
               names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
-                                   gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                                   paste(gene_pair,collapse="-"),paste(unique(trans_pair),collapse="-")),collapse=":")
               sequences<-c(sequences, sequ)
               mod<-mod_made(data.frame(combo_exons), cds_mod)
               if (leafcutter){
@@ -409,7 +409,7 @@ for (i in seq(intron_length)){
                 sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
                 orf_dat<-find_orfs(sequ,tx_junc_loc)
                 names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
-                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                                     paste(gene_pair,collapse="-"),paste(unique(trans_pair),collapse="-")),collapse=":")
                 sequences<-c(sequences, sequ)
                 mod<-mod_made(data.frame(combo_cds), cds_mod)
               } else if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]==junc[2]) {
@@ -427,7 +427,7 @@ for (i in seq(intron_length)){
                 sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
                 orf_dat<-find_orfs(sequ,tx_junc_loc)
                 names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
-                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                                     paste(gene_pair,collapse="-"),paste(unique(trans_pair),collapse="-")),collapse=":")
                 sequences<-c(sequences,sequ)
                 mod<-mod_made(data.frame(combo_cds), cds_mod)
               } else {
@@ -445,7 +445,7 @@ for (i in seq(intron_length)){
                 if (!check_tx(sequ)){protein_coding<-"tx_error"}
                 orf_dat<-find_orfs(sequ,tx_junc_loc)
                 names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
-                                     gene,paste(unique(trans_pair),collapse="-")),collapse=":")
+                                     paste(gene_pair,collapse="-"),paste(unique(trans_pair),collapse="-")),collapse=":")
                 sequences<-c(sequences,sequ)
                 mod<-mod_made(data.frame(combo_cds), cds_mod)
               }
