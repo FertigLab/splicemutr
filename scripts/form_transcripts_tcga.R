@@ -23,7 +23,7 @@ library(BSgenome.Hsapiens.GENCODE.GRCh38.p10)
 library(rlist)
 # library(splicemute)
 library(AnnotationDbi)
-BiocManager::install(c("ensembldb","biomaRt","DataCombine","stringi","stringr","optparse","dplyr","rlist"))
+
 #------------------------------------------------------------------------------#
 # handling command line input
 
@@ -46,9 +46,13 @@ source(funcs)
 
 junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
 introns <-readRDS(junc_file) # loading in the introns data
-introns$chr <- str_replace(introns$chr,"chr","")
+# introns$chr <- str_replace(introns$chr,"chr","")
 introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
 leafcutter<-T
+
+txdb_file <- "/media/theron/My_Passport/reference_genomes/SEQUENCES/GENCODE/recount3/G026_txdb.sqlite"
+junc_file <- "/media/theron/My_Passport/TCGA_junctions/split_introns/intron1.rds"
+funcs <- "/media/theron/My_Passport/splicemute/R/functions.R"
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
@@ -80,23 +84,16 @@ for (i in seq(intron_length)){
   } else {
     target_junc<-unname(as.character(introns[i,c(1,2,3,4)])) # extracting the target junction to look for from leafcutter input
   }
-  if (!(target_junc[2] %in% c("+","-"))){
-    print("target_junc")
-    next
-  }
+  if (!(target_junc[2] %in% c("+","-"))){next}
   genes<-find_genes(target_junc,all_genes)
   all_tx<-extract_transcripts(genes, tx_by_gene) # the genes and transcripts associated with the junction
 
   if (length(genes$cis) != 0){
-    print("first")
     # form cis and intragene trans-splcing events if they exist
     for (gene in genes$cis){
       # find the exons that are associated with the junction start and junction end, handles cryptic junctions
       exons<-choose_exons(target_junc,exons_by_gene,gene)
-      if (length(exons$exons_start) == 0 | length(exons$exons_end) == 0){
-        print("exons")
-        next
-      }
+      if (length(exons$exons_start) == 0 | length(exons$exons_end) == 0){next}
       # find the transcripts per exon for start and end splice sites associated with each exon
       tx_starts_ends<-choose_transcripts(exons,all_tx$cis[[gene]],c(),exons_by_tx)
       # iterate through all exons for start and all exons for end
@@ -110,10 +107,7 @@ for (i in seq(intron_length)){
           trans_combos$start_trans<-as.character(trans_combos$start_trans)
           trans_combos$end_trans<-as.character(trans_combos$end_trans)
           trans_combos <- trans_combos %>% dplyr::filter(start_trans == end_trans)
-          if (nrow(trans_combos)==0){
-            print(trans_combos)
-            next
-          }
+          if (nrow(trans_combos)==0){next}
           trans_combos<-unique(trans_combos)
           # iterate through every combination and pair the transcript GRanges object together
           for (pair in seq(nrow(trans_combos))){
@@ -302,15 +296,11 @@ for (i in seq(intron_length)){
   gene_combos$end_gene<-as.character(gene_combos$end_gene)
   gene_combos<-gene_combos %>% dplyr::filter(start_gene != end_gene)
   if (length(genes$trans$start) != 0 & length(genes$trans$end) != 0){
-    print("second")
     for (pair in seq(nrow(gene_combos))){
       gene_pair<-as.character(unname(gene_combos[pair,]))
       # find the exons that are associated with the junction start and junction end, handles cryptic junctions
       exons<-choose_exons(target_junc,exons_by_gene,gene_pair)
-      if (length(exons$exons_start) == 0 | length(exons$exons_start == 0)){
-        print("second exons")
-        next
-      }
+      if (length(exons$exons_start) == 0 | length(exons$exons_start == 0)){next}
       # find the transcripts per exon for start and end splice sites associated with each exon
       tx_starts_ends<-choose_transcripts(exons,all_tx$trans$start[[gene_pair[1]]],
                                          all_tx$trans$end[[gene_pair[2]]],exons_by_tx)
@@ -325,10 +315,7 @@ for (i in seq(intron_length)){
           trans_combos$start_trans<-as.character(trans_combos$start_trans)
           trans_combos$end_trans<-as.character(trans_combos$end_trans)
           trans_combos <- trans_combos %>% dplyr::filter(start_trans != end_trans)
-          if (nrow(trans_combos)==0){
-            print("second trans combos")
-            next
-          }
+          if (nrow(trans_combos)==0){next}
           trans_combos<-unique(trans_combos)
           # iterate through every combination and pair the transcript GRanges object together
           for (pair in seq(nrow(trans_combos))){
