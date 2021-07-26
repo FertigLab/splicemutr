@@ -50,9 +50,9 @@ introns <-readRDS(junc_file) # loading in the introns data
 introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
 leafcutter<-T
 
-txdb_file <- "/media/theron/My_Passport/reference_genomes/SEQUENCES/GENCODE/recount3/G026_txdb.sqlite"
-junc_file <- "/media/theron/My_Passport/TCGA_junctions/split_introns/intron1.rds"
-funcs <- "/media/theron/My_Passport/splicemute/R/functions.R"
+# txdb_file <- "/media/theron/My_Passport/reference_genomes/SEQUENCES/GENCODE/recount3/G026_txdb.sqlite"
+# junc_file <- "/media/theron/My_Passport/TCGA_junctions/split_introns/intron1.rds"
+# funcs <- "/media/theron/My_Passport/splicemute/R/functions.R"
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
