@@ -4,7 +4,6 @@
 # Created by: Theron Palmer
 
 import numpy as np
-import matplotlib.pyplot as plt
 from bisect import bisect
 
 def main(options, args):
