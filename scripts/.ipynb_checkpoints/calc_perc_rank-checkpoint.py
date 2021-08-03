@@ -14,12 +14,12 @@ def main(options, args):
     with open(data_file) as dat:
         data_list = dat.read().splitlines()
         data_list = data_list[1:]
-    data_vals = [float(i.split(',')[1]) for i in data_list if i.split(',')[1] ~= "ic50"]
-    data_kmers = [i.split(',')[0] for i in data_list if i.split(',')[0] ~= "peptide"]
+    data_vals = [float(i.split(',')[1]) for i in data_list if i.split(',')[1] != "ic50"]
+    data_kmers = [i.split(',')[0] for i in data_list if i.split(',')[0] != "peptide"]
     with open(ref_file) as ref:
         ref_list = ref.read().splitlines()
         ref_list = ref_list[1:]
-    ref_vals = [float(i.split(',')[1]) for i in ref_list if i.split(',') ~= "ic50"]
+    ref_vals = [float(i.split(',')[1]) for i in ref_list if i.split(',') != "ic50"]
     
     ref_vals.sort()
     data_perc = [(bisect(ref_vals,i)/len(ref_vals)) for i in data_vals]
