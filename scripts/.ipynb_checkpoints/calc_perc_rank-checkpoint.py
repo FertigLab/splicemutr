@@ -23,11 +23,11 @@ def main(options, args):
     ref_vals = [float(i.split(',')[1]) for i in ref_list]
     
     ref_vals.sort()
-    data_perc = [(bisect(ref_vals,i)/len(ref_vals))*100 for i in data_vals]
+    data_perc = [(bisect(ref_vals,i)/len(ref_vals)) for i in data_vals]
     with open(output_file,'w') as out: 
         percentile_data = ""
         for i in range(len(data_kmers)):
-            percentile_data += "%s,%.7f\n"%(data_kmers[i],data_perc[i])
+            percentile_data += "%s,%.10f\n"%(data_kmers[i],data_perc[i])
         print(percentile_data,file=out)
     
 if __name__ == "__main__":
