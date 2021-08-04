@@ -23,7 +23,7 @@ def main(options):
     kmer_beg = int(options.kmer_beg)
     kmer_end = int(options.kmer_end)
     pickle_dir = options.pickle_dir
-    pickle_template = "%s/%s_tx_dict_%d.pickle"
+    pickle_template = "%s/%s_tx_dict_perc%d.pickle"
     pickle_all = "%s/%s_tx_dict_summary.txt"
     tx_dict_all = defaultdict(list)
     for kmer_length in range(kmer_beg,kmer_end):
