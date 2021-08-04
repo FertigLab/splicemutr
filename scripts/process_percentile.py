@@ -50,7 +50,7 @@ def main(options):
 
     HLA_kmers=os.path.basename(binders_file)
     HLA=HLA_kmers.split("_")[0]
-    with open(out+'/'+HLA+'_tx_dict_'+str(kmer_length)+'.pickle', 'wb') as pickle_file:
+    with open(out+'/'+HLA+'_tx_dict_perc'+str(kmer_length)+'.pickle', 'wb') as pickle_file:
         pickle.dump(tx_dict, pickle_file)
 
 if __name__ == "__main__":
