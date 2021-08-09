@@ -28,13 +28,14 @@ arguments <- parse_args(OptionParser(usage = "",
                    make_option(c("-g","--genotypes_files"),
                                default = sprintf("%s",getwd()),
                                help="genotypes files"),
-                   make_option(c("-h","--hla_files"),
+                   make_option(c("-a","--hla_files"),
                                default = sprintf("%s",getwd()),
                                help="hla files"))))
 opt=arguments
 
 dat_file <- opt$dat_file
 dat_file <- sprintf("%s/data.Rdata",dat_file)
+if (!file.exists(dat_file)){quit(save="no")}
 load(dat_file)
 splicemutr_file <- opt$splice_dat
 mutation_count_file <- opt$mut_count
