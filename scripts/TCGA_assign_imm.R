@@ -143,10 +143,10 @@ genotypes <- genotypes %>% dplyr::filter(cancer_type == tolower(basename(dirname
 
 dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=nrow(genotypes)))
 vec <- vector("list",nrow(splicemutr_dat))
-
-for (i in seq(1,nrow(genotypes))){
-  row_vec <- rep(F,nrow(splicemutr_dat))
-  print(i)
+gene_row <- nrow(genotypes)
+for (i in seq(1,gene_row)){
+  row_vec <- rep(F,gene_row)
+  print("%s:%d:%d",basename(dirname(dat_file)),i,gene_row)
   class1_alleles <- as.character(unname(genotypes[i,seq(6)]))
   iter <- 0
   for (allele in class1_alleles){
