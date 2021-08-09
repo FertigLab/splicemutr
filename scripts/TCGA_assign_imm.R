@@ -161,12 +161,12 @@ for (i in seq(1,gene_row)){
     counts <- lapply(str_split(HLA_dat[,3],":"),length)
     kmers_split <- str_split(HLA_dat[,2],":")
     rows <- HLA_dat[,1]
-    row_vec[rows]<-T
+    # row_vec[rows]<-T
     counts <- unlist(counts)/iter
     if (length(counts)==0){
-      dat[row_vec,i] <- 0
+      dat[rows,i] <- 0
     } else {
-      dat[row_vec,i] <- dat[row_vec,i] + counts
+      dat[rows,i] <- dat[rows,i] + counts
     }
   }
 }
