@@ -4,12 +4,8 @@
 #author: "Theron Palmer"
 #date: "08/06/2021"
 
-library(ggplot2)
 library(stringr)
-library(pheatmap)
 library(dplyr)
-library(ggpubr)
-library(msigdbr)
 library(optparse)
 
 #------------------------------------------------------------------------------#
@@ -36,7 +32,6 @@ arguments <- parse_args(OptionParser(usage = "",
 opt=arguments
 
 dat_file <- opt$dat_file
-dat_file <- sprintf("%s/data.Rdata",dat_file)
 if (!file.exists(dat_file)){
   print(dat_file)
   quit(save="no")
