@@ -150,7 +150,7 @@ for (i in seq(1,nrow(genotypes))){
   class1_alleles <- as.character(unname(genotypes[i,seq(6)]))
   iter <- 0
   for (allele in class1_alleles){
-    print(allele)
+    # print(allele)
     file_HLA <- sprintf(HLA_files,str_replace(allele,":","-"))
     if (!file.exists(file_HLA)){next}
     info = file.info(file_HLA)
@@ -162,12 +162,12 @@ for (i in seq(1,nrow(genotypes))){
     kmers_split <- str_split(HLA_dat[,2],":")
     rows <- HLA_dat[,1]
     row_vec[rows]<-T
-  }
-  counts <- counts/iter
-  if (length(counts)==0){
-    dat[row_vec,i] <- 0
-  } else {
-    dat[row_vec,i] <- dat[row_vec,i] + counts
+    counts <- unlist(counts)/iter
+    if (length(counts)==0){
+      dat[row_vec,i] <- 0
+    } else {
+      dat[row_vec,i] <- dat[row_vec,i] + counts
+    }
   }
 }
 colnames(dat) <- genotypes$aliquot_id
