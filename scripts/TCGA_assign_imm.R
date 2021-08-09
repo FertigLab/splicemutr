@@ -65,7 +65,7 @@ mutation_counts <- read.table(mutation_count_file, sep="\t",header=T)
 #------------------------------------------------------------------------------#
 #Assigning filenames to genotypes
 
-genotypes <- read.table(genotypes_file,sep=",",header=T)
+genotypes <- read.table(genotypes_files,sep=",",header=T)
 genotypes$A1 <- unname(vapply(genotypes$A1,function(HLA){
   HLA_split<-str_split(HLA,"[*:]")[[1]]
   sprintf("HLA-%s%s-%s",HLA_split[1],HLA_split[2],HLA_split[3])
