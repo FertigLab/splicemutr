@@ -23,7 +23,8 @@ library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
 library(rlist)
 # library(splicemute)
 library(AnnotationDbi)
-BiocManager::install(c("ensembldb","biomaRt","DataCombine","stringi","stringr","optparse","dplyr","rlist"))
+# BiocManager::install(c("ensembldb","biomaRt","DataCombine","stringi","stringr","optparse","dplyr","rlist"))
+
 #------------------------------------------------------------------------------#
 # handling command line input
 

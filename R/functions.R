@@ -767,3 +767,157 @@ star_to_leaf <- function(STAR_file){
   junc_dat <- data.frame(chrom,chromStart,chromEnd,name,score,strand)
   return(junc_dat)
 }
+
+#' Determining the exons, transcripts, and genes that flank each leafcutter intron
+#'
+#' @param introns the introns object
+#'
+#' @return the intron flanking information
+#' @export
+#'
+txdb_file <- "/media/theron/My_Passport/reference_genomes/SEQUENCES/GENCODE/GRCh38_Ensembl99_sparseD3_sjdbOverhang99/GRCh38_p13_txdb.sqlite"
+txdb<-loadDb(txdb_file) # making the txdb from gtf
+load("/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data.Rdata")
+
+find_flanks <- function(introns,txdb,leafcutter){
+  all_genes<-genes(txdb)
+  exons_by_gene<-exonsBy(txdb,by="gene")
+  exons_by_tx<-exonsBy(txdb,by=c("tx"),use.names=T)
+  tx_by_gene<-transcriptsBy(txdb,by="gene")
+  five_by_tx<-fiveUTRsByTranscript(txdb,use.names=T)
+  three_by_tx<-threeUTRsByTranscript(txdb,use.names=T)
+  cds_by_tx <- cdsBy(txdb,by="tx",use.names=T)
+  introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
+  intron_length<-nrow(introns)
+  print(sprintf("%d introns out of %d total introns",i,intron_length))
+  curr_introns<-introns[i,]
+  if (str_detect(as.character(seqnames(all_genes))[1],"chr")){
+    if (!str_detect(introns$chr[1],"chr")){
+      introns$chr<-unname(vapply(introns$chr,
+                                 function(chr){sprintf("chr%s",chr)},
+                                 character(1)))
+    }
+  } else {
+    if (str_detect(introns$chr[1],"chr")){
+      introns$chr<-unname(vapply(introns$chr,
+                                 function(chr){str_replace(chr,"chr","")},
+                                 character(1)))
+    }
+  }
+  if (leafcutter) {
+    target_junc<-unname(as.character(introns[i,c(4,1,5,6)])) # extracting the target junction to look for from leafcutter input
+    target_junc[2]<-str_split(target_junc[2],"[_]")[[1]][3] # formatting the strand information
+  } else {
+    target_junc<-unname(as.character(introns[i,c(1,2,3,4)])) # extracting the target junction to look for from leafcutter input
+  }
+  if (!(target_junc[2] %in% c("+","-"))){next}
+  genes<-find_genes(target_junc,all_genes)
+  all_tx<-extract_transcripts(genes, tx_by_gene) # the genes and transcripts associated with the junction
+  gene_info<-lapply(genes$cis,function(gene){
+    exon_vals<<-choose_exons(target_junc,exons_by_gene,gene)
+    if (length(exon_vals$exons_start) == 0 | length(exon_vals$exons_end) == 0){return()}
+    # find the transcripts per exon for start and end splice sites associated with each exon
+    tx_starts_ends<<-choose_transcripts(exon_vals,all_tx$cis[[gene]],c(),exons_by_tx)
+    lapply(names(tx_starts_ends$starts),function(start_exon){
+      lapply(names(tx_starts_ends$ends),function(end_exon){
+        start_trans<<-tx_starts_ends$starts[[start_exon]]
+        end_trans<<-tx_starts_ends$ends[[end_exon]]
+        trans_combos<-data.frame(expand.grid(start_trans,end_trans))
+        colnames(trans_combos)<-c("start_trans","end_trans")
+        trans_combos$start_trans<-as.character(trans_combos$start_trans)
+        trans_combos$end_trans<-as.character(trans_combos$end_trans)
+        trans_combos <- trans_combos %>% dplyr::filter(start_trans == end_trans)
+        if (nrow(trans_combos)==0){next}
+        trans_combos<-unique(trans_combos)
+        lapply(seq(nrow(trans_combos)),function(pair){
+          protein_coding <- "No"
+          data_canon_fill<-data.frame()
+          trans_fir<-as.character(trans_combos[pair,1])
+          trans_sec<-as.character(trans_combos[pair,2])
+          trans_pair<-unique(c(trans_fir,trans_sec))
+          start_exons<-sort(exons_by_tx[[trans_fir]])
+          end_exons<-sort(exons_by_tx[[trans_sec]])
+          start_exon_split<-str_split(start_exon,"[-]")[[1]]
+          end_exon_split<-str_split(end_exon,"[-]")[[1]]
+          # start_loc<-which(start(ranges(start_exons))==start_exon_split[1]
+          #                  & end(ranges(start_exons))==start_exon_split[2])
+          # end_loc<- which(start(ranges(end_exons))==end_exon_split[1]
+          #                 & end(ranges(end_exons))==end_exon_split[2])
+          # combo_exons<-c(start_exons[1:start_loc],
+          #                end_exons[end_loc:length(end_exons)])
+          # tx_junc<-start_loc
+          # junc<-c(start_loc,start_loc+1)
+          as.character(cbind(curr_introns,data.frame(trans_fir,trans_sec,start_exon,end_exon,gene,gene))[1,])
+        })
+      })
+    })
+  })
+  gene_info_unlisted <- unlist(gene_info)
+  if (length(gene_info_unlisted) > 1 & length(gene_info_unlisted) %% 15 == 0){
+    gene_info <- as.data.frame(matrix(gene_info_unlisted,
+                                      nrow=length(gene_info_unlisted)/15,
+                                      byrow=T))
+  } else {
+    gene_info <- data.frame(t(rep(NA,15)))
+  }
+
+  # this is not complete yet
+
+  gene_combos<-data.frame(expand.grid(genes$trans$start,genes$trans$end))
+  colnames(gene_combos)<-c("start_gene","end_gene")
+  gene_combos$start_gene<-as.character(gene_combos$start_gene)
+  gene_combos$end_gene<-as.character(gene_combos$end_gene)
+  gene_combos<-gene_combos %>% dplyr::filter(start_gene != end_gene)
+  if (length(genes$trans$start) != 0 & length(genes$trans$end) != 0){
+    a<-vapply(seq(nrow(gene_combos)),function(pair){
+      gene_pair<-as.character(unname(gene_combos[pair,]))
+      # find the exons that are associated with the junction start and junction end, handles cryptic junctions
+      exon_vals<-choose_exons(target_junc,exons_by_gene,gene_pair)
+      if (length(exon_vals$exons_start) == 0 | length(exon_vals$exons_start == 0)){next}
+      # find the transcripts per exon for start and end splice sites associated with each exon
+      tx_starts_ends<<-choose_transcripts(exon_vals,all_tx$trans$start[[gene_pair[1]]],
+                                          all_tx$trans$end[[gene_pair[2]]],exons_by_tx)
+      a<-vapply(names(tx_starts_ends$starts),function(start_exon){
+        a<-vapply(names(tx_starts_ends$ends),function(end_exon){
+          start_trans<<-tx_starts_ends$starts[[start_exon]]
+          end_trans<<-tx_starts_ends$ends[[end_exon]]
+          trans_combos<<-data.frame(expand.grid(start_trans,end_trans))
+          names(trans_combos<<-c("start_trans","end_trans")
+          trans_combos$start_trans<<-as.character(trans_combos$start_trans)
+          trans_combos$end_trans<<-as.character(trans_combos$end_trans)
+          trans_combos<<-trans_combos %>% dplyr::filter(start_trans != end_trans)
+          if (nrow(trans_combos)==0){next}
+          trans_combos<-unique(trans_combos)
+          a<-vapply(seq(nrow(trans_combos)),function(pair){
+            protein_coding <<- "No"
+            data_canon_fill<<-data.frame()
+            trans_fir<<-as.character(trans_combos[pair,1])
+            trans_sec<<-as.character(trans_combos[pair,2])
+            trans_pair<<-unique(c(trans_fir,trans_sec))
+            start_exons<<-sort(exons_by_tx[[trans_fir]])
+            end_exons<<-sort(exons_by_tx[[trans_sec]])
+
+            start_exon_split<<-str_split(start_exon,"[-]")[[1]]
+            end_exon_split<<-str_split(end_exon,"[-]")[[1]]
+
+            start_loc<<-which(start(ranges(start_exons))==start_exon_split[1]
+                              & end(ranges(start_exons))==start_exon_split[2])
+
+            end_loc<<-which(start(ranges(end_exons))==end_exon_split[1]
+                            & end(ranges(end_exons))==end_exon_split[2])
+
+            combo_exons<<-c(start_exons[1:start_loc],
+                            end_exons[end_loc:length(end_exons)])
+            tx_junc<<-start_loc
+            junc<<-c(start_loc,start_loc+1)
+            return(T)
+          },logical(1))
+          return(T)
+        },logical(1))
+          return(T)
+      },logical(1))
+        return(T)
+    },logical(1))
+  }
+  return(junc_dat)
+}
