@@ -37,7 +37,10 @@ opt=arguments
 
 dat_file <- opt$dat_file
 dat_file <- sprintf("%s/data.Rdata",dat_file)
-if (!file.exists(dat_file)){quit(save="no")}
+if (!file.exists(dat_file)){
+  print(dat_file)
+  quit(save="no")
+}
 load(dat_file)
 splicemutr_file <- opt$splice_dat
 mutation_count_file <- opt$mut_count
