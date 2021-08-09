@@ -16,24 +16,26 @@ library(optparse)
 arguments <- parse_args(OptionParser(usage = "",
                  description="",
                  option_list=list(
-                   make_option(c("-d","--dat_file"), 
-                               default = sprintf("%s",getwd()), 
+                   make_option(c("-d","--dat_file"),
+                               default = sprintf("%s",getwd()),
                                help="dat_file"),
-                   make_option(c("-s","--splice_dat"), 
-                               default = sprintf("%s",getwd()), 
+                   make_option(c("-s","--splice_dat"),
+                               default = sprintf("%s",getwd()),
                                help="splicemutr data"),
-                   make_option(c("-m","--mut_count"), 
-                               default = sprintf("%s",getwd()), 
+                   make_option(c("-m","--mut_count"),
+                               default = sprintf("%s",getwd()),
                                help="mutation counts"),
-                   make_option(c("-g","--genotypes_files"), 
-                               default = sprintf("%s",getwd()), 
+                   make_option(c("-g","--genotypes_files"),
+                               default = sprintf("%s",getwd()),
                                help="genotypes files"),
-                   make_option(c("-h","--hla_files"), 
-                               default = sprintf("%s",getwd()), 
+                   make_option(c("-h","--hla_files"),
+                               default = sprintf("%s",getwd()),
                                help="hla files"))))
 opt=arguments
 
 dat_file <- opt$dat_file
+dat_file <- sprintf("%s/data.Rdata",dat_file)
+load(dat_file)
 splicemutr_file <- opt$splice_dat
 mutation_count_file <- opt$mut_count
 genotypes_files <- opt$genotypes_files
@@ -42,9 +44,7 @@ HLA_files <- opt$hla_files
 #------------------------------------------------------------------------------#
 # Internal functions
 
-create_tcga_splicemutr <- function(dat_file,splicemutr_dat){
-  # dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/data.Rdata"
-  # load(dat_file)
+create_tcga_splicemutr <- function(introns,splicemutr_dat){
   juncs_to_find <- sprintf("%s:%s:%s",introns$chr,introns$start,introns$end)
   rownames(introns) <- juncs_to_find
   specific_splicemutr_dat <- subset(splicemutr_dat,juncs %in% juncs_to_find)
@@ -136,18 +136,6 @@ genotypes <- genotypes %>% dplyr::filter(cancer_type != "NONE")
 cancer_types <- unique(genotypes$cancer_type)
 
 genotypes <- genotypes %>% dplyr::filter(cancer_type == tolower(basename(dirname(dat_file))))
-  
-
-#------------------------------------------------------------------------------#
-# creating the specific splicemutr data
-
-specific_splicemutr_dat <- create_tcga_splicemutr(dat_file,splicemutr_dat)
-write.table(specific_splicemutr_dat,
-            file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
-            sep="\t",
-            quote=F,
-            col.names=T,
-            row.names=F)
 
 #------------------------------------------------------------------------------#
 # calculating average tumor and average normal scores per sample
@@ -182,6 +170,17 @@ for (i in seq(1,nrow(genotypes))){
   }
 }
 colnames(dat) <- genotypes$aliquot_id
+splicemutr_dat <- cbind(splicemutr_dat,dat)
 
-saveRDS(dat,file=sprintf("%s/%s",dirname(dat_file),"specific_counts.rds"))
+# saveRDS(dat,file=sprintf("%s/%s",dirname(dat_file),"specific_counts.rds"))
 
+#------------------------------------------------------------------------------#
+# creating the specific splicemutr data
+
+specific_splicemutr_dat <- create_tcga_splicemutr(introns,splicemutr_dat)
+write.table(specific_splicemutr_dat,
+            file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
