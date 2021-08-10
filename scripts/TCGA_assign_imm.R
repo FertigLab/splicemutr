@@ -7,6 +7,7 @@
 library(stringr)
 library(dplyr)
 library(optparse)
+library(TCGAutils)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -28,7 +29,13 @@ arguments <- parse_args(OptionParser(usage = "",
                                help="genotypes files"),
                    make_option(c("-a","--hla_files"),
                                default = sprintf("%s",getwd()),
-                               help="hla files"))))
+                               help="hla files"),
+                   make_option(c("-r","--groups_file"),
+                               default = sprintf("%s",getwd()),
+                               help="groups file"),
+                   make_option(c("-j","--junc_rse"),
+                               default = sprintf("%s",getwd()),
+                               help="junc_rse"))))
 opt=arguments
 
 dat_file <- opt$dat_file
@@ -41,6 +48,8 @@ splicemutr_file <- opt$splice_dat
 mutation_count_file <- opt$mut_count
 genotypes_files <- opt$genotypes_files
 HLA_files <- opt$hla_files
+groups_files <- opt$groups_file
+junc_rse_file <- opt$junc_rse
 
 #------------------------------------------------------------------------------#
 # Internal functions
@@ -58,14 +67,26 @@ create_tcga_splicemutr <- function(introns,splicemutr_dat){
 #------------------------------------------------------------------------------#
 # reading in the data
 
-splicemutr_dat <- read.table(splicemutr_file, sep = " ",header=T)
+# genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
+# HLA_files <- "/media/theron/My_Passport/TCGA_junctions/summary_files/%s_tx_dict_summary_perc.txt"
+# splicemutr_file <- "/media/theron/My_Passport/TCGA_junctions/formed_transcripts/data_splicemutr.txt"
+# mutation_count_file <-"/media/theron/My_Passport/TCGA_junctions/cbioportal_data/Mutation_Count.txt"
+# dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/data.Rdata"
+# load(dat_file)
+# groups_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/groups_file.txt"
+# junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/juncrse.rds"
 
+leafcutter_groups <- read.table(groups_file)
+colnames(leafcutter_groups) <- c("external_id","type")
+splicemutr_dat <- read.table(splicemutr_file, sep = " ",header=T)
 mutation_counts <- read.table(mutation_count_file, sep="\t",header=T)
+genotypes <- read.table(genotypes_files,sep=",",header=T)
+junc_rse <- readRDS(junc_rse_file)
+junc_metadata <- as.data.frame(junc_rse@colData@listData)
 
 #------------------------------------------------------------------------------#
-#Assigning filenames to genotypes
+# assigning filenames to genotypes
 
-genotypes <- read.table(genotypes_files,sep=",",header=T)
 genotypes$A1 <- unname(vapply(genotypes$A1,function(HLA){
   HLA_split<-str_split(HLA,"[*:]")[[1]]
   sprintf("HLA-%s%s-%s",HLA_split[1],HLA_split[2],HLA_split[3])
@@ -100,16 +121,6 @@ mutation_IDs <- vapply(genotypes$aliquot_id,function(ID){
 },character(1))
 genotypes$mutation_IDs <- mutation_IDs
 
-mut_counts <- vapply(genotypes$mutation_IDs,function(ID){
-  counts <<- mutation_counts[mutation_counts$Patient.ID==ID,"Mutation.Count"]
-  if (length(counts)==0){
-    counts <- -1
-  } else {
-    counts <- max(counts)
-  }
-  return(counts)
-},numeric(1))
-
 cancer_type <- unname(vapply(genotypes$mutation_IDs,function(ID){
   cancer <- str_split(mutation_counts[mutation_counts$Patient.ID==ID,"Study.ID"],"[_]")
   if (length(cancer)==0){
@@ -129,7 +140,6 @@ tum_or_norm <- unname(vapply(genotypes$aliquot_id,function(ID){
   }
   return("C")
 },character(1)))
-genotypes$mut_counts <- mut_counts
 genotypes$cancer_type <- cancer_type
 genotypes$tum_or_norm <- tum_or_norm
 
@@ -139,15 +149,65 @@ cancer_types <- unique(genotypes$cancer_type)
 genotypes <- genotypes %>% dplyr::filter(cancer_type == tolower(basename(dirname(dat_file))))
 
 #------------------------------------------------------------------------------#
+# determining the cancer type per mutation count sample
+
+mutation_counts$cancer <- vapply(mutation_counts$Study.ID,
+                                 function(ID){str_split(ID,"[_]")[[1]][1]},
+                                 character(1))
+
+mutation_counts <- mutation_counts %>% dplyr::filter(cancer == tolower(basename(dirname(dat_file))))
+
+#------------------------------------------------------------------------------#
+# creating uniform names
+
+metadata_rows <- unlist(lapply(leafcutter_groups$external_id,
+                               function(external_id){
+                                 which(junc_metadata$external_id == external_id)
+                               }))
+leafcutter_groups$aliquot_id <- tolower(junc_metadata[metadata_rows,"tcga.cgc_file_aliquot"])
+leafcutter_groups$case_id <- tolower(junc_metadata[metadata_rows,"tcga.cgc_file_case"])
+genotypes$actual_aliquot_id<-barcodeToUUID(genotypes$aliquot_id)[,2] # aliquot_ID
+genotypes$case_id<-barcodeToUUID(genotypes$mutation_IDs)[,2] # case ID
+mutation_counts$case_id<-barcodeToUUID(mutation_counts$Patient.ID)[,2] # case ID
+
+#------------------------------------------------------------------------------#
+# joining leafcutter, genotypes, and mutation_count data to the leafcutter groups information
+
+cols <- c("A1","A2","B1","B2","C1","C2")
+HLA_alleles <- lapply(leafcutter_groups$case_id,function(ID){
+  a<-genotypes[genotypes$case_id == ID,cols]
+  if (nrow(a) == 0){
+    a <- data.frame(t(rep(NA,6)))
+    colnames(a) <-colnames(genotypes[,seq(6)])
+  }
+  a$case_id <- ID
+  return(a)
+})
+genotypes_leafcutter <- data.frame(HLA_alleles[[1]])
+for (i in seq(2,length(HLA_alleles))){
+    genotypes_leafcutter <- rbind(genotypes_leafcutter,
+                                  HLA_alleles[[i]])
+}
+
+genotypes_leafcutter$mut_counts <- vapply(genotypes_leafcutter$case_id,function(ID){
+  count <- mutation_counts[mutation_counts$case_id == ID,"Mutation.Count"]
+  if (length(count) == 0){
+    return(0)
+  } else {
+    return(count)
+  }
+},numeric(1))
+
+#------------------------------------------------------------------------------#
 # calculating average tumor and average normal scores per sample
 
-dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=nrow(genotypes)))
+dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=nrow(genotypes_leafcutter)))
 vec <- vector("list",nrow(splicemutr_dat))
 gene_row <- nrow(genotypes)
-for (i in seq(1,gene_row)){
+for (i in seq(1,gene_row)[1:2]){
   row_vec <- rep(F,gene_row)
   print(sprintf("%s:%d:%d",basename(dirname(dat_file)),i,gene_row))
-  class1_alleles <- as.character(unname(genotypes[i,seq(6)]))
+  class1_alleles <- as.character(unname(genotypes_leafcutter[i,seq(6)]))
   iter <- 0
   for (allele in class1_alleles){
     # print(allele)
@@ -161,7 +221,6 @@ for (i in seq(1,gene_row)){
     counts <- lapply(str_split(HLA_dat[,3],":"),length)
     kmers_split <- str_split(HLA_dat[,2],":")
     rows <- HLA_dat[,1]
-    # row_vec[rows]<-T
     counts <- unlist(counts)/iter
     if (length(counts)==0){
       dat[rows,i] <- 0
@@ -170,7 +229,7 @@ for (i in seq(1,gene_row)){
     }
   }
 }
-colnames(dat) <- genotypes$aliquot_id
+colnames(dat) <- genotypes_leafcutter$
 splicemutr_dat <- cbind(splicemutr_dat,dat)
 
 # saveRDS(dat,file=sprintf("%s/%s",dirname(dat_file),"specific_counts.rds"))
