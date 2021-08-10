@@ -48,7 +48,7 @@ splicemutr_file <- opt$splice_dat
 mutation_count_file <- opt$mut_count
 genotypes_files <- opt$genotypes_files
 HLA_files <- opt$hla_files
-groups_files <- opt$groups_file
+groups_file <- opt$groups_file
 junc_rse_file <- opt$junc_rse
 
 #------------------------------------------------------------------------------#
@@ -146,7 +146,7 @@ genotypes$tum_or_norm <- tum_or_norm
 genotypes <- genotypes %>% dplyr::filter(cancer_type != "NONE")
 cancer_types <- unique(genotypes$cancer_type)
 
-genotypes <- genotypes %>% dplyr::filter(cancer_type == tolower(basename(dirname(dat_file))))
+# genotypes <- genotypes %>% dplyr::filter(cancer_type == tolower(basename(dirname(dat_file))))
 
 #------------------------------------------------------------------------------#
 # determining the cancer type per mutation count sample
@@ -155,7 +155,7 @@ mutation_counts$cancer <- vapply(mutation_counts$Study.ID,
                                  function(ID){str_split(ID,"[_]")[[1]][1]},
                                  character(1))
 
-mutation_counts <- mutation_counts %>% dplyr::filter(cancer == tolower(basename(dirname(dat_file))))
+# mutation_counts <- mutation_counts %>% dplyr::filter(cancer == tolower(basename(dirname(dat_file))))
 
 #------------------------------------------------------------------------------#
 # creating uniform names
@@ -164,23 +164,32 @@ metadata_rows <- unlist(lapply(leafcutter_groups$external_id,
                                function(external_id){
                                  which(junc_metadata$external_id == external_id)
                                }))
-leafcutter_groups$aliquot_id <- tolower(junc_metadata[metadata_rows,"tcga.cgc_file_aliquot"])
-leafcutter_groups$case_id <- tolower(junc_metadata[metadata_rows,"tcga.cgc_file_case"])
-genotypes$actual_aliquot_id<-barcodeToUUID(genotypes$aliquot_id)[,2] # aliquot_ID
-genotypes$case_id<-barcodeToUUID(genotypes$mutation_IDs)[,2] # case ID
-mutation_counts$case_id<-barcodeToUUID(mutation_counts$Patient.ID)[,2] # case ID
+
+leafcutter_groups$sample_id <- vapply(leafcutter_groups$external_id,
+                                  function(ID){
+                                    barcode <- TCGAbarcode(junc_metadata$tcga.tcga_barcode[which(junc_metadata$external_id == ID)],
+                                                sample=T)
+                                    substr(barcode,1,nchar(barcode)-1)
+                                  },character(1))
+genotypes$sample_id <- TCGAbarcode(genotypes$aliquot_id, sample=T)
+genotypes$sample_id <- vapply(genotypes$sample_id,function(ID){substr(ID,1,nchar(ID)-1)},character(1))
 
 #------------------------------------------------------------------------------#
 # joining leafcutter, genotypes, and mutation_count data to the leafcutter groups information
 
 cols <- c("A1","A2","B1","B2","C1","C2")
-HLA_alleles <- lapply(leafcutter_groups$case_id,function(ID){
-  a<-genotypes[genotypes$case_id == ID,cols]
+HLA_alleles <- lapply(seq(length(leafcutter_groups$sample_id)),function(num){
+  ID <- leafcutter_groups$sample_id[num]
+  type <- leafcutter_groups$type[num]
+  external_id <- leafcutter_groups$external_id[num]
+  a<-genotypes[genotypes$sample_id == ID,cols]
   if (nrow(a) == 0){
     a <- data.frame(t(rep(NA,6)))
     colnames(a) <-colnames(genotypes[,seq(6)])
   }
-  a$case_id <- ID
+  a$sample_id <- ID
+  a$type <- type
+  a$external_id <- external_id
   return(a)
 })
 genotypes_leafcutter <- data.frame(HLA_alleles[[1]])
@@ -188,15 +197,17 @@ for (i in seq(2,length(HLA_alleles))){
     genotypes_leafcutter <- rbind(genotypes_leafcutter,
                                   HLA_alleles[[i]])
 }
+genotypes_leafcutter <- unique(genotypes_leafcutter)
 
-genotypes_leafcutter$mut_counts <- vapply(genotypes_leafcutter$case_id,function(ID){
-  count <- mutation_counts[mutation_counts$case_id == ID,"Mutation.Count"]
+genotypes_leafcutter$mut_counts<- vapply(genotypes_leafcutter$sample_id,function(ID){
+  count <- mutation_counts[mutation_counts$Sample.ID == ID,"Mutation.Count"]
   if (length(count) == 0){
     return(0)
   } else {
     return(count)
   }
 },numeric(1))
+
 
 #------------------------------------------------------------------------------#
 # calculating average tumor and average normal scores per sample
@@ -229,7 +240,7 @@ for (i in seq(1,gene_row)[1:2]){
     }
   }
 }
-colnames(dat) <- genotypes_leafcutter$
+colnames(dat) <- genotypes_leafcutter$external_id
 splicemutr_dat <- cbind(splicemutr_dat,dat)
 
 # saveRDS(dat,file=sprintf("%s/%s",dirname(dat_file),"specific_counts.rds"))
@@ -238,7 +249,7 @@ splicemutr_dat <- cbind(splicemutr_dat,dat)
 # creating the specific splicemutr data
 
 specific_splicemutr_dat <- create_tcga_splicemutr(introns,splicemutr_dat)
-write.table(specific_splicemutr_dat,
+write.table(specific_splicemutr,
             file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
             sep="\t",
             quote=F,
