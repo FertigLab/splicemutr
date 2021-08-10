@@ -57,6 +57,7 @@ junc_rse_file <- opt$junc_rse
 create_tcga_splicemutr <- function(introns,splicemutr_dat){
   juncs_to_find <- sprintf("%s:%s:%s",introns$chr,introns$start,introns$end)
   rownames(introns) <- juncs_to_find
+  splicemutr_dat$juncs <- sprintf("%s:%s:%s",splicemutr_dat$chr,splicemutr_dat$start,splicemutr_dat$end)
   specific_splicemutr_dat <- subset(splicemutr_dat,juncs %in% juncs_to_find)
   specific_splicemutr_dat$cluster <- introns[specific_splicemutr_dat$juncs,"clusterID"]
   specific_splicemutr_dat$verdict <- introns[specific_splicemutr_dat$juncs,"verdict"]
@@ -214,7 +215,7 @@ genotypes_leafcutter$mut_counts<- vapply(genotypes_leafcutter$sample_id,function
 
 dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=nrow(genotypes_leafcutter)))
 vec <- vector("list",nrow(splicemutr_dat))
-gene_row <- nrow(genotypes_leafcutter)
+gene_row <- nrow(genotypes)
 for (i in seq(1,gene_row)[1:2]){
   row_vec <- rep(F,gene_row)
   print(sprintf("%s:%d:%d",basename(dirname(dat_file)),i,gene_row))
@@ -248,14 +249,8 @@ splicemutr_dat <- cbind(splicemutr_dat,dat)
 # creating the specific splicemutr data
 
 specific_splicemutr_dat <- create_tcga_splicemutr(introns,splicemutr_dat)
-write.table(specific_splicemutr,
+write.table(specific_splicemutr_dat,
             file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
-            sep="\t",
-            quote=F,
-            col.names=T,
-            row.names=F)
-write.table(genotypes_leafcutter,
-            file=sprintf("%s/%s_genotypes.txt",dirname(dat_file),basename(dirname(dat_file))),
             sep="\t",
             quote=F,
             col.names=T,
