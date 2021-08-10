@@ -67,14 +67,14 @@ create_tcga_splicemutr <- function(introns,splicemutr_dat){
 #------------------------------------------------------------------------------#
 # reading in the data
 
-# genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
-# HLA_files <- "/media/theron/My_Passport/TCGA_junctions/summary_files/%s_tx_dict_summary_perc.txt"
-# splicemutr_file <- "/media/theron/My_Passport/TCGA_junctions/formed_transcripts/data_splicemutr.txt"
-# mutation_count_file <-"/media/theron/My_Passport/TCGA_junctions/cbioportal_data/Mutation_Count.txt"
-# dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/data.Rdata"
-# load(dat_file)
-# groups_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/groups_file.txt"
-# junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/juncrse.rds"
+genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
+HLA_files <- "/media/theron/My_Passport/TCGA_junctions/summary_files/%s_tx_dict_summary_perc.txt"
+splicemutr_file <- "/media/theron/My_Passport/TCGA_junctions/formed_transcripts/data_splicemutr.txt"
+mutation_count_file <-"/media/theron/My_Passport/TCGA_junctions/cbioportal_data/Mutation_Count.txt"
+dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/data.Rdata"
+load(dat_file)
+groups_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/groups_file.txt"
+junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/juncrse.rds"
 
 leafcutter_groups <- read.table(groups_file)
 colnames(leafcutter_groups) <- c("external_id","type")
@@ -214,7 +214,7 @@ genotypes_leafcutter$mut_counts<- vapply(genotypes_leafcutter$sample_id,function
 
 dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=nrow(genotypes_leafcutter)))
 vec <- vector("list",nrow(splicemutr_dat))
-gene_row <- nrow(genotypes)
+gene_row <- nrow(genotypes_leafcutter)
 for (i in seq(1,gene_row)[1:2]){
   row_vec <- rep(F,gene_row)
   print(sprintf("%s:%d:%d",basename(dirname(dat_file)),i,gene_row))
@@ -240,7 +240,6 @@ for (i in seq(1,gene_row)[1:2]){
     }
   }
 }
-colnames(dat) <- genotypes_leafcutter$external_id
 splicemutr_dat <- cbind(splicemutr_dat,dat)
 
 # saveRDS(dat,file=sprintf("%s/%s",dirname(dat_file),"specific_counts.rds"))
@@ -251,6 +250,12 @@ splicemutr_dat <- cbind(splicemutr_dat,dat)
 specific_splicemutr_dat <- create_tcga_splicemutr(introns,splicemutr_dat)
 write.table(specific_splicemutr,
             file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+write.table(genotypes_leafcutter,
+            file=sprintf("%s/%s_genotypes.txt",dirname(dat_file),basename(dirname(dat_file))),
             sep="\t",
             quote=F,
             col.names=T,
