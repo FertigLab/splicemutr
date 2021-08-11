@@ -17,7 +17,7 @@ library(maftools)
 arguments <- parse_args(OptionParser(usage = "",
                              description="",
                              option_list=list(
-                               make_option(c("-m","--naf_file"),
+                               make_option(c("-m","--maf_file"),
                                            default = sprintf("%s",getwd()),
                                            help=".maf file"))))
 opt=arguments
