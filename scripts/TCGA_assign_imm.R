@@ -223,7 +223,6 @@ for (i in seq(1,gene_row)){
   iter <- 0
   kmers <- vector(mode = "list", length = nrow(splicemutr_dat))
   for (allele in class1_alleles){
-    print(allele)
     file_HLA <- sprintf(HLA_files,str_replace(allele,":","-"))
     if (!file.exists(file_HLA)){next}
     info = file.info(file_HLA)
