@@ -68,14 +68,14 @@ create_tcga_splicemutr <- function(introns,splicemutr_dat){
 #------------------------------------------------------------------------------#
 # reading in the data
 
-genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
-HLA_files <- "/media/theron/My_Passport/TCGA_junctions/summary_files/%s_tx_dict_summary_perc.txt"
-splicemutr_file <- "/media/theron/My_Passport/TCGA_junctions/formed_transcripts/data_splicemutr.txt"
-mutation_count_file <-"/media/theron/My_Passport/TCGA_junctions/cbioportal_data/Mutation_Count.txt"
-dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/data.Rdata"
-load(dat_file)
-groups_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/groups_file.txt"
-junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/juncrse.rds"
+# genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
+# HLA_files <- "/media/theron/My_Passport/TCGA_junctions/summary_files/%s_tx_dict_summary_perc.txt"
+# splicemutr_file <- "/media/theron/My_Passport/TCGA_junctions/formed_transcripts/data_splicemutr.txt"
+# mutation_count_file <-"/media/theron/My_Passport/TCGA_junctions/cbioportal_data/Mutation_Count.txt"
+# dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/data.Rdata"
+# load(dat_file)
+# groups_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/groups_file.txt"
+# junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/juncrse.rds"
 
 leafcutter_groups <- read.table(groups_file)
 colnames(leafcutter_groups) <- c("external_id","type")
