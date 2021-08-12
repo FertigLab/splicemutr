@@ -221,9 +221,7 @@ for (i in seq(1,gene_row)){
   print(sprintf("%s:%d:%d",basename(dirname(dat_file)),i,gene_row))
   class1_alleles <- as.character(unname(genotypes_leafcutter[i,seq(6)]))
   iter <- 0
-  kmers <- vector(mode = "list", length = nrow(splicemutr_dat))
   for (allele in class1_alleles){
-    print(allele)
     file_HLA <- sprintf(HLA_files,str_replace(allele,":","-"))
     if (!file.exists(file_HLA)){next}
     info = file.info(file_HLA)
@@ -231,32 +229,35 @@ for (i in seq(1,gene_row)){
     iter <- iter + 1
     HLA_dat <- read.table(file_HLA)
     HLA_dat[,1]<-as.numeric(HLA_dat[,1])+1
+    counts <- lapply(str_split(HLA_dat[,3],":"),length)
+    kmers_split <- str_split(HLA_dat[,2],":")
     rows <- HLA_dat[,1]
-    kmers_split<-str_split(HLA_dat[,2],":")
-    fill <- vapply(seq(length(rows)),function(row){
-      kmers[[rows[row]]]<<-unique(c(kmers[[rows[row]]],kmers_split[[row]]))
-      return(T)
-    },logical(1))
+    counts <- unlist(counts)/iter
+    if (length(counts)==0){
+      dat[rows,i] <- dat[rows,i] + 0
+    } else {
+      dat[rows,i] <- dat[rows,i] + counts
+    }
   }
-  kmers <- unlist(lapply(seq(length(kmers)),function(val){
-    paste(kmers[[val]],collapse=":")
-  }))
-  dat[,i] <- kmers
 }
 cols_to_remove <- which(is.na(genotypes_leafcutter$A1))
 tumor_cols <- genotypes_leafcutter$type == "T"
 tumor_cols[cols_to_remove] <- F
 normal_cols <- genotypes_leafcutter$type == "N"
 normal_cols[cols_to_remove] <- F
+dat$mean_tumor <- apply(dat[,tumor_cols],1,mean)
+dat$mean_normal <- apply(dat[,normal_cols],1,mean)
 
+dat_mean <- data.frame(dat$mean_tumor,dat$mean_normal)
+colnames(dat_mean) <- c("mean_tumor_counts","mean_normal_counts")
+splicemutr_dat <- cbind(splicemutr_dat, dat_mean)
 
-splicemutr_dat <- cbind(splicemutr_dat, dat)
+# saveRDS(dat,file=sprintf("%s/%s",dirname(dat_file),"specific_counts.rds"))
 
 #------------------------------------------------------------------------------#
 # creating the specific splicemutr data
 
 specific_splicemutr_dat <- create_tcga_splicemutr(introns,splicemutr_dat)
-
 write.table(specific_splicemutr_dat,
             file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
             sep="\t",
@@ -271,7 +272,7 @@ write.table(genotypes_leafcutter,
             col.names=T,
             row.names=F)
 
-write.table(junc_metadata,
+write.table(dat,
             file=sprintf("%s/%s_per_sample_counts.txt",dirname(dat_file),basename(dirname(dat_file))),
             sep="\t",
             quote=F,
