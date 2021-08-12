@@ -272,7 +272,7 @@ write.table(genotypes_leafcutter,
             row.names=F)
 
 write.table(junc_metadata,
-            file=sprintf("%s/%s_per_sample_counts.txt",dirname(dat_file),basename(dirname(dat_file))),
+            file=sprintf("%s/%s_metadata.txt",dirname(dat_file),basename(dirname(dat_file))),
             sep="\t",
             quote=F,
             col.names=T,
