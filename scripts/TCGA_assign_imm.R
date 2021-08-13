@@ -1,6 +1,5 @@
 #!/usr/bin/env Rscript
 
-#title: "Daria Class 1 Analysis"
 #author: "Theron Palmer"
 #date: "08/06/2021"
 
