@@ -108,7 +108,7 @@ def main(options, args):
         groups_file = pd.read_table(options.groups_file)
         intron_file = pd.read_table(options.intron_file)
         hla_dir = options.hla_dir
-        cancer_dir = os.path.basename(os.path.dirname(options.intron_file))
+        cancer_dir = os.path.dirname(options.intron_file)
         groups_file.columns = ["file_name","tumor_normal"]
         num_samples = len(groups_file.index)
         
