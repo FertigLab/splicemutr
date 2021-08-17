@@ -212,55 +212,55 @@ genotypes_leafcutter$mut_counts<- vapply(genotypes_leafcutter$sample_id,function
 #------------------------------------------------------------------------------#
 # calculating average tumor and average normal scores per sample
 
-dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=nrow(genotypes_leafcutter)))
-vec <- vector("list",nrow(splicemutr_dat))
-gene_row <- nrow(genotypes_leafcutter)
-for (i in seq(1,gene_row)){
-  row_vec <- rep(F,gene_row)
-  print(sprintf("%s:%d:%d",basename(dirname(dat_file)),i,gene_row))
-  class1_alleles <- as.character(unname(genotypes_leafcutter[i,seq(6)]))
-  iter <- 0
-  kmers <- vector(mode = "list", length = nrow(splicemutr_dat))
-  for (allele in class1_alleles){
-    file_HLA <- sprintf(HLA_files,str_replace(allele,":","-"))
-    if (!file.exists(file_HLA)){next}
-    info = file.info(file_HLA)
-    if (info$size == 0){next}
-    iter <- iter + 1
-    HLA_dat <- read.table(file_HLA)
-    HLA_dat[,1]<-as.numeric(HLA_dat[,1])+1
-    rows <- HLA_dat[,1]
-    kmers_split<-str_split(HLA_dat[,2],":")
-    fill <- vapply(seq(length(rows)),function(row){
-      kmers[[rows[row]]]<<-unique(c(kmers[[rows[row]]],kmers_split[[row]]))
-      return(T)
-    },logical(1))
-  }
-  kmers <- unlist(lapply(seq(length(kmers)),function(val){
-    paste(kmers[[val]],collapse=":")
-  }))
-  dat[,i] <- kmers
-}
-cols_to_remove <- which(is.na(genotypes_leafcutter$A1))
-tumor_cols <- genotypes_leafcutter$type == "T"
-tumor_cols[cols_to_remove] <- F
-normal_cols <- genotypes_leafcutter$type == "N"
-normal_cols[cols_to_remove] <- F
-
-
-splicemutr_dat <- cbind(splicemutr_dat, dat)
+# dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=nrow(genotypes_leafcutter)))
+# vec <- vector("list",nrow(splicemutr_dat))
+# gene_row <- nrow(genotypes_leafcutter)
+# for (i in seq(1,gene_row)){
+#   row_vec <- rep(F,gene_row)
+#   print(sprintf("%s:%d:%d",basename(dirname(dat_file)),i,gene_row))
+#   class1_alleles <- as.character(unname(genotypes_leafcutter[i,seq(6)]))
+#   iter <- 0
+#   kmers <- vector(mode = "list", length = nrow(splicemutr_dat))
+#   for (allele in class1_alleles){
+#     file_HLA <- sprintf(HLA_files,str_replace(allele,":","-"))
+#     if (!file.exists(file_HLA)){next}
+#     info = file.info(file_HLA)
+#     if (info$size == 0){next}
+#     iter <- iter + 1
+#     HLA_dat <- read.table(file_HLA)
+#     HLA_dat[,1]<-as.numeric(HLA_dat[,1])+1
+#     rows <- HLA_dat[,1]
+#     kmers_split<-str_split(HLA_dat[,2],":")
+#     fill <- vapply(seq(length(rows)),function(row){
+#       kmers[[rows[row]]]<<-unique(c(kmers[[rows[row]]],kmers_split[[row]]))
+#       return(T)
+#     },logical(1))
+#   }
+#   kmers <- unlist(lapply(seq(length(kmers)),function(val){
+#     paste(kmers[[val]],collapse=":")
+#   }))
+#   dat[,i] <- kmers
+# }
+# cols_to_remove <- which(is.na(genotypes_leafcutter$A1))
+# tumor_cols <- genotypes_leafcutter$type == "T"
+# tumor_cols[cols_to_remove] <- F
+# normal_cols <- genotypes_leafcutter$type == "N"
+# normal_cols[cols_to_remove] <- F
+#
+#
+# splicemutr_dat <- cbind(splicemutr_dat, dat)
 
 #------------------------------------------------------------------------------#
 # creating the specific splicemutr data
 
-specific_splicemutr_dat <- create_tcga_splicemutr(introns,splicemutr_dat)
-
-write.table(specific_splicemutr_dat,
-            file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
-            sep="\t",
-            quote=F,
-            col.names=T,
-            row.names=F)
+# specific_splicemutr_dat <- create_tcga_splicemutr(introns,splicemutr_dat)
+#
+# write.table(specific_splicemutr_dat,
+#             file=sprintf("%s/%s_splicemutr.txt",dirname(dat_file),basename(dirname(dat_file))),
+#             sep="\t",
+#             quote=F,
+#             col.names=T,
+#             row.names=F)
 
 write.table(genotypes_leafcutter,
             file=sprintf("%s/%s_genotypes.txt",dirname(dat_file),basename(dirname(dat_file))),
