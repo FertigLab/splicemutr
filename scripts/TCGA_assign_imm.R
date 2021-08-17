@@ -276,3 +276,9 @@ write.table(junc_metadata,
             col.names=T,
             row.names=F)
 
+write.table(introns,
+            file=sprintf("%s/introns.txt",dirname(dat_file)),
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)

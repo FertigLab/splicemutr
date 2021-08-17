@@ -62,7 +62,7 @@ def create_specific_splicemutr(splice_dat, intron_file):
     
     return(splice_dat_new)
 
-def assign_kmers(genotypes_file,rows,hla_dir):
+def assign_kmers(genotypes_file,rows,hla_dir,cancer):
     # genotypes_file: the genotypes_file, including path
     # rows: the specific_splice_dat rows
     # outputs:
@@ -73,7 +73,7 @@ def assign_kmers(genotypes_file,rows,hla_dir):
     all_kmers = {}
     #print(all_kmers)
     for i in range(len(genotypes_file)):
-        print(i)
+        print("%s:%d:%d"%(cancer,i,len(genotypes_file)))
         kmers = [[] for i in range(len(rows))]
         hlas = genotypes_file[i][0:6]
         sample = genotypes_file[i][7]
@@ -120,7 +120,7 @@ def main(options, args):
         rows = specific_splice_dat.rows.tolist()
         
         # assigning the immunogenic kmers to the specific_splice_dat
-        specific_splice_kmers = assign_kmers(genotypes_file,rows,hla_dir)
+        specific_splice_kmers = assign_kmers(genotypes_file,rows,hla_dir,os.path.basename(cancer_dir))
         specific_splice_kmers.to_csv("%s/%s_kmers.txt"%(cancer_dir,os.path.basename(cancer_dir)),sep='\t')
         
 if __name__ == "__main__":
