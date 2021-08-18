@@ -71,7 +71,7 @@ def assign_kmers(genotypes_file,rows,hla_dir,cancer):
     hla_file = "%s/%s_tx_dict_summary_perc.txt"
     genotypes_file = genotypes_file.values.tolist()
     all_kmers = {}
-    #print(all_kmers)
+    hla_dict = {}
     for i in range(len(genotypes_file)):
         print("%s:%d:%d"%(cancer,i,len(genotypes_file)))
         kmers = [[] for i in range(len(rows))]
@@ -79,24 +79,23 @@ def assign_kmers(genotypes_file,rows,hla_dir,cancer):
         sample = genotypes_file[i][7]
         sample_type = genotypes_file[i][8]
         for hla in hlas:
-            print(hla)
             if (type(hla) is float):
                 break
             else:
-                geno_file = pd.read_table(hla_file%(hla_dir,hla))
-                geno_file.columns = ["row","kmer","perc"]
-                geno_file = geno_file[geno_file.row.isin(rows)]
-                geno_rows = geno_file.row.tolist()
-                geno_kmers = geno_file.kmer.tolist()
-                rows_fill = pd.DataFrame(rows)
-                rows_fill.columns = ["row"]
-                rows_fill = rows_fill[rows_fill.row.isin(geno_file.row.tolist())]
-                rows_fill = rows_fill.row.tolist()
-                geno_splice_dat_match = [geno_rows.index(j) for j in rows_fill]
-                for j in range(len(rows_fill)):
-                    kmers[j] = kmers[j] + geno_kmers[geno_splice_dat_match[j]].split(':')
-        for j in range(len(rows)):
-            kmers[j] = ":".join(kmers[j])
+                if hla in hla_dict:
+                    geno_dat = hla_dict[hla]
+                else:
+                    with open(hla_file%(hla_dir,hla)) as geno_file:
+                        geno_list = geno_file.read().splitlines()
+                        geno_rows = [i.split('\t')[0] for i in geno_list]
+                        geno_kmers = [i.split('\t')[1] for i in geno_list]
+                        hla_dict[hla] = {int(geno_rows[i]):geno_kmers[i] for i in range(len(geno_rows))}
+                        geno_dat = hla_dict[hla]
+                for j in range(len(rows)):
+                    if rows[j] in geno_dat:
+                        kmers[j].append(geno_dat[rows[j]])
+        
+        kmers = [":".join(k) for k in kmers]
         all_kmers[i] = kmers
     all_kmers = pd.DataFrame(all_kmers)
     return(all_kmers)
