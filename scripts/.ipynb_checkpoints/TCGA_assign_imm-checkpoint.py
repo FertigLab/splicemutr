@@ -73,7 +73,7 @@ def assign_kmers(genotypes_file,rows,hla_dir,cancer):
     all_kmers = {}
     hla_dict = {}
     for i in range(len(genotypes_file)):
-        print("%s:%d:%d"%(cancer,i,len(genotypes_file)))
+        print("%s:%d:%d"%(cancer,i,len(genotypes_file)),flush=True)
         kmers = [[] for i in range(len(rows))]
         hlas = genotypes_file[i][0:6]
         sample = genotypes_file[i][7]
