@@ -119,8 +119,17 @@ def main(options, args):
         rows = specific_splice_dat.rows.tolist()
         
         # assigning the immunogenic kmers to the specific_splice_dat
-        specific_splice_kmers = assign_kmers(genotypes_file,rows,hla_dir,os.path.basename(cancer_dir))
-        specific_splice_kmers.to_csv("%s/%s_kmers.txt"%(cancer_dir,os.path.basename(cancer_dir)),sep='\t')
+        geno_length = len(genotypes_file.index)
+        iter_val = 1
+        for i in range(0,geno_length,100):
+            if i+100-1 <= geno_length:
+                end = i+100-1
+            else:
+                end = geno_length
+                genotypes_file_small = genotypes_file[i:end]
+            specific_splice_kmers = assign_kmers(genotypes_file_small,rows,hla_dir,os.path.basename(cancer_dir))
+            specific_splice_kmers.to_csv("%s/%s_kmers_%d.txt"%(cancer_dir,os.path.basename(cancer_dir),iter_val),sep='\t')
+            iter_val+=1
         
 if __name__ == "__main__":
 
