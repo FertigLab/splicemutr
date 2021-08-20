@@ -126,7 +126,7 @@ def main(options, args):
                 end = i+100-1
             else:
                 end = geno_length
-                genotypes_file_small = genotypes_file[i:end]
+            genotypes_file_small = genotypes_file[i:end]
             specific_splice_kmers = assign_kmers(genotypes_file_small,rows,hla_dir,os.path.basename(cancer_dir))
             specific_splice_kmers.to_csv("%s/%s_kmers_%d.txt"%(cancer_dir,os.path.basename(cancer_dir),iter_val),sep='\t')
             iter_val+=1
