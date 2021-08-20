@@ -122,8 +122,8 @@ def main(options, args):
         geno_length = len(genotypes_file.index)
         iter_val = 1
         for i in range(0,geno_length,100):
-            if i+99 <= geno_length:
-                end = i+99
+            if i+100 <= geno_length:
+                end = i+100
             else:
                 end = geno_length
             genotypes_file_small = genotypes_file[i:end]
