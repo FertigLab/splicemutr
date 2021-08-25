@@ -72,12 +72,13 @@ def assign_kmers(genotypes_file,rows,hla_dir,cancer):
     genotypes_file = genotypes_file.values.tolist()
     all_kmers = {}
     hla_dict = {}
+    tumor_kmers = [set() for i in range(len(rows))]
+    normal_kmers = [set() for i in range(len(rows))]
     for i in range(len(genotypes_file)):
         print("%s:%d:%d"%(cancer,i,len(genotypes_file)),flush=True)
         kmers = [[] for i in range(len(rows))]
         hlas = genotypes_file[i][0:6]
-        sample = genotypes_file[i][7]
-        sample_type = genotypes_file[i][8]
+        sample_type = genotypes_file[i][7]
         for hla in hlas:
             if (type(hla) is float):
                 break
@@ -97,8 +98,14 @@ def assign_kmers(genotypes_file,rows,hla_dir,cancer):
         
         kmers = [":".join(k) for k in kmers]
         all_kmers[i] = kmers
+        if sample_type == "T":
+            for i in range(len(rows)):
+                tumor_kmers[i].update(kmers[i].split(":"))
+        else:
+            for i in range(len(rows)):
+                normal_kmers[i].update(kmers[i].split(":"))
     all_kmers = pd.DataFrame(all_kmers)
-    return(all_kmers)
+    return(all_kmers,tumor_kmers,normal_kmers)
         
 def main(options, args):
         
@@ -127,9 +134,27 @@ def main(options, args):
             else:
                 end = geno_length
             genotypes_file_small = genotypes_file[i:end]
-            specific_splice_kmers = assign_kmers(genotypes_file_small,rows,hla_dir,os.path.basename(cancer_dir))
+            specific_splice_kmers,tumor_kmers_fill,normal_kmers_fill = assign_kmers(genotypes_file_small,
+                                                                          rows,
+                                                                          hla_dir,
+                                                                          os.path.basename(cancer_dir))
+            if i == 0:
+                tumor_kmers = tumor_kmers_fill
+                normal_kmers = normal_kmers_fill
+            else:
+                for i in range(len(rows)):
+                    tumor_kmers[i] = tumor_kmers[i].union(tumor_kmers_fill[i])
+                    normal_kmers[i] = normal_kmers[i].union(normal_kmers_fill[i])
+            
+            # turning tumor and normal kmers into pandas dataframe for saving
+            
             specific_splice_kmers.to_csv("%s/%s_kmers_%d.txt"%(cancer_dir,os.path.basename(cancer_dir),iter_val),sep='\t')
             iter_val+=1
+            
+        tumor_normal_kmers = {"tumor":[":".join(list(i)) for i in tumor_kmers],
+                              "normal":[":".join(list(i)) for i in normal_kmers]}
+        tumor_normal_kmers = pd.DataFrame(tumor_normal_kmers)
+        tumor_normal_kmers.to_csv("%s/%s_tumor_normal_kmers.txt"%(cancer_dir,os.path.basename(cancer_dir)),sep='\t')
         
 if __name__ == "__main__":
 
