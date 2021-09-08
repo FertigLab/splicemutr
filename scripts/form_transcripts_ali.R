@@ -43,10 +43,10 @@ file_num<-opt$num
 funcs <- opt$funcs
 source(funcs)
 
-junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
+# junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
 introns <-readRDS(junc_file) # loading in the introns data
-introns$chr <- str_replace(introns$chr,"chr","")
-introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
+# introns$chr <- str_replace(introns$chr,"chr","")
+#introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
 leafcutter<-F
 
 #------------------------------------------------------------------------------#
@@ -508,7 +508,7 @@ for (i in seq(intron_length)){
 
 out<-sprintf("%s/%s%s%s",out_dir,"data_splicemutr",file_num,".txt")
 out_fasta<-sprintf("%s/%s%s%s",out_dir,"sequences",file_num,".fa")
-out_cds <- sprintf("%s/cds_stored_%s.rds",out_dir,file_num)
+out_cds <- sprintf("%s/cds_stored%s.rds",out_dir,file_num)
 write.table(data_canon,file=out,col.names=T,row.names=F,quote=F)
 sequences<-DNAStringSet(sequences)
 writeXStringSet(sequences,out_fasta)
