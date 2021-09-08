@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# created: 05/15/2021
+# created: 09/07/2021
 
 # The purpose of this script is to modify reference transcripts using
 # reference transcript information
@@ -19,11 +19,9 @@ library(stringi)
 library(stringr)
 library(optparse)
 library(dplyr)
-library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
+library(BSgenome.Mmusculus.GENCODE.GRCm38.102)
 library(rlist)
-# library(splicemute)
 library(AnnotationDbi)
-# BiocManager::install(c("ensembldb","biomaRt","DataCombine","stringi","stringr","optparse","dplyr","rlist"))
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -49,7 +47,7 @@ junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must b
 introns <-readRDS(junc_file) # loading in the introns data
 introns$chr <- str_replace(introns$chr,"chr","")
 introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
-leafcutter<-T
+leafcutter<-F
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
@@ -63,7 +61,7 @@ tx_by_gene<-transcriptsBy(txdb,by="gene")
 five_by_tx<-fiveUTRsByTranscript(txdb,use.names=T)
 three_by_tx<-threeUTRsByTranscript(txdb,use.names=T)
 cds_by_tx <- cdsBy(txdb,by="tx",use.names=T)
-bsgenome<-BSgenome.Hsapiens.GENCODE.GRCh38.p13
+bsgenome<-BSgenome.Mmusculus.GENCODE.GRCm38.102
 
 #------------------------------------------------------------------------------#
 # performing transcript formation

@@ -79,7 +79,7 @@ for (i in seq(intron_length)){
     target_junc<-unname(as.character(introns[i,c(4,1,5,6)])) # extracting the target junction to look for from leafcutter input
     target_junc[2]<-str_split(target_junc[2],"[_]")[[1]][3] # formatting the strand information
   } else {
-    target_junc<-unname(as.character(introns[i,c(1,4,2,3)])) # extracting the target junction to look for from leafcutter input
+    target_junc<-unname(as.character(introns[i,c(1,2,3,4)])) # extracting the target junction to look for from leafcutter input
   }
   if (!(target_junc[2] %in% c("+","-"))){next}
   genes<-find_genes(target_junc,all_genes)
@@ -173,9 +173,7 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          protein_coding,
-                          start_exon,
-                          end_exon)
+                          protein_coding)
             } else {
               protein_coding <- "Yes"
               if (any(as.character(strand(combo_exons)) == "-")) {
@@ -264,17 +262,14 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          protein_coding,
-                          start_exon,
-                          end_exon)
+                          protein_coding)
             }
 
             # for (r in seq(3)){
             # filling the data_canon dataframe with the junction information
             col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
-                         "error","peptide","tx_length","start_stop","protein_coding",
-                         "start_exon","end_exon") # introns cols are c("chr","start","end","gene","verdict")
+                         "error","peptide","tx_length","start_stop","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names
@@ -386,9 +381,7 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          protein_coding,
-                          start_exon,
-                          end_exon)
+                          protein_coding)
             } else {
               protein_coding <- "Yes"
               if (any(as.character(strand(combo_exons)) == "-")) {
@@ -477,16 +470,13 @@ for (i in seq(intron_length)){
                           orf_dat[3],
                           orf_dat[5],
                           orf_dat[6],
-                          protein_coding,
-                          start_exon,
-                          end_exon)
+                          protein_coding)
             }
 
             # filling the data_canon dataframe with the junction information
             col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
-                         "error","peptide","tx_length","start_stop","protein_coding",
-                         "start_exon","end_exon") # introns cols are c("chr","start","end","gene","verdict")
+                         "error","peptide","tx_length","start_stop","protein_coding") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names
