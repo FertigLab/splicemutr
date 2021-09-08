@@ -44,6 +44,7 @@ funcs <- opt$funcs
 source(funcs)
 
 # junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
+junc_file <- opt$juncs
 introns <-readRDS(junc_file) # loading in the introns data
 # introns$chr <- str_replace(introns$chr,"chr","")
 #introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
@@ -155,8 +156,8 @@ for (i in seq(intron_length)){
                 verdict<-NA
                 deltapsi<-NA
               }
-              next_row<-c(curr_introns$clusterID,
-                          curr_introns$chr,
+              next_row<-c(curr_introns$strand,
+                          curr_introns$chrom,
                           curr_introns$start,
                           curr_introns$end,
                           gene,
@@ -246,8 +247,8 @@ for (i in seq(intron_length)){
                 verdict<-NA
                 deltapsi<-NA
               }
-              next_row<-c(curr_introns$clusterID,
-                          curr_introns$chr,
+              next_row<-c(curr_introns$strand,
+                          curr_introns$chrom,
                           curr_introns$start,
                           curr_introns$end,
                           gene,
@@ -368,8 +369,8 @@ for (i in seq(intron_length)){
                 verdict<-NA
                 deltapsi<-NA
               }
-              next_row<-c(curr_introns$clusterID,
-                          curr_introns$chr,
+              next_row<-c(curr_introns$strand,
+                          curr_introns$chrom,
                           curr_introns$start,
                           curr_introns$end,
                           paste(gene_pair,collapse="-"),
@@ -459,8 +460,8 @@ for (i in seq(intron_length)){
                 verdict<-NA
                 deltapsi<-NA
               }
-              next_row<-c(curr_introns$clusterID,
-                          curr_introns$chr,
+              next_row<-c(curr_introns$strand,
+                          curr_introns$chrom,
                           curr_introns$start,
                           curr_introns$end,
                           paste(gene_pair,collapse="-"),
