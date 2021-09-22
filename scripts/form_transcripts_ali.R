@@ -183,7 +183,7 @@ for (i in seq(intron_length)){
               } else {
                 UTR5<-sort(five_by_tx[[trans_fir]])
                 UTR3<-sort(three_by_tx[[trans_sec]])
-              }
+              }write.fasta
               junc<-is_UTR(target_junc,UTR5,UTR3,junc)
               if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]!=junc[2]){
                 cds_mod_info <- list()

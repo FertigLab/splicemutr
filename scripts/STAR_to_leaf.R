@@ -37,8 +37,7 @@ junc_dat <- star_to_leaf(star_file)
 # saving junc file
 
 star_file_name <- basename(star_file)
-star_file_name <- strsplit(star_file_name,"[.]")[[1]][1]
-star_file_name <- str_remove_all(star_file_name,"[SJ]")
+star_file_name <- str_remove_all(star_file_name,"SJ.out.tab")
 
 out<-sprintf("%s/%s.junc",out_dir,star_file_name)
 write.table(junc_dat,file=out,col.names=F,quote = F,row.names = F,sep="\t")
