@@ -2,7 +2,16 @@
 
 import numpy as np
 import timeit
-from splicemutr import calculate_similarity  
+
+def calculate_similarity(counts_list):
+    counts_np = np.array(counts_list)
+    k = 4.87
+    a = np.array(26)
+    alpha = np.sum(np.exp(-1*k*(a - counts_list)))
+    R = alpha/(1+alpha)
+    return(float(R))
+    
+    
 
 def main(option,args,b62):
     pep_file = args[0]

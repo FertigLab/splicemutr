@@ -766,3 +766,4 @@ format_introns <- function(introns){
   introns_fill <- introns[,important_info]
   introns_fill <- cbind(introns_fill,introns[,!important_info])
 }
+
