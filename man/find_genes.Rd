@@ -2,18 +2,18 @@
 % Please edit documentation in R/functions.R
 \name{find_genes}
 \alias{find_genes}
-\title{finds the genes that the target junction can exist in}
+\title{find_genes}
 \usage{
 find_genes(target_junc, all_genes)
 }
 \arguments{
 \item{target_junc}{the target junction c(chr, strand, start, end)}
 
-\item{all_genes}{he GRanges object of genes}
+\item{all_genes}{the GenomicRanges::GRanges object of genes}
 }
 \value{
 list of cis, trans_start, and trans_end genes associated with the junction
 }
 \description{
-finds the genes that the target junction can exist in
+find_genes
 }

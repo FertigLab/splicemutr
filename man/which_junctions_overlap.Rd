@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{which_junctions_overlap}
 \alias{which_junctions_overlap}
-\title{determining the junctions that overlap in a specific gene from a dataframe of junctions}
+\title{which_junctions_overlap}
 \usage{
 which_junctions_overlap(curr_introns)
 }
@@ -13,5 +13,5 @@ which_junctions_overlap(curr_introns)
 a list of non-overlapping junctions for the gene with row indeces dictating the associated row index of the curr_introns list
 }
 \description{
-determining the junctions that overlap in a specific gene from a dataframe of junctions
+which_junctions_overlap
 }

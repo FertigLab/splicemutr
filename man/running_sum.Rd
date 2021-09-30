@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{running_sum}
 \alias{running_sum}
-\title{finding the running sum of a vector of numbers}
+\title{running_sum}
 \usage{
 running_sum(vector)
 }
@@ -13,5 +13,5 @@ running_sum(vector)
 the vector modified to reflect the incremented sum
 }
 \description{
-finding the running sum of a vector of numbers
+running_sum
 }

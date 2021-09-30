@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{is_UTR}
 \alias{is_UTR}
-\title{determining whether the target junction is a part of the UTR}
+\title{is_UTR}
 \usage{
 is_UTR(target_junc, UTR5, UTR3, junc)
 }
@@ -19,5 +19,5 @@ is_UTR(target_junc, UTR5, UTR3, junc)
 two logicals indicating whether the junction is UTR or not
 }
 \description{
-determining whether the target junction is a part of the UTR
+is_UTR
 }

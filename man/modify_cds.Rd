@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{modify_cds}
 \alias{modify_cds}
-\title{modifying the combined cds using the junction}
+\title{modify_cds}
 \usage{
 modify_cds(combo_cds, target_junc, junc, start_exon, end_exon)
 }
@@ -21,5 +21,5 @@ modify_cds(combo_cds, target_junc, junc, start_exon, end_exon)
 a list containing the modified cds and the junction location in the cds cds_mod junc_loc
 }
 \description{
-modifying the combined cds using the junction
+modify_cds
 }

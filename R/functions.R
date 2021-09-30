@@ -1,21 +1,21 @@
 
-#' finds the genes that the target junction can exist in
-#'
+#' @name find_genes
+#' @title find_genes
 #' @param target_junc the target junction c(chr, strand, start, end)
-#' @param all_genes the GRanges object of genes
+#' @param all_genes the GenomicRanges::GRanges object of genes
 #' @return  list of cis, trans_start, and trans_end genes associated with the junction
 #' @export
 #'
 find_genes<-function(target_junc,all_genes){
 
-  junc_start<-GRanges(seqnames = c(target_junc[1]), strand = target_junc[2],
-                      ranges = IRanges(start = as.numeric(target_junc[3]), width = c(1)))
-  junc_end<-GRanges(seqnames = target_junc[1], strand = target_junc[2],
-                    ranges = IRanges(start = as.numeric(target_junc[4]), width = c(1)))
-  start<-findOverlaps(all_genes,junc_start)
-  end<-findOverlaps(all_genes,junc_end)
-  hits_start<-queryHits(start)
-  hits_end<-queryHits(end)
+  junc_start<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[4],
+                      ranges = IRanges::IRanges(start = as.numeric(target_junc[2]), width = c(1)))
+  junc_end<-GenomicRanges::GRanges(seqnames = target_junc[1], strand = target_junc[4],
+                    ranges = IRanges::IRanges(start = as.numeric(target_junc[3]), width = c(1)))
+  start<-GenomicRanges::findOverlaps(all_genes,junc_start)
+  end<-GenomicRanges::findOverlaps(all_genes,junc_end)
+  hits_start<-S4Vectors::queryHits(start)
+  hits_end<-S4Vectors::queryHits(end)
   genes_start<-all_genes[hits_start]
   genes_end<-all_genes[hits_end]
   genes<-list()
@@ -25,10 +25,10 @@ find_genes<-function(target_junc,all_genes){
   return(genes)
 }
 
-#' extracts all transcripts associated with the input genes
-#'
+#' @name extract_transcripts
+#' @title extract_transcripts
 #' @param genes character vector containing genes the target junction can exist in
-#' @param tx_by_gene GRanges object containing introns per for a specified transcript
+#' @param tx_by_gene GenomicRanges::GRanges object containing introns per for a specified transcript
 #' @return  list containing genes and transcripts
 #' @export
 #'
@@ -60,10 +60,10 @@ extract_transcripts<-function(genes,tx_by_gene){
   return(gene_tx_list)
 }
 
-#' finds the introns per transcript that the target junction overlaps with
-#'
+#' @name find_introns
+#' @title find_introns
 #' @param target_junc target junction character vector as c(chr,strand,start,stop)
-#' @param tx_introns GRanges object containing introns per for a specified transcript
+#' @param tx_introns GenomicRanges::GRanges object containing introns per for a specified transcript
 #' @param exact logical indicating whether the junction should exactly match a reference intron or not
 #' @return  chracter vector indicating the intron range the target junction overlaps with
 #' @export
@@ -72,35 +72,35 @@ find_introns<-function(target_junc,tx_introns,exact=FALSE){
   # finds the introns per transcript that the target junction overlaps with
   # inputs:
   #   target_junction: target junction character vector as c(chr,strand,start,stop)
-  #   tx_introns: GRanges object containing introns per for a specified transcript
+  #   tx_introns: GenomicRanges::GRanges object containing introns per for a specified transcript
   # outputs:
   #   hits: chracter vector indicating the intron range the target junction overlaps with
   start_adj<-as.numeric(target_junc[3])+1
   end_adj<-as.numeric(target_junc[4])-1
   if (exact){
-    junction<-GRanges(seqnames = c(target_junc[1]), strand = target_junc[2],
-                      ranges = IRanges(start = start_adj, width = end_adj-start_adj+1))
+    junction<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[2],
+                      ranges = IRanges::IRanges(start = start_adj, width = end_adj-start_adj+1))
     return(any(tx_introns==junction))
   } else {
-    junction<-GRanges(seqnames = c(target_junc[1]), strand = target_junc[2],
-                      ranges = IRanges(start = start_adj, width = end_adj-start_adj+1))
-    junc_intr<-findOverlaps(junction,tx_introns)
-    hits<-subjectHits(junc_intr)
+    junction<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[2],
+                      ranges = IRanges::IRanges(start = start_adj, width = end_adj-start_adj+1))
+    junc_intr<-GenomicRanges::findOverlaps(junction,tx_introns)
+    hits<-S4Vectors::subjectHits(junc_intr)
     return(hits)
   }
 }
 
-#' determining the junctions that overlap in a specific gene from a dataframe of junctions
-#'
+#' @name which_junctions_overlap
+#' @title which_junctions_overlap
 #' @param curr_introns a list of junctions corresponding to the current gene being analyzed
 #' @return  a list of non-overlapping junctions for the gene with row indeces dictating the associated row index of the curr_introns list
 #' @export
 #'
 which_junctions_overlap<-function(curr_introns){
 
-  overlaps<-findOverlaps(makeGRangesFromDataFrame(curr_introns,keep.extra.columns=TRUE))
-  queries<-queryHits(overlaps)
-  subjects<-subjectHits(overlaps)
+  overlaps<-GenomicRanges::findOverlaps(GenomicRanges::makeGRangesFromDataFrame(curr_introns,keep.extra.columns=TRUE))
+  queries<-S4Vectors::queryHits(overlaps)
+  subjects<-S4Vectors::subjectHits(overlaps)
   queries_all<-seq(1,nrow(curr_introns))
   shared_sets<-lapply(queries_all,function(x){
     query_test<-!(queries_all %in% subjects[queries==x])
@@ -113,8 +113,8 @@ which_junctions_overlap<-function(curr_introns){
   return(shared_sets)
 }
 
-#' adjusting the width of a cds dataframe after modification
-#'
+#' @name adjust_width
+#' @title adjust_width
 #' @param cds A cds dataframe with vectors of numeric widths, ends, and starts
 #' @return  The cds data with an adjusted width
 #' @export
@@ -131,8 +131,8 @@ adjust_width<-function(cds){
   return(cds)
 }
 
-#' finding the running sum of a vector of numbers
-#'
+#' @name running_sum
+#' @title running_sum
 #' @param vector The vector of numbers
 #' @return  the vector modified to reflect the incremented sum
 #' @export
@@ -152,8 +152,8 @@ running_sum<-function(vector){
   return(vector)
 }
 
-#' modifying the combined cds using the junction
-#'
+#' @name modify_cds
+#' @title modify_cds
 #' @param combo_cds the combined cds output from create_cds()
 #' @param target_junc the intron coordinates used for modifying the cds
 #' @param junc the junction location information output from is_UTR
@@ -164,17 +164,17 @@ running_sum<-function(vector){
 #'
 modify_cds <- function(combo_cds, target_junc, junc, start_exon, end_exon){
   # are either junction in a UTR?
-  junc_UTR <- which(str_detect(junc,"p"))
+  junc_UTR <- which(stringr::str_detect(junc,"p"))
 
   # is the junction inside either exon region?
-  start_pos<-as.numeric(target_junc[3])
-  end_pos<-as.numeric(target_junc[4])
+  start_pos<-as.numeric(target_junc[2])
+  end_pos<-as.numeric(target_junc[3])
 
-  start_exon_split <- as.numeric(str_split(start_exon,"-")[[1]])
+  start_exon_split <- as.numeric(stringr::str_split(start_exon,"-")[[1]])
   in_start <- start_pos < start_exon_split[2]
   start_exon_mod <- c(start_exon_split[1],start_pos)
 
-  end_exon_split <- as.numeric(str_split(end_exon,"-")[[1]])
+  end_exon_split <- as.numeric(stringr::str_split(end_exon,"-")[[1]])
   in_end <- end_pos > end_exon_split[1]
   end_exon_mod <- c(end_pos,end_exon_split[2])
 
@@ -249,8 +249,8 @@ modify_cds <- function(combo_cds, target_junc, junc, start_exon, end_exon){
   return(list(cds_mod,junc_loc))
 }
 
-#' Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
-#'
+#' @name mod_made
+#' @title mod_made
 #' @param cds reference cds as sorted dataframe
 #' @param cds_mod junction-modified cds as sorted dataframe
 #' @return "changed" if the starts and ends are different, "normal" if the starts and ends are the same, "add_reg" if more elements in cds_mod than cds, sub_reg if less elements in cds_mod than cds
@@ -283,8 +283,8 @@ mod_made<-function(cds,cds_mod){
   }
 }
 
-#' Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
-#'
+#' @name which_codon
+#' @title which_codon
 #' @param cod DNAstring containing codon start and end coordinates
 #' @param tx_junc_loc The junction location in the transcript
 #' @param start_loc start codon location in peptide coordinates relative to whole transcript
@@ -294,8 +294,8 @@ mod_made<-function(cds,cds_mod){
 #'
 which_codon<-function(cod,tx_junc_loc,start_loc,stop_loc){
 
-  starts<-start(cod)
-  ends<-end(cod)
+  starts<-BiocGenerics::start(cod)
+  ends<-BiocGenerics::end(cod)
   pep_junc_pos<-which(starts %in% tx_junc_loc | ends %in% tx_junc_loc)
 
   if(length(pep_junc_pos)==0){
@@ -313,8 +313,8 @@ which_codon<-function(cod,tx_junc_loc,start_loc,stop_loc){
   return(pep_junc_pos)
 }
 
-#' Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
-#'
+#' @name junc_loc_pep
+#' @title junc_loc_pep
 #' @param tx_junc_loc The junction location in the transcript
 #' @param tx The transcript sequence
 #' @param start_loc start codon location in peptide coordinates relative to whole transcript
@@ -329,21 +329,21 @@ junc_loc_pep<-function(tx_junc_loc,tx,start_loc,stop_loc){ #write
   # outputs:
   # pep_junc_loc: junction location in translated protein coordinates or tx_junc_loc if in UTR
   if(any(is.na(tx_junc_loc))){return(tx_junc_loc)}
-  if (length(tx_junc_loc)==1 | any(str_detect(tx_junc_loc,"p"))){
+  if (length(tx_junc_loc)==1 | any(stringr::str_detect(tx_junc_loc,"p"))){
     return(tx_junc_loc)
   } else {
     if ( ((nchar(tx)) %%3 > 0) | ((tx_junc_loc[1]+1) != tx_junc_loc[2])){
       return(F)
     } else {
-      cod<-codons(DNAString(tx))
+      cod<-Biostrings::codons(Biostrings::DNAString(tx))
     }
     codon<-which_codon(cod,tx_junc_loc,start_loc,stop_loc)
     return(codon)
   }
 }
 
-#' Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
-#'
+#' @name find_orfs
+#' @title find_orfs
 #' @param sequ The DNA sequence in character form to analyze
 #' @param tx_junc_loc The junction location in the transcript
 #' @return a vector of error type, protein if translatable or DNA sequence, ensembl transcript name , junction location relative to peptide start, modified transcript length, start and stop codon locations
@@ -358,7 +358,7 @@ find_orfs<-function(sequ,tx_junc_loc){
   if (x >= nchar(sequ)){
     return(c("seq_too_small",NA,NA,NA,NA,NA,NA,sequ_len))
   } else {
-    sequence_split<-stri_sub(str = sequ,
+    sequence_split<-stringi::stri_sub(str = sequ,
                              from = seq(x, nchar(sequ) - 3 + 1,by = 3),
                              length = 3)
 
@@ -398,8 +398,8 @@ find_orfs<-function(sequ,tx_junc_loc){
     error <- "tx"
   }
   orf_seq<-paste(sequence_split[1:stop_cods[1]],collapse="")
-  seq_str_set<-DNAStringSet(orf_seq)
-  trans<-translate(seq_str_set,no.init.codon = F)
+  seq_str_set<-Biostrings::DNAStringSet(orf_seq)
+  trans<-Biostrings::translate(seq_str_set,no.init.codon = F)
   orf_loc<-c((start_cods[1]*3)-2, (start_cods[1]*3)-2 + (stop_cods[1]*3)-1)-1+x
   pep_junc_loc<-junc_loc_pep(tx_junc_loc,orf_seq,orf_loc[1],orf_loc[2])
   out<-c(error,
@@ -412,8 +412,8 @@ find_orfs<-function(sequ,tx_junc_loc){
   }
 }
 
-#' checking if the transcript without the UTR has a start codon in the first codon and a stop codon in the last codon
-#'
+#' @name check_tx
+#' @title check_tx
 #' @param seq The DNA sequence in character form to analyze
 #' @return TRUE or FALSE dependent upon whether the transcript has start codon at first codon and stop codon at last codon
 #' @export
@@ -426,8 +426,8 @@ check_tx<-function(seq){
   #   out: logical saying if both starts and stop codons exist in sequence
 
   if ( all(unique(strsplit(seq,"")[[1]]) %in% c("A","T","C","G")) ) {
-    seq<-DNAStringSet(substr(seq,1,nchar(seq)-((nchar(seq)-1+1) %% 3)))
-    trans<-translate(seq,no.init.codon = FALSE)
+    seq<-Biostrings::DNAStringSet(substr(seq,1,nchar(seq)-((nchar(seq)-1+1) %% 3)))
+    trans<-Biostrings::translate(seq,no.init.codon = FALSE)
   } else {
     trans<-seq
   }
@@ -440,7 +440,8 @@ check_tx<-function(seq){
   return(out)
 }
 
-#' finding the exons that are associated with start and end of the junction
+#' @name choose_exons
+#' @title choose_exons
 #' @param target_junc the target junction to use for analysis
 #' @param exons_by_gene the exons per gene in the genome
 #' @param gene_tar a vector pair of gene targets, left is first or only gene, right is second gene. Single element vector if only one gene.
@@ -448,38 +449,38 @@ check_tx<-function(seq){
 #' @export
 #'
 choose_exons<-function(target_junc, exons_by_gene, gene_tar){
-  junc_start<-GRanges(seqnames = c(target_junc[1]), strand = target_junc[2],
-                      ranges = IRanges(start = as.numeric(target_junc[3]), width = c(1)))
-  junc_end<-GRanges(seqnames = target_junc[1], strand = target_junc[2],
-                    ranges = IRanges(start = as.numeric(target_junc[4]), width = c(1)))
+  junc_start<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[4],
+                      ranges = IRanges::IRanges(start = as.numeric(target_junc[2]), width = c(1)))
+  junc_end<-GenomicRanges::GRanges(seqnames = target_junc[1], strand = target_junc[4],
+                    ranges = IRanges::IRanges(start = as.numeric(target_junc[3]), width = c(1)))
   if (length(gene_tar)==1){
     exons_small<-sort(exons_by_gene[[gene_tar]])
-    start<-findOverlaps(exons_small,junc_start)
-    hits_start<-queryHits(start)
+    start<-GenomicRanges::findOverlaps(exons_small,junc_start)
+    hits_start<-S4Vectors::queryHits(start)
     if (length(start)==0){
-      hits_start<-which(ranges(junc_start) > ranges(exons_small))
+      hits_start<-which(IRanges::ranges(junc_start) > IRanges::ranges(exons_small))
       hits_start<-hits_start[length(hits_start)]
     }
-    end<-findOverlaps(exons_small,junc_end)
-    hits_end<-queryHits(end)
+    end<-GenomicRanges::findOverlaps(exons_small,junc_end)
+    hits_end<-S4Vectors::queryHits(end)
     if (length(end)==0){
-      hits_end<-which(ranges(junc_end) < ranges(exons_small))[1]
+      hits_end<-which(IRanges::ranges(junc_end) < IRanges::ranges(exons_small))[1]
     }
     exons_start<-unique(exons_small[hits_start])
     exons_end<-unique(exons_small[hits_end])
   } else {
     exons_small_start<-exons_by_gene[[gene_tar[1]]]
-    start<-findOverlaps(exons_small_start,junc_start)
-    hits_start<-queryHits(start)
+    start<-GenomicRanges::findOverlaps(exons_small_start,junc_start)
+    hits_start<-S4Vectors::queryHits(start)
     if (length(start)==0){
-      hits_start<-which(ranges(junc_start) > ranges(exons_small_start))
+      hits_start<-which(IRanges::ranges(junc_start) > IRanges::ranges(exons_small_start))
       hits_start<-hits_start[length(hits_start)]
     }
     exons_small_end<-exons_by_gene[[gene_tar[2]]]
-    end<-findOverlaps(exons_small_end,junc_end)
-    hits_end<-queryHits(end)
+    end<-GenomicRanges::findOverlaps(exons_small_end,junc_end)
+    hits_end<-S4Vectors::queryHits(end)
     if (length(end)==0){
-      hits_end<-which(ranges(junc_end) < ranges(exons_small_end))[1]
+      hits_end<-which(IRanges::ranges(junc_end) < IRanges::ranges(exons_small_end))[1]
     }
     exons_start<-unique(exons_small_start[hits_start])
     exons_end<-unique(exons_small_end[hits_end])
@@ -495,7 +496,8 @@ choose_exons<-function(target_junc, exons_by_gene, gene_tar){
   return(exons_start_end)
 }
 
-#' choosing the transcripts that the exons can exist in
+#' @name choose_transcripts
+#' @title choose_transcripts
 #' @param exons the exons for the start and end of the junction
 #' @param transcripts_1 the character vector of transcripts for the start gene
 #' @param transcripts_2 the character vector of transcripts for the end gene
@@ -517,8 +519,8 @@ choose_transcripts<-function(exons, transcripts_1, transcripts_2=c(), exons_by_t
   tx_starts<-lapply(starts,function(start){
     transcripts[start]
   })
-  start<-start(ranges(exons$exons_start))
-  end<-end(ranges(exons$exons_start))
+  start<-BiocGenerics::start(IRanges::ranges(exons$exons_start))
+  end<-BiocGenerics::end(IRanges::ranges(exons$exons_start))
   names(tx_starts)<-sprintf("%d-%d",start,end)
   if (length(transcripts_2)>0){
     transcripts<-transcripts_2
@@ -534,16 +536,16 @@ choose_transcripts<-function(exons, transcripts_1, transcripts_2=c(), exons_by_t
   tx_ends<-lapply(ends,function(end){
     transcripts[end]
   })
-  start<-start(ranges(exons$exons_end))
-  end<-end(ranges(exons$exons_end))
+  start<-BiocGenerics::start(IRanges::ranges(exons$exons_end))
+  end<-BiocGenerics::end(IRanges::ranges(exons$exons_end))
   names(tx_ends)<-sprintf("%d-%d",start,end)
   tx_starts_ends<-list(tx_starts,tx_ends)
   names(tx_starts_ends)<-c("starts","ends")
   return(tx_starts_ends)
 }
 
-#' creating the combination cds for the junction
-#'
+#' @name create_cds
+#' @title create_cds
 #' @param combo_exons the combined exons for the two transcripts associated with the junction
 #' @param UTR5 the 5' UTR for the first transcript
 #' @param UTR3 the 3' UTR for the final transcript
@@ -558,7 +560,7 @@ create_cds<-function(combo_exons,UTR5,UTR3,tx_junc){
   comb_end<-data.frame(combo_end)
   start_UTR<-UTR5
   end_UTR<-UTR3
-  if (any(as.character(strand(combo_exons)) == "-")){
+  if (any(as.character(BiocGenerics::strand(combo_exons)) == "-")){
     start_UTR<-UTR3
     end_UTR<-UTR5
   } else {
@@ -566,31 +568,31 @@ create_cds<-function(combo_exons,UTR5,UTR3,tx_junc){
     end_UTR<-UTR3
   }
 
-  start_pos<-end(ranges(start_UTR[length(start_UTR)]))+1
-  end_pos<-start(ranges(end_UTR[1]))-1
+  start_pos<-BiocGenerics::end(IRanges::ranges(start_UTR[length(start_UTR)]))+1
+  end_pos<-BiocGenerics::start(IRanges::ranges(end_UTR[1]))-1
 
   # need to modify this section such that UTRs can eb found to precede and be found after
   # the overlaps are not working because of this
   # do what you did in choose_exons
-  start_cds_block<-findOverlaps(combo_start,start_UTR[length(start_UTR)])
+  start_cds_block<-GenomicRanges::findOverlaps(combo_start,start_UTR[length(start_UTR)])
   if (length(start_cds_block)==0){
     start_UTR_in<-T
     hits_start<-tx_junc
   } else {
     start_UTR_in<-F
-    hits_start<-queryHits(start_cds_block[length(start_cds_block)])
+    hits_start<-S4Vectors::queryHits(start_cds_block[length(start_cds_block)])
   }
-  end_cds_block<-findOverlaps(combo_end,end_UTR[1])
+  end_cds_block<-GenomicRanges::findOverlaps(combo_end,end_UTR[1])
   if (length(end_cds_block)==0){
     end_UTR_in<-T
     hits_end<-1
   } else {
     end_UTR_in<-F
-    hits_end<-queryHits(end_cds_block[1])
+    hits_end<-S4Vectors::queryHits(end_cds_block[1])
   }
 
   if (!start_UTR_in){ # subtracting the UTR from the cds
-    comb_start<-InsertRow(comb_start,comb_start[hits_start,],hits_start)
+    comb_start<-DataCombine::InsertRow(comb_start,comb_start[hits_start,],hits_start)
     comb_start[hits_start+1,"start"]<-start_pos
     comb_start<-comb_start[(hits_start+1):nrow(comb_start),]
   } else {
@@ -598,7 +600,7 @@ create_cds<-function(combo_exons,UTR5,UTR3,tx_junc){
   }
 
   if (!end_UTR_in){
-    comb_end<-InsertRow(comb_end,comb_end[hits_end,],hits_end)
+    comb_end<-DataCombine::InsertRow(comb_end,comb_end[hits_end,],hits_end)
     comb_end[(hits_end),"end"]<-end_pos
     comb_end<-comb_end[1:(hits_end),]
   } else {
@@ -609,8 +611,8 @@ create_cds<-function(combo_exons,UTR5,UTR3,tx_junc){
   return(comb)
 }
 
-#' determining whether the target junction is a part of the UTR
-#'
+#' @name is_UTR
+#' @title is_UTR
 #' @param target_junc the target junction in form chr,strand,start,end
 #' @param UTR5 the 5' UTR
 #' @param UTR3 the 3' UTR
@@ -619,7 +621,7 @@ create_cds<-function(combo_exons,UTR5,UTR3,tx_junc){
 #' @export
 #'
 is_UTR<-function(target_junc, UTR5, UTR3, junc){
-  if (target_junc[2] == "-"){
+  if (target_junc[4] == "-"){
     flip=T
     start_UTR<-UTR3
     end_UTR<-UTR5
@@ -628,12 +630,12 @@ is_UTR<-function(target_junc, UTR5, UTR3, junc){
     start_UTR<-UTR5
     end_UTR<-UTR3
   }
-  start_UTR_start<-start(ranges(start_UTR[1]))
-  start_UTR_end<-end(ranges(start_UTR[length(start_UTR)]))
-  end_UTR_start<-start(ranges(end_UTR[1]))
-  end_UTR_end<-end(ranges(end_UTR[length(end_UTR)]))
-  junc_start<-as.numeric(target_junc[3])
-  junc_end<-as.numeric(target_junc[4])
+  start_UTR_start<-BiocGenerics::start(IRanges::ranges(start_UTR[1]))
+  start_UTR_end<-BiocGenerics::end(IRanges::ranges(start_UTR[length(start_UTR)]))
+  end_UTR_start<-BiocGenerics::start(IRanges::ranges(end_UTR[1]))
+  end_UTR_end<-BiocGenerics::end(IRanges::ranges(end_UTR[length(end_UTR)]))
+  junc_start<-as.numeric(target_junc[2])
+  junc_end<-as.numeric(target_junc[3])
   junc_1<-junc[1]
   junc_2<-junc[2]
   if (junc_start >= start_UTR_start & junc_start <= start_UTR_end){
@@ -665,11 +667,8 @@ is_UTR<-function(target_junc, UTR5, UTR3, junc){
   return (c(junc_1,junc_2))
 }
 
-#' returns the unique set of kmers from a vector of non-unique kmers with
-#' integer counts representing counts of the kmer in each junction-tx pair
-#' uses lapply to iterate over each seq in seqs_vec lapply will automatically
-#' return a list with index in seqs_vec as list access index in returned list
-#'
+#' @name countKmers
+#' @title countKmers
 #' @param seqs_vec vector of sequences (i.e. data_canon[,2])
 #' @param K the kmer length
 #' @return a list of integer vectors with kmer character vectors as names
@@ -678,7 +677,7 @@ is_UTR<-function(target_junc, UTR5, UTR3, junc){
 countKmers <- function(seqs_vec, K){
 
   kmers <- lapply(seqs_vec, function(x){
-    table(stri_sub(str = x,
+    table(stringi::stri_sub(str = x,
                    from = seq(1, nchar(x) - K + 1,
                               by = 1),
                    length = K))
@@ -687,9 +686,8 @@ countKmers <- function(seqs_vec, K){
   return(kmers) # return is not necessary in R, but I like to make it explicit
 }
 
-#' returns the unique set of kmers from a vector of non-unique kmers with
-#' integer counts per junction-tx pair
-#'
+#' @name getUniqKmers
+#' @title getUniqKmers
 #' @param kmers character vector of non-unique kmers
 #' @return vector of character vectors representing unique list of kmers from the union of all sequences
 #'
@@ -698,9 +696,8 @@ getUniqKmers <- function(kmers){
   return(unique(unlist(lapply(kmers, names))))
 }
 
-#' This script splits the kmer files into blocks of 2000000 or less and saves them to the out directory.
-#' This helps with computation efficiency
-#'
+#' @name split_kmers
+#' @title split_kmers
 #' @param kmers The kmers character vector
 #' @param save_dir The directory to save the kmer vector to.
 #' @return A vector detailing the number of kmers saved per file saved.
@@ -719,37 +716,19 @@ split_kmers<-function(kmers,save_dir){
     }
     kmers_test[1:length(a)]<-kmers[a]
     kmers_test<-data.frame(kmers_test)
-    write.table(kmers_test,file=sprintf(save_dir,x),quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
+    utils::write.table(kmers_test,file=sprintf(save_dir,x),quote=FALSE,sep="\t",row.names=FALSE,col.names=FALSE)
     return(nrow(kmers_test))
   },numeric(1))
 }
 
-#' Taking the star .out.tab file and converting it to the junctions extract format for leafcutter
-#' SJ.out.tab format
-#' column 1: chromosome
-#' column 2: first base of the intron (1-based)
-#' column 3: last base of the intron (1-based)
-#' column 4: strand (0: undefined, 1: +, 2: -)
-#' column 5: intron motif: 0: non-canonical; 1: GT/AG, 2: CT/AC, 3: GC/AG, 4: CT/GC, 5: AT/AC, 6: GT/AT
-#' column 6: 0: unannotated, 1: annotated (only if splice junctions database is used)
-#' column 7: number of uniquely mapping reads crossing the junction
-#' column 8: number of multi-mapping reads crossing the junction
-#' column 9: maximum spliced alignment overhang
-#'
-#' JUNC file format
-#' chrom	The name of the chromosome.
-#' chromStart	The starting position of the junction-anchor. This includes the maximum overhang for the junction on the left. For the exact junction start add blockSizes[0].
-#' chromEnd	The ending position of the junction-anchor. This includes the maximum overhang for the juncion on the left. For the exact junction end subtract blockSizes[1].
-#' name	The name of the junctions, the junctions are just numbered JUNC1 to JUNCn.
-#' score	The number of reads supporting the junction.
-#' strand	Defines the strand - either '+' or '-'. This is calculated using the XS tag in the BAM file.
-#'
+#' @name star_to_leaf
+#' @title star_to_leaf
 #' @param STAR_file The star file to be converted
 #' @return converted junc_dat dataframe
 #' @export
 #'
 star_to_leaf <- function(STAR_file){
-  star_dat <- read.table(star_file,header=F)
+  star_dat <- utils::read.table(STAR_file,header=F)
   chrom <- star_dat[,1]
   chromStart <- as.numeric(star_dat[,2]-1)
   chromEnd <- as.numeric(star_dat[,3]+1)
@@ -766,4 +745,24 @@ star_to_leaf <- function(STAR_file){
   },character(1))
   junc_dat <- data.frame(chrom,chromStart,chromEnd,name,score,strand)
   return(junc_dat)
+}
+
+#' @name format_introns
+#' @title format_introns
+#' @param introns the introns file
+#' @return splicemutr formatted introns file
+#' @export
+#'
+format_introns <- function(introns){
+  if ("clusterID" %in% colnames(introns)){
+    strand <- as.character(matrix(unlist(str_split(introns$clusterID,"_")),byrow=T,nrow=nrow(introns))[,3])
+    introns$strand <- strand
+  }
+  chr_mask <- colnames(introns)=="chr"
+  start_mask <- colnames(introns)=="start"
+  end_mask <- colnames(introns)=="end"
+  strand_mask <- colnames(introns)=="strand"
+  important_info <- chr_mask | start_mask | end_mask | strand_mask
+  introns_fill <- introns[,important_info]
+  introns_fill <- cbind(introns_fill,introns[,!important_info])
 }

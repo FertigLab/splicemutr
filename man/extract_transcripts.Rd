@@ -2,18 +2,18 @@
 % Please edit documentation in R/functions.R
 \name{extract_transcripts}
 \alias{extract_transcripts}
-\title{extracts all transcripts associated with the input genes}
+\title{extract_transcripts}
 \usage{
 extract_transcripts(genes, tx_by_gene)
 }
 \arguments{
 \item{genes}{character vector containing genes the target junction can exist in}
 
-\item{tx_by_gene}{GRanges object containing introns per for a specified transcript}
+\item{tx_by_gene}{GenomicRanges::GRanges object containing introns per for a specified transcript}
 }
 \value{
 list containing genes and transcripts
 }
 \description{
-extracts all transcripts associated with the input genes
+extract_transcripts
 }

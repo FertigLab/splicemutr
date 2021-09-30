@@ -34,4 +34,9 @@ splice_juncs <- splice_juncs %>% dplyr::filter(V5 != 0)
 # saving the biologically relevant splice junctions
 
 out <- sprintf("%s/%s.filt",out_dir,basename(sj_file))
-write.table(splice_juncs,file=out,col.names=F,quote = F,row.names = F,sep="\t")
+write.table(splice_juncs,
+            file=out,
+            col.names=F,
+            quote = F,
+            row.names = F,
+            sep="\t")

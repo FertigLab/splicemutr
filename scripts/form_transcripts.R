@@ -1,9 +1,17 @@
 #!/usr/bin/env Rscript
 
 # created: 05/15/2021
+# updated: 09/29/2021
 
 # The purpose of this script is to modify reference transcripts using
 # reference transcript information
+
+
+#------------------------------------------------------------------------------#
+# BSgenome stuff, you modify as needed
+
+library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
+bsgenome<-BSgenome.Hsapiens.GENCODE.GRCh38.p13
 
 #------------------------------------------------------------------------------#
 # loading libraries
@@ -19,11 +27,9 @@ library(stringi)
 library(stringr)
 library(optparse)
 library(dplyr)
-library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
 library(rlist)
 # library(splicemute)
 library(AnnotationDbi)
-# BiocManager::install(c("ensembldb","biomaRt","DataCombine","stringi","stringr","optparse","dplyr","rlist"))
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -34,22 +40,19 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
    make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
    make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
-   make_option(c("-n","--num"), default="", help="The file number output for the data"),
-   make_option(c("-f","--funcs"), default="", help="The functions file"))))
+   make_option(c("-f","--funcs"), default=NULL, help="The splicemute functions to source"))))
 
 opt=arguments
 
 out_dir<-opt$output_directory
 txdb_file<-opt$txdb
 file_num<-opt$num
-funcs <- opt$funcs
+funcs<-opt$funcs
 source(funcs)
 
-junc_file<-sprintf("%s/%s%s.rds",opt$juncs,"intron",opt$n) # introns file must be in format introns_<file_num>.rds
-introns <-readRDS(junc_file) # loading in the introns data
+introns <-readRDS(opt$juncs) # loading in the introns data
 introns$chr <- str_replace(introns$chr,"chr","")
-introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
-leafcutter<-T
+introns<-format_introns(introns)
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
@@ -63,7 +66,22 @@ tx_by_gene<-transcriptsBy(txdb,by="gene")
 five_by_tx<-fiveUTRsByTranscript(txdb,use.names=T)
 three_by_tx<-threeUTRsByTranscript(txdb,use.names=T)
 cds_by_tx <- cdsBy(txdb,by="tx",use.names=T)
-bsgenome<-BSgenome.Hsapiens.GENCODE.GRCh38.p13
+
+#------------------------------------------------------------------------------#
+# annotating junctions using reference introns
+
+introns_by_tx<-data.frame(unlist(intronsByTranscript(txdb,use.names=T)))
+ref_juncs<-sprintf("%s:%s:%s:%s",introns_by_tx$seqnames,introns_by_tx$start-1,introns_by_tx$end+1,introns_by_tx$strand)
+target_juncs <- sprintf("%s:%s:%s:%s",introns$chr,introns$start,introns$end,introns$strand)
+
+annotated_juncs <- target_juncs %in% ref_juncs
+introns$ann <- "unannotated"
+introns$ann[annotated_juncs]<-"annotated"
+if ("verdict" %in% colnames(introns)){
+  introns <- introns %>% dplyr::filter(verdict != "unknown_strand")
+}
+
+rm(introns_by_tx)
 
 #------------------------------------------------------------------------------#
 # performing transcript formation
@@ -75,13 +93,9 @@ intron_length<-nrow(introns)
 for (i in seq(intron_length)){
   print(sprintf("%d introns out of %d total introns",i,intron_length))
   curr_introns<-introns[i,]
-  if (leafcutter) {
-    target_junc<-unname(as.character(introns[i,c(4,1,5,6)])) # extracting the target junction to look for from leafcutter input
-    target_junc[2]<-str_split(target_junc[2],"[_]")[[1]][3] # formatting the strand information
-  } else {
-    target_junc<-unname(as.character(introns[i,c(1,4,2,3)])) # extracting the target junction to look for from leafcutter input
-  }
-  if (!(target_junc[2] %in% c("+","-"))){next}
+  ann<-curr_introns$ann
+  target_junc <- unname(as.character(introns[i,seq(4)]))
+  if (!(target_junc[4] %in% c("+","-"))){next}
   genes<-find_genes(target_junc,all_genes)
   all_tx<-extract_transcripts(genes, tx_by_gene) # the genes and transcripts associated with the junction
 
@@ -150,17 +164,21 @@ for (i in seq(intron_length)){
                                    gene,paste(unique(trans_pair),collapse="-")),collapse=":")
               sequences<-c(sequences, sequ)
               mod<-mod_made(data.frame(combo_exons), cds_mod)
-              if (leafcutter){
-                verdict<-curr_introns$verdict # verdict
+              if ("deltapsi" %in% colnames(curr_introns)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
+              } else {
+                deltapsi<-NA
+              }
+              if ("verdict" %in% colnames(curr_introns)){
+                verdict<-curr_introns$verdict # verdict
               } else{
                 verdict<-NA
-                deltapsi<-NA
               }
               next_row<-c(curr_introns$clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
+                          curr_introns$strand,
                           gene,
                           paste(unique(trans_pair),collapse="-"),
                           mod,
@@ -175,7 +193,8 @@ for (i in seq(intron_length)){
                           orf_dat[6],
                           protein_coding,
                           start_exon,
-                          end_exon)
+                          end_exon,
+                          ann)
             } else {
               protein_coding <- "Yes"
               if (any(as.character(strand(combo_exons)) == "-")) {
@@ -241,17 +260,21 @@ for (i in seq(intron_length)){
                 mod<-mod_made(data.frame(combo_cds), cds_mod)
               }
               # modify the joined cds using the junction
-              if (leafcutter){
-                verdict<-curr_introns$verdict # verdict
+              if ("deltapsi" %in% colnames(curr_introns)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
               } else {
-                verdict<-NA
                 deltapsi<-NA
+              }
+              if ("verdict" %in% colnames(curr_introns)){
+                verdict<-curr_introns$verdict # verdict
+              } else{
+                verdict<-NA
               }
               next_row<-c(curr_introns$clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
+                          curr_introns$strand,
                           gene,
                           paste(unique(trans_pair),collapse="-"),
                           mod,
@@ -266,15 +289,16 @@ for (i in seq(intron_length)){
                           orf_dat[6],
                           protein_coding,
                           start_exon,
-                          end_exon)
+                          end_exon,
+                          ann)
             }
 
             # for (r in seq(3)){
             # filling the data_canon dataframe with the junction information
-            col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
+            col_names<-c("cluster","chr","start","end","strand","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
                          "error","peptide","tx_length","start_stop","protein_coding",
-                         "start_exon","end_exon") # introns cols are c("chr","start","end","gene","verdict")
+                         "start_exon","end_exon","annotated") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names
@@ -363,17 +387,21 @@ for (i in seq(intron_length)){
                                    gene,paste(unique(trans_pair),collapse="-")),collapse=":")
               sequences<-c(sequences, sequ)
               mod<-mod_made(data.frame(combo_exons), cds_mod)
-              if (leafcutter){
-                verdict<-curr_introns$verdict # verdict
+              if ("deltapsi" %in% colnames(curr_introns)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
+              } else {
+                deltapsi<-NA
+              }
+              if ("verdict" %in% colnames(curr_introns)){
+                verdict<-curr_introns$verdict # verdict
               } else{
                 verdict<-NA
-                deltapsi<-NA
               }
               next_row<-c(curr_introns$clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
+                          curr_introns$strand,
                           paste(gene_pair,collapse="-"),
                           paste(unique(trans_pair),collapse="-"),
                           mod,
@@ -388,7 +416,8 @@ for (i in seq(intron_length)){
                           orf_dat[6],
                           protein_coding,
                           start_exon,
-                          end_exon)
+                          end_exon,
+                          ann)
             } else {
               protein_coding <- "Yes"
               if (any(as.character(strand(combo_exons)) == "-")) {
@@ -454,17 +483,21 @@ for (i in seq(intron_length)){
                 mod<-mod_made(data.frame(combo_cds), cds_mod)
               }
               # modify the joined cds using the junction
-              if (leafcutter){
-                verdict<-curr_introns$verdict # verdict
+              if ("deltapsi" %in% colnames(curr_introns)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
               } else {
-                verdict<-NA
                 deltapsi<-NA
+              }
+              if ("verdict" %in% colnames(curr_introns)){
+                verdict<-curr_introns$verdict # verdict
+              } else{
+                verdict<-NA
               }
               next_row<-c(curr_introns$clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
+                          curr_introns$strand,
                           paste(gene_pair,collapse="-"),
                           paste(unique(trans_pair),collapse="-"),
                           mod,
@@ -479,14 +512,15 @@ for (i in seq(intron_length)){
                           orf_dat[6],
                           protein_coding,
                           start_exon,
-                          end_exon)
+                          end_exon,
+                          ann)
             }
 
             # filling the data_canon dataframe with the junction information
-            col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
+            col_names<-c("cluster","chr","start","end","strand","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
                          "error","peptide","tx_length","start_stop","protein_coding",
-                         "start_exon","end_exon") # introns cols are c("chr","start","end","gene","verdict")
+                         "start_exon","end_exon","annotated") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{mod_made}
 \alias{mod_made}
-\title{Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.}
+\title{mod_made}
 \usage{
 mod_made(cds, cds_mod)
 }
@@ -15,5 +15,5 @@ mod_made(cds, cds_mod)
 "changed" if the starts and ends are different, "normal" if the starts and ends are the same, "add_reg" if more elements in cds_mod than cds, sub_reg if less elements in cds_mod than cds
 }
 \description{
-Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
+mod_made
 }

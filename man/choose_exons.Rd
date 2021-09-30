@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{choose_exons}
 \alias{choose_exons}
-\title{finding the exons that are associated with start and end of the junction}
+\title{choose_exons}
 \usage{
 choose_exons(target_junc, exons_by_gene, gene_tar)
 }
@@ -17,5 +17,5 @@ choose_exons(target_junc, exons_by_gene, gene_tar)
 the unique start and end junction exons
 }
 \description{
-finding the exons that are associated with start and end of the junction
+choose_exons
 }

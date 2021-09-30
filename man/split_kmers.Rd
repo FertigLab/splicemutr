@@ -2,8 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{split_kmers}
 \alias{split_kmers}
-\title{This script splits the kmer files into blocks of 2000000 or less and saves them to the out directory.
-This helps with computation efficiency}
+\title{split_kmers}
 \usage{
 split_kmers(kmers, save_dir)
 }
@@ -16,6 +15,5 @@ split_kmers(kmers, save_dir)
 A vector detailing the number of kmers saved per file saved.
 }
 \description{
-This script splits the kmer files into blocks of 2000000 or less and saves them to the out directory.
-This helps with computation efficiency
+split_kmers
 }

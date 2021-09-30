@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{create_cds}
 \alias{create_cds}
-\title{creating the combination cds for the junction}
+\title{create_cds}
 \usage{
 create_cds(combo_exons, UTR5, UTR3, tx_junc)
 }
@@ -19,5 +19,5 @@ create_cds(combo_exons, UTR5, UTR3, tx_junc)
 created cds
 }
 \description{
-creating the combination cds for the junction
+create_cds
 }

@@ -2,14 +2,14 @@
 % Please edit documentation in R/functions.R
 \name{find_introns}
 \alias{find_introns}
-\title{finds the introns per transcript that the target junction overlaps with}
+\title{find_introns}
 \usage{
 find_introns(target_junc, tx_introns, exact = FALSE)
 }
 \arguments{
 \item{target_junc}{target junction character vector as c(chr,strand,start,stop)}
 
-\item{tx_introns}{GRanges object containing introns per for a specified transcript}
+\item{tx_introns}{GenomicRanges::GRanges object containing introns per for a specified transcript}
 
 \item{exact}{logical indicating whether the junction should exactly match a reference intron or not}
 }
@@ -17,5 +17,5 @@ find_introns(target_junc, tx_introns, exact = FALSE)
 chracter vector indicating the intron range the target junction overlaps with
 }
 \description{
-finds the introns per transcript that the target junction overlaps with
+find_introns
 }

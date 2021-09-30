@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{junc_loc_pep}
 \alias{junc_loc_pep}
-\title{Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.}
+\title{junc_loc_pep}
 \usage{
 junc_loc_pep(tx_junc_loc, tx, start_loc, stop_loc)
 }
@@ -19,5 +19,5 @@ junc_loc_pep(tx_junc_loc, tx, start_loc, stop_loc)
 junction location in translated protein coordinates or tx_junc_loc if in UTR
 }
 \description{
-Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
+junc_loc_pep
 }

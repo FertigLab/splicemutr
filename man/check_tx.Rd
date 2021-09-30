@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{check_tx}
 \alias{check_tx}
-\title{checking if the transcript without the UTR has a start codon in the first codon and a stop codon in the last codon}
+\title{check_tx}
 \usage{
 check_tx(seq)
 }
@@ -13,5 +13,5 @@ check_tx(seq)
 TRUE or FALSE dependent upon whether the transcript has start codon at first codon and stop codon at last codon
 }
 \description{
-checking if the transcript without the UTR has a start codon in the first codon and a stop codon in the last codon
+check_tx
 }

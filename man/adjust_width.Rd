@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{adjust_width}
 \alias{adjust_width}
-\title{adjusting the width of a cds dataframe after modification}
+\title{adjust_width}
 \usage{
 adjust_width(cds)
 }
@@ -13,5 +13,5 @@ adjust_width(cds)
 The cds data with an adjusted width
 }
 \description{
-adjusting the width of a cds dataframe after modification
+adjust_width
 }

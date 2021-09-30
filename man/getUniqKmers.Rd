@@ -2,8 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{getUniqKmers}
 \alias{getUniqKmers}
-\title{returns the unique set of kmers from a vector of non-unique kmers with
-integer counts per junction-tx pair}
+\title{getUniqKmers}
 \usage{
 getUniqKmers(kmers)
 }
@@ -14,6 +13,5 @@ getUniqKmers(kmers)
 vector of character vectors representing unique list of kmers from the union of all sequences
 }
 \description{
-returns the unique set of kmers from a vector of non-unique kmers with
-integer counts per junction-tx pair
+getUniqKmers
 }

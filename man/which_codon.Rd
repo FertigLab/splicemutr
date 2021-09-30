@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{which_codon}
 \alias{which_codon}
-\title{Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.}
+\title{which_codon}
 \usage{
 which_codon(cod, tx_junc_loc, start_loc, stop_loc)
 }
@@ -19,5 +19,5 @@ which_codon(cod, tx_junc_loc, start_loc, stop_loc)
 junction location in translated protein coordinates or tx_junc_loc if in UTR
 }
 \description{
-Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
+which_codon
 }

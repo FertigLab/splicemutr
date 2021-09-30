@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{find_orfs}
 \alias{find_orfs}
-\title{Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.}
+\title{find_orfs}
 \usage{
 find_orfs(sequ, tx_junc_loc)
 }
@@ -15,5 +15,5 @@ find_orfs(sequ, tx_junc_loc)
 a vector of error type, protein if translatable or DNA sequence, ensembl transcript name , junction location relative to peptide start, modified transcript length, start and stop codon locations
 }
 \description{
-Finding an open-reading frame given a DNA character sequence and documenting the errors associated with attempting to do so.
+find_orfs
 }

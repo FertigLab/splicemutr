@@ -2,10 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{countKmers}
 \alias{countKmers}
-\title{returns the unique set of kmers from a vector of non-unique kmers with
-integer counts representing counts of the kmer in each junction-tx pair
-uses lapply to iterate over each seq in seqs_vec lapply will automatically
-return a list with index in seqs_vec as list access index in returned list}
+\title{countKmers}
 \usage{
 countKmers(seqs_vec, K)
 }
@@ -18,8 +15,5 @@ countKmers(seqs_vec, K)
 a list of integer vectors with kmer character vectors as names
 }
 \description{
-returns the unique set of kmers from a vector of non-unique kmers with
-integer counts representing counts of the kmer in each junction-tx pair
-uses lapply to iterate over each seq in seqs_vec lapply will automatically
-return a list with index in seqs_vec as list access index in returned list
+countKmers
 }

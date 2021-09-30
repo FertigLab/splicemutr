@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{choose_transcripts}
 \alias{choose_transcripts}
-\title{choosing the transcripts that the exons can exist in}
+\title{choose_transcripts}
 \usage{
 choose_transcripts(exons, transcripts_1, transcripts_2 = c(), exons_by_tx)
 }
@@ -19,5 +19,5 @@ choose_transcripts(exons, transcripts_1, transcripts_2 = c(), exons_by_tx)
 a list of start junction and end junction transcripts that can be paired
 }
 \description{
-choosing the transcripts that the exons can exist in
+choose_transcripts
 }
