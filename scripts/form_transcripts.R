@@ -154,7 +154,7 @@ for (i in seq(intron_length)){
               cds_mod_info[[1]] <- data.frame(combo_exons)
               cds_mod_info[[2]] <- junc
               cds_mod<-cds_mod_info[[1]]
-              tx_junc_loc<-cds_mod_innfo[[2]]
+              tx_junc_loc<-cds_mod_info[[2]]
               if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
                 cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
               }
@@ -170,13 +170,19 @@ for (i in seq(intron_length)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
               } else {
                 deltapsi<-NA
+
               }
               if ("verdict" %in% colnames(curr_introns)){
                 verdict<-curr_introns$verdict # verdict
               } else{
                 verdict<-NA
               }
-              next_row<-c(curr_introns$clusterID,
+              if ("clusterID" %in% colnames(curr_introns)){
+                clusterID<-curr_introns$clusterID # verdict
+              } else{
+                clusterID<-NA
+              }
+              next_row<-c(clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
@@ -266,13 +272,19 @@ for (i in seq(intron_length)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
               } else {
                 deltapsi<-NA
+
               }
               if ("verdict" %in% colnames(curr_introns)){
                 verdict<-curr_introns$verdict # verdict
               } else{
                 verdict<-NA
               }
-              next_row<-c(curr_introns$clusterID,
+              if ("clusterID" %in% colnames(curr_introns)){
+                clusterID<-curr_introns$clusterID # verdict
+              } else{
+                clusterID<-NA
+              }
+              next_row<-c(clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
@@ -393,13 +405,19 @@ for (i in seq(intron_length)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
               } else {
                 deltapsi<-NA
+
               }
               if ("verdict" %in% colnames(curr_introns)){
                 verdict<-curr_introns$verdict # verdict
               } else{
                 verdict<-NA
               }
-              next_row<-c(curr_introns$clusterID,
+              if ("clusterID" %in% colnames(curr_introns)){
+                clusterID<-curr_introns$clusterID # verdict
+              } else{
+                clusterID<-NA
+              }
+              next_row<-c(clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
@@ -495,7 +513,12 @@ for (i in seq(intron_length)){
               } else{
                 verdict<-NA
               }
-              next_row<-c(curr_introns$clusterID,
+              if ("clusterID" %in% colnames(curr_introns)){
+                clusterID<-curr_introns$clusterID # verdict
+              } else{
+                clusterID<-NA
+              }
+              next_row<-c(clusterID,
                           curr_introns$chr,
                           curr_introns$start,
                           curr_introns$end,
