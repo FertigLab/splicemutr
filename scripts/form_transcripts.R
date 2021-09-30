@@ -40,7 +40,8 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
    make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
    make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
-   make_option(c("-f","--funcs"), default=NULL, help="The splicemute functions to source"))))
+   make_option(c("-f","--funcs"), default=NULL, help="The splicemute functions to source"),
+   make_option(c("-n","--num"), default=NULL, help="file number"))))
 
 opt=arguments
 
@@ -48,6 +49,7 @@ out_dir<-opt$output_directory
 txdb_file<-opt$txdb
 file_num<-opt$num
 funcs<-opt$funcs
+file_num<-as.numeric(opt$num)
 source(funcs)
 
 introns <-readRDS(opt$juncs) # loading in the introns data
@@ -152,7 +154,7 @@ for (i in seq(intron_length)){
               cds_mod_info[[1]] <- data.frame(combo_exons)
               cds_mod_info[[2]] <- junc
               cds_mod<-cds_mod_info[[1]]
-              tx_junc_loc<-cds_mod_info[[2]]
+              tx_junc_loc<-cds_mod_innfo[[2]]
               if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
                 cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
               }
