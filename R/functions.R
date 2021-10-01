@@ -758,7 +758,11 @@ format_introns <- function(introns){
     strand <- as.character(matrix(unlist(str_split(introns$clusterID,"_")),byrow=T,nrow=nrow(introns))[,3])
     introns$strand <- strand
   }
-  chr_mask <- colnames(introns)=="chr"
+  intron_names<-which(colnames(introns)=="chrom")
+  if(length(intron_names)>0){
+    colnames(introns)[intron_names]<-"chr"
+  }
+  chr_mask <- colnames(introns) %in% c("chr")
   start_mask <- colnames(introns)=="start"
   end_mask <- colnames(introns)=="end"
   strand_mask <- colnames(introns)=="strand"
