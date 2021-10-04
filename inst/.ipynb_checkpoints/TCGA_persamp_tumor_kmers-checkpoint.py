@@ -73,7 +73,6 @@ def main(options,args):
             for row in tum_rows:
                 tumor_kmers = kmer_dat[row]
                 tumor_kmers_all.append("\t".join(filter_tumor_kmers(tumor_kmers,norm_kmers)+[str(row),cluster]))
-            break
         
         tumor_kmers_file_str = "\n".join(tumor_kmers_all)
         tumor_kmer_file = "%s/%s_kmers_%d_filt.txt"%(os.path.dirname(kmer_file),cancer,i+1)
