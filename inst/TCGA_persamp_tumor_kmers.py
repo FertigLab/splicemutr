@@ -83,6 +83,11 @@ def main(options,args):
         with open(tumor_kmer_file,"w") as k:
             print(tumor_kmers_file_str,file=k)
         
+        #-----------------------get_summary()----------------------#
+        tumor_kmer_frame = pd.read_table(tumor_kmers_file,sep="\t") # this part should be done in the function as well
+        tumor_kmer_summary = get_summary(tumor_kmers_file)
+        #----------------------------------------------------------#
+
 if __name__ == "__main__":
 
     from optparse import OptionParser

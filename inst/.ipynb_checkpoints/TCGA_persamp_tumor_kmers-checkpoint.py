@@ -67,8 +67,6 @@ def main(options,args):
             tumor_kmers_all = []
             iter_val=1
         for cluster in splice_dat_dict.keys():
-            if iter_val % 1000 == 0:
-                print("%d:%d"%(iter_val,len(splice_dat_clusters)))
             rows = splice_dat_dict[cluster]["row"]
             deltapsi = splice_dat_dict[cluster]["deltapsi"]
             norm_rows = [rows[i] for i in range(len(deltapsi)) if deltapsi[i] < 0]
@@ -85,6 +83,11 @@ def main(options,args):
         with open(tumor_kmer_file,"w") as k:
             print(tumor_kmers_file_str,file=k)
         
+        #-----------------------get_summary()----------------------#
+        tumor_kmer_frame = pd.read_table(tumor_kmers_file,sep="\t") # this part should be done in the function as well
+        tumor_kmer_summary = get_summary(tumor_kmers_file)
+        #----------------------------------------------------------#
+
 if __name__ == "__main__":
 
     from optparse import OptionParser
