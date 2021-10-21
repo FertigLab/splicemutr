@@ -1,8 +1,11 @@
+#!/usr/bin/env Rscript
+
 library(dplyr)
 library(ggplot2)
 library(TCGAutils)
 library(maftools)
 library(stringr)
+library(optparse)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -40,20 +43,20 @@ nogos <- c("ESCA","MESO","PAAD","KIRC","GBM")
 print(cancer)
 if (cancer %in% nogos){next}
 
-splice_dat_file <- sprintf("%s/%s_splicemutr_dat.txt",tumor_dir,cancer)
+splice_dat_file <- sprintf("%s/%s/%s_splicemutr_dat.txt",tumor_dir,cancer,cancer)
 splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
-tumor_geno_file <- sprintf("%s/%s_genotypes.txt",tumor_dir,cancer)
+tumor_geno_file <- sprintf("%s/%s/%s_genotypes.txt",tumor_dir,cancer,cancer)
 tumor_geno <- read.table(tumor_geno_file,header=T)
-summary_file <- sprintf("%s/summaries.txt",tumor_dir)
+summary_file <- sprintf("%s/%s/summaries.txt",tumor_dir,cancer)
 summaries <- read.table(summary_file)
 summaries <- summaries$V1
 summaries<-unname(vapply(summaries,function(summ){
   str_replace(summ,"kmers_summary","persamp_line")
 },character(1)))
-meta_file <- sprintf("%s/%s_metadata.rds",tumor_dir,cancer)
+meta_file <- sprintf("%s/%s/%s_metadata.rds",tumor_dir,cancer,cancer)
 meta_dat <- readRDS(meta_file)
 rownames(meta_dat) <- meta_dat$external_id
-psi_file <- sprintf("%s/leafcutter_run_1/data_perind.counts",tumor_dir)
+psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
 psi_dat <- read.table(psi_file,header=T,check.names=F)
 psi_dat <- psi_dat[,c("chrom",tumor_geno$external_id)]
 sample_names <- colnames(psi_dat)[seq(2,ncol(psi_dat))]
@@ -125,6 +128,6 @@ splice_dat_clusters <- data.frame(t(vapply(clusters$Var1,function(clu){
   apply(summaries_combined_small,2,sum)/clusters[clu,"Freq"]
 },numeric(ncol(summaries_combined_psi)))))
 
-saveRDS(splice_dat_clusters,file=sprintf("%s/%s_splice_dat_clusters.rds",tumor_dir,cancer))
-saveRDS(clusters,file=sprintf("%s/%s_clusters.rds",tumor_dir,cancer))
+saveRDS(splice_dat_clusters,file=sprintf("%s/%s/%s_splice_dat_clusters.rds",tumor_dir,cancer/cancer))
+saveRDS(clusters,file=sprintf("%s/%s/%s_clusters.rds",tumor_dir,cancer,cancer))
   
