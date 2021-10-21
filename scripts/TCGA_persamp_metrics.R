@@ -1,0 +1,130 @@
+library(dplyr)
+library(ggplot2)
+library(TCGAutils)
+library(maftools)
+library(stringr)
+
+#------------------------------------------------------------------------------#
+# handling command line input
+
+arguments <- parse_args(OptionParser(usage = "",
+             description="",
+             option_list=list(
+               make_option(c("-t","--tumor_dir"),
+                           default = sprintf("%s",getwd()),
+                           help="tumor type dir"),
+               make_option(c("-c","--cancer"),
+                           default = sprintf("%s",getwd()),
+                           help="cancer"))))
+opt=arguments
+tumor_dir <- opt$tumor_data_file
+cancer <- opt$cancer
+
+#------------------------------------------------------------------------------#
+# internal functions
+
+split_num <- function(vals){
+  a<-data.frame(matrix(as.numeric(unlist(str_split(vals,"/"))),byrow=T,nrow=length(vals)))[,1]
+  return(a)
+}
+split_dom <- function(vals){
+  a<-data.frame(matrix(as.numeric(unlist(str_split(vals,"/"))),byrow=T,nrow=length(vals)))[,2]
+  return(a)
+}
+
+#------------------------------------------------------------------------------#
+# internal functions
+
+nogos <- c("ESCA","MESO","PAAD","KIRC","GBM")
+
+print(cancer)
+if (cancer %in% nogos){next}
+
+splice_dat_file <- sprintf("%s/%s_splicemutr_dat.txt",tumor_dir,cancer)
+splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
+tumor_geno_file <- sprintf("%s/%s_genotypes.txt",tumor_dir,cancer)
+tumor_geno <- read.table(tumor_geno_file,header=T)
+summary_file <- sprintf("%s/summaries.txt",tumor_dir)
+summaries <- read.table(summary_file)
+summaries <- summaries$V1
+summaries<-unname(vapply(summaries,function(summ){
+  str_replace(summ,"kmers_summary","persamp_line")
+},character(1)))
+meta_file <- sprintf("%s/%s_metadata.rds",tumor_dir,cancer)
+meta_dat <- readRDS(meta_file)
+rownames(meta_dat) <- meta_dat$external_id
+psi_file <- sprintf("%s/leafcutter_run_1/data_perind.counts",tumor_dir)
+psi_dat <- read.table(psi_file,header=T,check.names=F)
+psi_dat <- psi_dat[,c("chrom",tumor_geno$external_id)]
+sample_names <- colnames(psi_dat)[seq(2,ncol(psi_dat))]
+sample_names <- meta_dat[sample_names,"tcga.tcga_barcode"]
+colnames(psi_dat)[seq(2,ncol(psi_dat))] <- sample_names
+
+for (summ in seq(length(summaries))){
+  if (summ == 1){
+    summaries_combined <- read.table(summaries[summ],header=F,sep="\t")
+    if (length(summaries)>1){
+      summaries_combined <- summaries_combined[,seq(ncol(summaries_combined)-2)]
+    }
+  } else if (summ == length(summaries)){
+    summaries_fill <- read.table(summaries[summ],header=F,sep="\t")
+    summaries_combined <- cbind(summaries_combined,summaries_fill)
+  } else {
+    summaries_fill <- read.table(summaries[summ],header=F,sep="\t")
+    summaries_fill <- summaries_fill[,seq(ncol(summaries_fill)-2)]
+    summaries_combined <- cbind(summaries_combined,summaries_fill)
+  }
+}
+
+sample_types <- sprintf("%s_%s",tumor_geno$sample_id,tumor_geno$type)
+sample_types<-c(sample_types,"row","cluster")
+colnames(summaries_combined)<-sample_types
+tumor_cols <- which(str_detect(sample_types,"_T"))
+summaries_combined <- summaries_combined[,c(tumor_cols,length(sample_types)-1,length(sample_types))]
+
+num <- data.frame(apply(psi_dat[,seq(2,ncol(psi_dat))],2,split_num))
+denom <- data.frame(apply(psi_dat[,seq(2,ncol(psi_dat))],2,split_dom))
+psi <- num/denom
+is.nan.data.frame <- function(x){do.call(cbind, lapply(x, is.nan))}
+psi[is.nan(psi)]<-0
+psi$chrom <- psi_dat$chrom
+colnames(psi)[seq(1,ncol(psi)-1)] <- colnames(psi_dat)[seq(2,ncol(psi_dat))]
+tumor_cols <- which(tumor_geno$type == "T")
+psi <- psi[,c(tumor_cols,ncol(psi))]
+psi_summary<-psi[summaries_combined$row+1,]
+
+summaries_combined_psi <- psi_summary[,seq(1,ncol(psi_summary)-1)]*summaries_combined[,seq(1,ncol(summaries_combined)-2)]
+
+splice_dat_specific <- splice_dat[summaries_combined$row+1,]
+rows_to_keep <- which(!is.na(splice_dat_specific$peptide))
+
+summaries_combined_psi <- summaries_combined_psi[rows_to_keep,]
+summaries_combined_psi[is.na(summaries_combined_psi)]<-0
+splice_dat_specific <- splice_dat_specific[rows_to_keep,]
+rows_to_keep <- !(splice_dat_specific$verdict == "annotated" & splice_dat_specific$modified == "changed")
+summaries_combined_psi <- summaries_combined_psi[rows_to_keep,]
+summaries_combined <- summaries_combined[rows_to_keep,]
+splice_dat_specific <- splice_dat_specific[rows_to_keep,]
+rows_to_keep <- which(splice_dat_specific$deltapsi > 0)
+summaries_combined_psi <- summaries_combined_psi[rows_to_keep,]
+summaries_combined <- summaries_combined[rows_to_keep,]
+splice_dat_specific <- splice_dat_specific[rows_to_keep,]
+
+clusters <- data.frame(table(splice_dat_specific$cluster))
+rownames(clusters)<-clusters$Var1
+clusters$Var1<-as.character(clusters$Var1)
+
+clusters$genes <- vapply(clusters$Var1,function(clu){
+  splice_dat_small <- splice_dat_specific %>% dplyr::filter(cluster == clu)
+  gene<-paste(unique(splice_dat_small$gene),collapse=":")
+},character(1))
+
+splice_dat_clusters <- data.frame(t(vapply(clusters$Var1,function(clu){
+  cluster_rows <- which(splice_dat_specific$cluster == clu)
+  summaries_combined_small <- summaries_combined_psi[cluster_rows,]
+  apply(summaries_combined_small,2,sum)/clusters[clu,"Freq"]
+},numeric(ncol(summaries_combined_psi)))))
+
+saveRDS(splice_dat_clusters,file=sprintf("%s/%s_splice_dat_clusters.rds",tumor_dir,cancer))
+saveRDS(clusters,file=sprintf("%s/%s_clusters.rds",tumor_dir,cancer))
+  
