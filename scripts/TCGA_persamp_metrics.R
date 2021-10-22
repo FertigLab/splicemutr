@@ -20,7 +20,7 @@ arguments <- parse_args(OptionParser(usage = "",
                            default = sprintf("%s",getwd()),
                            help="cancer"))))
 opt=arguments
-tumor_dir <- opt$tumor_data_file
+tumor_dir <- opt$tumor_dir
 cancer <- opt$cancer
 
 #------------------------------------------------------------------------------#
@@ -41,28 +41,22 @@ split_dom <- function(vals){
 nogos <- c("ESCA","MESO","PAAD","KIRC","GBM")
 
 print(cancer)
-if (cancer %in% nogos){next}
 
 splice_dat_file <- sprintf("%s/%s/%s_splicemutr_dat.txt",tumor_dir,cancer,cancer)
 splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
-print("splice_dat")
 tumor_geno_file <- sprintf("%s/%s/%s_genotypes.txt",tumor_dir,cancer,cancer)
 tumor_geno <- read.table(tumor_geno_file,header=T)
-print("tumor_geno")
 summary_file <- sprintf("%s/%s/summaries.txt",tumor_dir,cancer)
 summaries <- read.table(summary_file)
-print("summaries")
 summaries <- summaries$V1
 summaries<-unname(vapply(summaries,function(summ){
   str_replace(summ,"kmers_summary","persamp_line")
 },character(1)))
 meta_file <- sprintf("%s/%s/%s_metadata.rds",tumor_dir,cancer,cancer)
 meta_dat <- readRDS(meta_file)
-print("meta_data")
 rownames(meta_dat) <- meta_dat$external_id
 psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
 psi_dat <- read.table(psi_file,header=T,check.names=F)
-print("psi_dat")
 psi_dat <- psi_dat[,c("chrom",tumor_geno$external_id)]
 sample_names <- colnames(psi_dat)[seq(2,ncol(psi_dat))]
 sample_names <- meta_dat[sample_names,"tcga.tcga_barcode"]
@@ -71,17 +65,14 @@ colnames(psi_dat)[seq(2,ncol(psi_dat))] <- sample_names
 for (summ in seq(length(summaries))){
   if (summ == 1){
     summaries_combined <- read.table(summaries[summ],header=F,sep="\t")
-    print("summaries")
     if (length(summaries)>1){
       summaries_combined <- summaries_combined[,seq(ncol(summaries_combined)-2)]
     }
   } else if (summ == length(summaries)){
     summaries_fill <- read.table(summaries[summ],header=F,sep="\t")
-    print("fill")
     summaries_combined <- cbind(summaries_combined,summaries_fill)
   } else {
     summaries_fill <- read.table(summaries[summ],header=F,sep="\t")
-    print("fill_summ")
     summaries_fill <- summaries_fill[,seq(ncol(summaries_fill)-2)]
     summaries_combined <- cbind(summaries_combined,summaries_fill)
   }
