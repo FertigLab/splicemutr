@@ -55,9 +55,14 @@ summaries<-unname(vapply(summaries,function(summ){
 meta_file <- sprintf("%s/%s/%s_metadata.rds",tumor_dir,cancer,cancer)
 meta_dat <- readRDS(meta_file)
 rownames(meta_dat) <- meta_dat$external_id
-psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
+#psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
+psi_file <- sprintf("%s/%s/data_perind.counts",tumor_dir,cancer)
+
 psi_dat <- read.table(psi_file,header=T,check.names=F)
-psi_dat <- psi_dat[,c("chrom",tumor_geno$external_id)]
+if (!(any(tumor_geno$external_id %in% colnames(psi_dat)))){
+  colnames(psi_dat)<-c("chrom",meta_dat[vapply(meta_dat$tcga.tcga_barcode,function(code){which(code == colnames(psi_dat)[seq(2,ncol(psi_dat))])},numeric(1)),"external_id"])
+  psi_dat <- psi_dat[,c("chrom",tumor_geno$external_id)]
+}
 sample_names <- colnames(psi_dat)[seq(2,ncol(psi_dat))]
 sample_names <- meta_dat[sample_names,"tcga.tcga_barcode"]
 colnames(psi_dat)[seq(2,ncol(psi_dat))] <- sample_names
