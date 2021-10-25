@@ -36,7 +36,7 @@ split_dom <- function(vals){
 }
 
 #------------------------------------------------------------------------------#
-# internal functions
+# creating per_cluster score
 
 nogos <- c("ESCA","MESO","PAAD","KIRC","GBM")
 
@@ -46,6 +46,7 @@ splice_dat_file <- sprintf("%s/%s/%s_splicemutr_dat.txt",tumor_dir,cancer,cancer
 splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
 tumor_geno_file <- sprintf("%s/%s/%s_genotypes.txt",tumor_dir,cancer,cancer)
 tumor_geno <- read.table(tumor_geno_file,header=T)
+tumor_geno$rows <- seq(nrow(tumor_geno))
 summary_file <- sprintf("%s/%s/summaries.txt",tumor_dir,cancer)
 summaries <- read.table(summary_file)
 summaries <- summaries$V1
@@ -63,9 +64,7 @@ if (!(any(tumor_geno$external_id %in% colnames(psi_dat)))){
   colnames(psi_dat)<-c("chrom",meta_dat[vapply(meta_dat$tcga.tcga_barcode,function(code){which(code == colnames(psi_dat)[seq(2,ncol(psi_dat))])},numeric(1)),"external_id"])
   psi_dat <- psi_dat[,c("chrom",tumor_geno$external_id)]
 }
-sample_names <- colnames(psi_dat)[seq(2,ncol(psi_dat))]
-sample_names <- meta_dat[sample_names,"tcga.tcga_barcode"]
-colnames(psi_dat)[seq(2,ncol(psi_dat))] <- sample_names
+
 
 for (summ in seq(length(summaries))){
   if (summ == 1){
@@ -83,11 +82,20 @@ for (summ in seq(length(summaries))){
   }
 }
 
-sample_types <- sprintf("%s_%s",tumor_geno$sample_id,tumor_geno$type)
-sample_types<-c(sample_types,"row","cluster")
-colnames(summaries_combined)<-sample_types
-tumor_cols <- which(str_detect(sample_types,"_T"))
-summaries_combined <- summaries_combined[,c(tumor_cols,length(sample_types)-1,length(sample_types))]
+cols_to_keep <- unname(vapply(colnames(psi_dat)[seq(2,ncol(psi_dat))],function(col_name){
+  which(tumor_geno$external_id == col_name)[1]
+},numeric(1)))
+summaries_combined <- summaries_combined[,c(cols_to_keep,ncol(summaries_combined)-1,ncol(summaries_combined))]
+tumor_geno <- tumor_geno[cols_to_keep,]
+tumor_geno$rows <- seq(nrow(tumor_geno))
+tumor_geno <- tumor_geno %>% dplyr::filter(type=="T")
+cols_to_keep <- tumor_geno$rows
+
+summaries_combined <- summaries_combined[,c(cols_to_keep,ncol(summaries_combined)-1,ncol(summaries_combined))]
+psi_dat <- psi_dat[,c(1,cols_to_keep+1)]
+colnames(summaries_combined) <- c(colnames(psi_dat)[seq(2,ncol(psi_dat))],"row","cluster")
+
+# At this point summaries_combined, psi_dat, and tumor_geno only include tumor sample information
 
 num <- data.frame(apply(psi_dat[,seq(2,ncol(psi_dat))],2,split_num))
 denom <- data.frame(apply(psi_dat[,seq(2,ncol(psi_dat))],2,split_dom))
@@ -96,9 +104,10 @@ is.nan.data.frame <- function(x){do.call(cbind, lapply(x, is.nan))}
 psi[is.nan(psi)]<-0
 psi$chrom <- psi_dat$chrom
 colnames(psi)[seq(1,ncol(psi)-1)] <- colnames(psi_dat)[seq(2,ncol(psi_dat))]
-tumor_cols <- which(tumor_geno$type == "T")
-psi <- psi[,c(tumor_cols,ncol(psi))]
-psi_summary<-psi[summaries_combined$row+1,]
+rownames(psi)<-psi$chrom
+splice_dat$chrom <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$cluster)
+psi_splice_dat <- psi[splice_dat$chrom,]
+psi_summary <- psi_splice_dat[summaries_combined$row+1,]
 
 summaries_combined_psi <- psi_summary[,seq(1,ncol(psi_summary)-1)]*summaries_combined[,seq(1,ncol(summaries_combined)-2)]
 
@@ -132,6 +141,22 @@ splice_dat_clusters <- data.frame(t(vapply(clusters$Var1,function(clu){
   apply(summaries_combined_small,2,sum)/clusters[clu,"Freq"]
 },numeric(ncol(summaries_combined_psi)))))
 
-saveRDS(splice_dat_clusters,file=sprintf("%s/%s/%s_splice_dat_clusters.rds",tumor_dir,cancer/cancer))
+saveRDS(splice_dat_clusters,file=sprintf("%s/%s/%s_splice_dat_clusters.rds",tumor_dir,cancer,cancer))
 saveRDS(clusters,file=sprintf("%s/%s/%s_clusters.rds",tumor_dir,cancer,cancer))
+
+
+splice_dat_clusters_filt<-splice_dat_clusters[which(!(apply(splice_dat_clusters,1,sd)==0 & apply(splice_dat_clusters,1,sum)==0)),
+                                              unname(which(apply(splice_dat_clusters,2,sum)>0))]
+saveRDS(splice_dat_clusters_filt,file=sprintf("%s/%s/%s_splice_dat_clusters_filt.rds",tumor_dir,cancer,cancer))
+
+#------------------------------------------------------------------------------#
+# printing per_cluster heatmaps
+
+pdf(file=sprintf("%s/%s/perclust_heatmaps.pdf",tumor_dir,cancer),width=10, height=10)
+
+print(pheatmap::pheatmap(log10(splice_dat_clusters_filt+1),show_rownames=F,show_colnames=F,main="log10"))
+print(pheatmap::pheatmap(splice_dat_clusters_filt,show_rownames=F,show_colnames=F,scale="row",main="zscore across row"))
+
+dev.off()
+
 
