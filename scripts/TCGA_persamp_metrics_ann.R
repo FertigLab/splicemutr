@@ -146,35 +146,35 @@ splice_dat_clusters <- data.frame(t(vapply(clusters$Var1,function(clu){
   apply(summaries_combined_small,2,sum)/clusters[clu,"Freq"]
 },numeric(ncol(summaries_combined_psi)))))
 
-saveRDS(splice_dat_clusters,file=sprintf("%s/%s/%s_splice_dat_clusters.rds",tumor_dir,cancer,cancer))
-saveRDS(clusters,file=sprintf("%s/%s/%s_clusters.rds",tumor_dir,cancer,cancer))
+saveRDS(splice_dat_clusters,file=sprintf("%s/%s/%s_splice_dat_clusters_ann.rds",tumor_dir,cancer,cancer))
+saveRDS(clusters,file=sprintf("%s/%s/%s_clusters_ann.rds",tumor_dir,cancer,cancer))
 
 
 splice_dat_clusters_filt<-splice_dat_clusters[which(!(apply(splice_dat_clusters,1,sd)==0 & apply(splice_dat_clusters,1,sum)==0)),
                                               unname(which(apply(splice_dat_clusters,2,sum)>0))]
 clusters_filt <- clusters[which(!(apply(splice_dat_clusters,1,sd)==0 & apply(splice_dat_clusters,1,sum)==0)),]
 
-saveRDS(splice_dat_clusters_filt,file=sprintf("%s/%s/%s_splice_dat_clusters_filt.rds",tumor_dir,cancer,cancer))
+saveRDS(splice_dat_clusters_filt,file=sprintf("%s/%s/%s_splice_dat_clusters_filt_ann.rds",tumor_dir,cancer,cancer))
 
 #------------------------------------------------------------------------------#
 # printing per_cluster heatmaps
 
-pdf(file=sprintf("%s/%s/perclust_heatmaps.pdf",tumor_dir,cancer),width=10, height=10)
-
-print(pheatmap::pheatmap(log10(splice_dat_clusters_filt+1),show_rownames=F,show_colnames=F,main="log10"))
-print(pheatmap::pheatmap(splice_dat_clusters_filt,show_rownames=F,show_colnames=F,scale="row",main="zscore across row"))
-# Heatmap(log10(splice_dat_clusters_filt+1),
-#         right_annotation = rowAnnotation(perc_ann=(1-clusters_filt$ann)),
-#         show_row_names=F,
-#         show_column_names = T,
-#         cluster_rows=T,
-#         cluster_columns=T)
-# Heatmap(log10(splice_dat_clusters_filt+1),
-#         right_annotation = rowAnnotation(perc_ann=clusters_filt$ann),
-#         show_row_names=F,
-#         show_column_names = T,
-#         cluster_rows=T,
-#         cluster_columns=T)
-dev.off()
+# pdf(file=sprintf("%s/%s/perclust_heatmaps.pdf",tumor_dir,cancer),width=10, height=10)
+#
+# print(pheatmap::pheatmap(log10(splice_dat_clusters_filt+1),show_rownames=F,show_colnames=F,main="log10"))
+# print(pheatmap::pheatmap(splice_dat_clusters_filt,show_rownames=F,show_colnames=F,scale="row",main="zscore across row"))
+# # Heatmap(log10(splice_dat_clusters_filt+1),
+# #         right_annotation = rowAnnotation(perc_ann=(1-clusters_filt$ann)),
+# #         show_row_names=F,
+# #         show_column_names = T,
+# #         cluster_rows=T,
+# #         cluster_columns=T)
+# # Heatmap(log10(splice_dat_clusters_filt+1),
+# #         right_annotation = rowAnnotation(perc_ann=clusters_filt$ann),
+# #         show_row_names=F,
+# #         show_column_names = T,
+# #         cluster_rows=T,
+# #         cluster_columns=T)
+# dev.off()
 
 
