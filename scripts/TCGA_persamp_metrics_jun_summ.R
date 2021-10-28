@@ -11,14 +11,14 @@ library(optparse)
 # handling command line input
 
 arguments <- parse_args(OptionParser(usage = "",
-             description="",
-             option_list=list(
-               make_option(c("-t","--tumor_dir"),
-                           default = sprintf("%s",getwd()),
-                           help="tumor type dir"),
-               make_option(c("-c","--cancer"),
-                           default = sprintf("%s",getwd()),
-                           help="cancer"))))
+         description="",
+         option_list=list(
+           make_option(c("-t","--tumor_dir"),
+                       default = sprintf("%s",getwd()),
+                       help="tumor type dir"),
+           make_option(c("-c","--cancer"),
+                       default = sprintf("%s",getwd()),
+                       help="cancer"))))
 opt=arguments
 tumor_dir <- opt$tumor_dir
 cancer <- opt$cancer
@@ -38,8 +38,6 @@ split_dom <- function(vals){
 #------------------------------------------------------------------------------#
 # creating per_cluster score
 
-nogos <- c("ESCA","MESO","PAAD","KIRC","GBM")
-
 print(cancer)
 
 splice_dat_file <- sprintf("%s/%s/%s_splicemutr_dat.txt",tumor_dir,cancer,cancer)
@@ -56,8 +54,8 @@ summaries<-unname(vapply(summaries,function(summ){
 meta_file <- sprintf("%s/%s/%s_metadata.rds",tumor_dir,cancer,cancer)
 meta_dat <- readRDS(meta_file)
 rownames(meta_dat) <- meta_dat$external_id
-#psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
-psi_file <- sprintf("%s/%s/data_perind.counts",tumor_dir,cancer)
+psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
+#psi_file <- sprintf("%s/%s/data_perind.counts",tumor_dir,cancer)
 
 psi_dat <- read.table(psi_file,header=T,check.names=F)
 if (!(any(tumor_geno$external_id %in% colnames(psi_dat)))){
@@ -117,7 +115,7 @@ summaries_combined_psi <- summaries_combined_psi[rows_to_keep,]
 summaries_combined_psi[is.na(summaries_combined_psi)]<-0
 splice_dat_specific <- splice_dat_specific[rows_to_keep,]
 rows_to_keep <- !(splice_dat_specific$verdict == "annotated" & splice_dat_specific$modified == "changed")
-rows_to_keep <- rows_to_keep & splice_dat_specific$verdict == "annotated"
+#rows_to_keep <- rows_to_keep & splice_dat_specific$verdict == "annotated"
 summaries_combined_psi <- summaries_combined_psi[rows_to_keep,]
 summaries_combined <- summaries_combined[rows_to_keep,]
 splice_dat_specific <- splice_dat_specific[rows_to_keep,]
@@ -140,20 +138,70 @@ clusters$ann <- vapply(clusters$Var1,function(clu){
   length(which(splice_dat_small$verdict == "annotated"))/nrow(splice_dat_small)
 },numeric(1))
 
-splice_dat_clusters <- data.frame(t(vapply(clusters$Var1,function(clu){
+splice_dat_clusters_max <- data.frame(t(vapply(clusters$Var1,function(clu){
+  clu<<-clu
   cluster_rows <- which(splice_dat_specific$cluster == clu)
   summaries_combined_small <- summaries_combined_psi[cluster_rows,]
-  apply(summaries_combined_small,2,sum)/clusters[clu,"Freq"]
+  summ_rows <- rownames(summaries_combined_small)
+  summ_rows_split <- data.frame(matrix(unlist(str_split(summ_rows,":")),byrow=T,nrow=nrow(summaries_combined_small)))
+  summ_rows_split$juncs <- sprintf("%s:%s:%s",summ_rows_split$X1,summ_rows_split$X2,summ_rows_split$X3)
+  summ_rows_juncs <- unique(summ_rows_split$juncs)
+  summaries_combined_small$juncs <- summ_rows_split$juncs
+  vals <- t(vapply(summ_rows_juncs,function(junc){
+    summaries_combined_small_junc <- summaries_combined_small %>% dplyr::filter(juncs %in% junc)
+    vals <- apply(summaries_combined_small_junc[,seq(1,ncol(summaries_combined_small)-1)],2,max)
+  },numeric(ncol(summaries_combined_small)-1)))
+  apply(vals,2,mean)
 },numeric(ncol(summaries_combined_psi)))))
 
-saveRDS(splice_dat_clusters,file=sprintf("%s/%s/%s_splice_dat_clusters_ann.rds",tumor_dir,cancer,cancer))
-saveRDS(clusters,file=sprintf("%s/%s/%s_clusters_ann.rds",tumor_dir,cancer,cancer))
+splice_dat_clusters_mean <- data.frame(t(vapply(clusters$Var1,function(clu){
+  clu<<-clu
+  cluster_rows <- which(splice_dat_specific$cluster == clu)
+  summaries_combined_small <- summaries_combined_psi[cluster_rows,]
+  summ_rows <- rownames(summaries_combined_small)
+  summ_rows_split <- data.frame(matrix(unlist(str_split(summ_rows,":")),byrow=T,nrow=nrow(summaries_combined_small)))
+  summ_rows_split$juncs <- sprintf("%s:%s:%s",summ_rows_split$X1,summ_rows_split$X2,summ_rows_split$X3)
+  summ_rows_juncs <- unique(summ_rows_split$juncs)
+  summaries_combined_small$juncs <- summ_rows_split$juncs
+  vals <- t(vapply(summ_rows_juncs,function(junc){
+    summaries_combined_small_junc <- summaries_combined_small %>% dplyr::filter(juncs %in% junc)
+    vals <- apply(summaries_combined_small_junc[,seq(1,ncol(summaries_combined_small)-1)],2,mean)
+  },numeric(ncol(summaries_combined_small)-1)))
+  apply(vals,2,mean)
+},numeric(ncol(summaries_combined_psi)))))
 
-splice_dat_clusters_filt<-splice_dat_clusters[which(!(apply(splice_dat_clusters,1,sd)==0 & apply(splice_dat_clusters,1,sum)==0)),
-                                              unname(which(apply(splice_dat_clusters,2,sum)>0))]
+splice_dat_clusters_median <- data.frame(t(vapply(clusters$Var1,function(clu){
+  clu<<-clu
+  cluster_rows <- which(splice_dat_specific$cluster == clu)
+  summaries_combined_small <- summaries_combined_psi[cluster_rows,]
+  summ_rows <- rownames(summaries_combined_small)
+  summ_rows_split <- data.frame(matrix(unlist(str_split(summ_rows,":")),byrow=T,nrow=nrow(summaries_combined_small)))
+  summ_rows_split$juncs <- sprintf("%s:%s:%s",summ_rows_split$X1,summ_rows_split$X2,summ_rows_split$X3)
+  summ_rows_juncs <- unique(summ_rows_split$juncs)
+  summaries_combined_small$juncs <- summ_rows_split$juncs
+  vals <- t(vapply(summ_rows_juncs,function(junc){
+    summaries_combined_small_junc <- summaries_combined_small %>% dplyr::filter(juncs %in% junc)
+    vals <- apply(summaries_combined_small_junc[,seq(1,ncol(summaries_combined_small)-1)],2,median)
+  },numeric(ncol(summaries_combined_small)-1)))
+  apply(vals,2,mean)
+},numeric(ncol(summaries_combined_psi)))))
+
+saveRDS(splice_dat_clusters_max,file=sprintf("%s/%s/%s_splice_dat_clusters_max.rds",tumor_dir,cancer,cancer))
+saveRDS(splice_dat_clusters_mean,file=sprintf("%s/%s/%s_splice_dat_clusters_mean.rds",tumor_dir,cancer,cancer))
+saveRDS(splice_dat_clusters_median,file=sprintf("%s/%s/%s_splice_dat_clusters_median.rds",tumor_dir,cancer,cancer))
+saveRDS(clusters,file=sprintf("%s/%s/%s_clusters.rds",tumor_dir,cancer,cancer))
+
+splice_dat_clusters_filt_max<-splice_dat_clusters_max[which(!(apply(splice_dat_clusters_max,1,sd)==0 & apply(splice_dat_clusters_max,1,sum)==0)),
+                                              unname(which(apply(splice_dat_clusters_max,2,sum)>0))]
+splice_dat_clusters_filt_mean<-splice_dat_clusters_mean[which(!(apply(splice_dat_clusters_mean,1,sd)==0 & apply(splice_dat_clusters_mean,1,sum)==0)),
+                                              unname(which(apply(splice_dat_clusters_mean,2,sum)>0))]
+splice_dat_clusters_filt_median<-splice_dat_clusters_median[which(!(apply(splice_dat_clusters_median,1,sd)==0 & apply(splice_dat_clusters_median,1,sum)==0)),
+                                              unname(which(apply(splice_dat_clusters_median,2,sum)>0))]
 clusters_filt <- clusters[which(!(apply(splice_dat_clusters,1,sd)==0 & apply(splice_dat_clusters,1,sum)==0)),]
 
-saveRDS(splice_dat_clusters_filt,file=sprintf("%s/%s/%s_splice_dat_clusters_filt_ann.rds",tumor_dir,cancer,cancer))
+saveRDS(splice_dat_clusters_filt_max,file=sprintf("%s/%s/%s_splice_dat_clusters_filt_max.rds",tumor_dir,cancer,cancer))
+saveRDS(splice_dat_clusters_filt_mean,file=sprintf("%s/%s/%s_splice_dat_clusters_filt_mean.rds",tumor_dir,cancer,cancer))
+saveRDS(splice_dat_clusters_filt_median,file=sprintf("%s/%s/%s_splice_dat_clusters_filt_median.rds",tumor_dir,cancer,cancer))
 
 #------------------------------------------------------------------------------#
 # printing per_cluster heatmaps
