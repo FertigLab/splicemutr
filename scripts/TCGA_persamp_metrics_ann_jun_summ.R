@@ -54,8 +54,8 @@ summaries<-unname(vapply(summaries,function(summ){
 meta_file <- sprintf("%s/%s/%s_metadata.rds",tumor_dir,cancer,cancer)
 meta_dat <- readRDS(meta_file)
 rownames(meta_dat) <- meta_dat$external_id
-#psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
-psi_file <- sprintf("%s/%s/data_perind.counts",tumor_dir,cancer)
+psi_file <- sprintf("%s/%s/leafcutter_run_1/data_perind.counts",tumor_dir,cancer)
+#psi_file <- sprintf("%s/%s/data_perind.counts",tumor_dir,cancer)
 
 psi_dat <- read.table(psi_file,header=T,check.names=F)
 if (!(any(tumor_geno$external_id %in% colnames(psi_dat)))){
