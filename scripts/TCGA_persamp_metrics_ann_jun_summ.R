@@ -197,7 +197,6 @@ splice_dat_clusters_filt_mean<-splice_dat_clusters_mean[which(!(apply(splice_dat
                                               unname(which(apply(splice_dat_clusters_mean,2,sum)>0))]
 splice_dat_clusters_filt_median<-splice_dat_clusters_median[which(!(apply(splice_dat_clusters_median,1,sd)==0 & apply(splice_dat_clusters_median,1,sum)==0)),
                                               unname(which(apply(splice_dat_clusters_median,2,sum)>0))]
-clusters_filt <- clusters[which(!(apply(splice_dat_clusters,1,sd)==0 & apply(splice_dat_clusters,1,sum)==0)),]
 
 saveRDS(splice_dat_clusters_filt_max,file=sprintf("%s/%s/%s_splice_dat_clusters_filt_ann_max.rds",tumor_dir,cancer,cancer))
 saveRDS(splice_dat_clusters_filt_mean,file=sprintf("%s/%s/%s_splice_dat_clusters_filt_ann_mean.rds",tumor_dir,cancer,cancer))
