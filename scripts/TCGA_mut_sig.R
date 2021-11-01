@@ -104,7 +104,7 @@ mut_sig_types_L1 <- data.frame(vapply(seq(nrow(L1_loss)),function(row_val){
   mut_type <- paste(mut_type,collapse=":")
 },character(1)))
 mut_sig_types$tumor_sample <- tumor_samples
-colnames(mut_sig_types) <- c("SBS_TYPE","TUMOR_SAMPLE")
+colnames(mut_sig_types_L1) <- c("SBS_TYPE","TUMOR_SAMPLE")
 
 mut_sig_types_L2 <- data.frame(vapply(seq(nrow(L1_loss)),function(row_val){
   row_vals <- as.numeric(L2_loss[row_val,])
@@ -112,7 +112,7 @@ mut_sig_types_L2 <- data.frame(vapply(seq(nrow(L1_loss)),function(row_val){
   mut_type <- paste(mut_type,collapse=":")
 },character(1)))
 mut_sig_types$tumor_sample <- tumor_samples
-colnames(mut_sig_types) <- c("SBS_TYPE","TUMOR_SAMPLE")
+colnames(mut_sig_types_L2) <- c("SBS_TYPE","TUMOR_SAMPLE")
 
 #------------------------------------------------------------------------------#
 # saving the mutation type information
