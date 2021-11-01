@@ -103,7 +103,7 @@ mut_sig_types_L1 <- data.frame(vapply(seq(nrow(L1_loss)),function(row_val){
   mut_type <- mut_sig_type[which(row_vals == min(row_vals))]
   mut_type <- paste(mut_type,collapse=":")
 },character(1)))
-mut_sig_types$tumor_sample <- tumor_samples
+mut_sig_types_L1$tumor_sample <- tumor_samples
 colnames(mut_sig_types_L1) <- c("SBS_TYPE","TUMOR_SAMPLE")
 
 mut_sig_types_L2 <- data.frame(vapply(seq(nrow(L1_loss)),function(row_val){
@@ -111,7 +111,7 @@ mut_sig_types_L2 <- data.frame(vapply(seq(nrow(L1_loss)),function(row_val){
   mut_type <- mut_sig_type[which(row_vals == min(row_vals))]
   mut_type <- paste(mut_type,collapse=":")
 },character(1)))
-mut_sig_types$tumor_sample <- tumor_samples
+mut_sig_types_L2$tumor_sample <- tumor_samples
 colnames(mut_sig_types_L2) <- c("SBS_TYPE","TUMOR_SAMPLE")
 
 #------------------------------------------------------------------------------#
