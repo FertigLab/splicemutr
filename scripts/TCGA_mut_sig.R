@@ -119,3 +119,4 @@ colnames(mut_sig_types_L2) <- c("SBS_TYPE","TUMOR_SAMPLE")
 
 saveRDS(mut_sig_types_L1,file=sprintf("%s/mut_sig_types_L1.rds",dirname(maf_file)))
 saveRDS(mut_sig_types_L2,file=sprintf("%s/mut_sig_types_L2.rds",dirname(maf_file)))
+saveRDS(percentages,file=sprintf("%s/mut_sig_percentages.rds",dirname(maf_file)))
