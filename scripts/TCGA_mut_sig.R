@@ -15,7 +15,10 @@ arguments <- parse_args(OptionParser(usage = "",
                  option_list=list(
                    make_option(c("-m","--maf_file"),
                                default = sprintf("%s",getwd()),
-                               help="maf file"))))
+                               help="maf file"),
+                   make_option(c("-s","--sbs_file"),
+                               default = sprintf("%s",getwd()),
+                               help="sbs file"))))
 opt=arguments
 maf_file <- opt$maf_file
 sbs_file<-opt$sbs_file
