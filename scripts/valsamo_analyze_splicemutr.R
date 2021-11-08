@@ -43,7 +43,7 @@ counts_file <- opt$counts_file
 # reading in the data necessary for creating specific splicemutr data
 
 genotypes <- readRDS(genotypes_file)
-splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
+splice_dat <- read.table(splice_dat_file,header=T,sep=" ")
 counts <- read.table(counts_file)
 
 #------------------------------------------------------------------------------#
@@ -51,6 +51,7 @@ counts <- read.table(counts_file)
 
 counts$V2 <- as.numeric(counts$V2)
 counts$V3 <- as.numeric(counts$V3)
+counts$V5 <- as.numeric(counts$V5)
 counts$juncs <- sprintf("%s:%s:%s:%s",counts$V1,counts$V2,counts$V3,counts$V6)
 
 #------------------------------------------------------------------------------#
@@ -59,8 +60,8 @@ counts$juncs <- sprintf("%s:%s:%s:%s",counts$V1,counts$V2,counts$V3,counts$V6)
 sample <- basename(str_replace(counts_file,".filt.junc",""))
 sample_geno <- unname(genotypes[[which(names(genotypes) == sample)]])
 class_1 <- c("HLA-A","HLA-B","HLA-C")
-sample_geno <- str_replace(sample_geno[which(str_detect(sample_geno,class_1[1]) | 
-                                               str_detect(sample_geno,class_1[2]) | 
+sample_geno <- str_replace(sample_geno[which(str_detect(sample_geno,class_1[1]) |
+                                               str_detect(sample_geno,class_1[2]) |
                                                str_detect(sample_geno,class_1[3]))], ":","-")
 
 sample_kmers <- data.frame(seq(nrow(splice_dat)))
@@ -83,6 +84,15 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
   },character(1))
   return(TRUE)
 },logical(1))
+
+#------------------------------------------------------------------------------#
+# annotating sample_kmers with junctions
+
+juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$strand)
+splice_dat$juncs <- juncs
+sample_kmers$juncs <- juncs
+rownames(counts)<-counts$juncs
+sample_kmers$counts <- counts[sample_kmers$juncs,"V5"]
 
 #------------------------------------------------------------------------------#
 # saving samples_kmers file
