@@ -1,0 +1,91 @@
+#!/usr/bin/env Rscript
+
+library(dplyr)
+library(ggplot2)
+library(TCGAutils)
+library(maftools)
+library(stringr)
+library(optparse)
+
+#------------------------------------------------------------------------------#
+# handling command line input
+
+arguments <- parse_args(OptionParser(usage = "",
+                 description="",
+                 option_list=list(
+                   make_option(c("-g","--genotypes_file"),
+                               default = sprintf("%s",getwd()),
+                               help="the genotypes file"),
+                   make_option(c("-s","--summary_dir"),
+                               default = sprintf("%s",getwd()),
+                               help="summary file dir"),
+                   make_option(c("-d","--splice_dat_file"),
+                               default = sprintf("%s",getwd()),
+                               help="splicemutr file"),
+                   make_option(c("-c","--counts_file"),
+                               default = sprintf("%s",getwd()),
+                               help="sample junc file"))))
+opt=arguments
+genotypes <- opt$genotypes_file
+summary_dir <- opt$summary_dir
+splice <- opt$splice_dat_file
+counts_file <- opt$counts_file
+
+#------------------------------------------------------------------------------#
+# local directories and file inputs for testing
+
+# genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
+# summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/predictions_1"
+# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/data_splicemutr.txt"
+# counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
+
+#------------------------------------------------------------------------------#
+# reading in the data necessary for creating specific splicemutr data
+
+genotypes <- readRDS(genotypes_file)
+splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
+counts <- read.table(counts_file)
+
+#------------------------------------------------------------------------------#
+# formatting counts file
+
+counts$V2 <- as.numeric(counts$V2)
+counts$V3 <- as.numeric(counts$V3)
+counts$juncs <- sprintf("%s:%s:%s:%s",counts$V1,counts$V2,counts$V3,counts$V6)
+
+#------------------------------------------------------------------------------#
+# reading in the genotype for the specific sample
+
+sample <- basename(str_replace(counts_file,".filt.junc",""))
+sample_geno <- unname(genotypes[[which(names(genotypes) == sample)]])
+class_1 <- c("HLA-A","HLA-B","HLA-C")
+sample_geno <- str_replace(sample_geno[which(str_detect(sample_geno,class_1[1]) | 
+                                               str_detect(sample_geno,class_1[2]) | 
+                                               str_detect(sample_geno,class_1[3]))], ":","-")
+
+sample_kmers <- data.frame(seq(nrow(splice_dat)))
+colnames(sample_kmers) <- "rows"
+rownames(sample_kmers) <- sample_kmers$rows
+sample_kmers$kmers <- NA
+
+sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
+  HLA<-sample_geno[geno_val]
+  HLA_summ_file <- sprintf("%s/%s_tx_dict_summary_perc.txt",summary_dir,HLA)
+  HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
+  HLA_summ$V1 <- as.numeric(HLA_summ$V1)+1
+  sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
+    dat_row_val <- HLA_summ[row_val,"V1"]+1
+    if (is.na(sample_kmers$kmers[dat_row_val])){
+      HLA_summ[row_val,"V2"]
+    } else {
+      paste(c(sample_kmers$kmers[dat_row_val],HLA_summ[row_val,"V2"]),collapse=":")
+    }
+  },character(1))
+  return(TRUE)
+},logical(1))
+
+#------------------------------------------------------------------------------#
+# saving samples_kmers file
+
+sample_kmers_file <- sprintf("%s/%s_splicemutr_kmers.rds",summary_dir,sample)
+readRDS(sample_kmers,file=sample_kmers_file)
