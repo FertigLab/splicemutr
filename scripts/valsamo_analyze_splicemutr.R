@@ -97,5 +97,5 @@ sample_kmers$counts <- counts[sample_kmers$juncs,"V5"]
 #------------------------------------------------------------------------------#
 # saving samples_kmers file
 
-sample_kmers_file <- sprintf("%s/%s_splicemutr_kmers.rds",summary_dir,sample)
+sample_kmers_file <- sprintf("%s/%s_splicemutr_kmers.rds",dirname(counts_file),sample)
 readRDS(sample_kmers,file=sample_kmers_file)
