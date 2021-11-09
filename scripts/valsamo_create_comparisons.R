@@ -35,7 +35,7 @@ opt=arguments
 comparison_juncs_file <- opt$comparison_juncs_file
 splice_dat_file <- opt$splice_dat_file
 comparisons_file <- opt$comparisons_file
-comp_num <- opt$comp_num
+comp_num <- as.numeric(opt$comp_num)
 junc_dir <- opt$junc_dir
 leaf_dir <- opt$leaf_dir
 
@@ -106,13 +106,13 @@ for (target in targets){
   juncs <- sprintf("%s:%s:%s:%s",juncs$V1,juncs$V2,juncs$V3,strand)
   psi_dat$juncs <- juncs
   psi_dat <- psi_dat %>% dplyr::filter(juncs %in% psi_all$comp_juncs_parsed)
-  psi_all[psi_dat$chrom,sprintf("%s_tar",target)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(target,"-","."))])
+  psi_all[psi_dat$chrom,sprintf("%s_tar",target)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(target,"-","."),"[+]","."))])
   target_dat <- readRDS(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,target))
   kmers[,sprintf("%s_tar",target)]<-target_dat$kmers
 }
 for (comp in comparators){
   comp_dat <- readRDS(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,comp))
-  psi_all[psi_dat$chrom,sprintf("%s_comp",comp)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(comp,"-","."))])
+  psi_all[psi_dat$chrom,sprintf("%s_comp",comp)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(comp,"-","."),"[+]","."))])
   kmers[,sprintf("%s_comp",comp)]<-comp_dat$kmers
 }
 psi_all[is.na(psi_all)]<-0
