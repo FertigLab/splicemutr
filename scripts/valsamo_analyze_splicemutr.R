@@ -28,7 +28,7 @@ arguments <- parse_args(OptionParser(usage = "",
 opt=arguments
 genotypes_file <- opt$genotypes_file
 summary_dir <- opt$summary_dir
-splice <- opt$splice_dat_file
+splice_dat_file <- opt$splice_dat_file
 counts_file <- opt$counts_file
 
 #------------------------------------------------------------------------------#
