@@ -26,7 +26,7 @@ arguments <- parse_args(OptionParser(usage = "",
                                default = sprintf("%s",getwd()),
                                help="sample junc file"))))
 opt=arguments
-genotypes <- opt$genotypes_file
+genotypes_file <- opt$genotypes_file
 summary_dir <- opt$summary_dir
 splice <- opt$splice_dat_file
 counts_file <- opt$counts_file
