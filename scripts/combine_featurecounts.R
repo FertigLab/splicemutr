@@ -25,13 +25,13 @@ featurecount_files_file <- read.table(featurecount_files,header=F)
 # compiling featurecount files
 
 
-for (i in seq(nrow(featurecount_files))){
+for (i in seq(nrow(featurecount_files_file))){
   if (i == 1){
-    featurecounts_all <- read.table(featurecounts_files[i,],header=T,sep="\t")
+    featurecounts_all <- read.table(featurecount_files_file[i,],header=T,sep="\t")
   } else {
-    featurecounts <- read.table(featurecounts_files[i,],header=T,sep="\t")
+    featurecounts <- read.table(featurecount_files_file[i,],header=T,sep="\t")
     featurecounts_all[,colnames(featurecounts)[ncol(featurecounts)]] <- featurecounts[,ncol(featurecounts)]
   }
 }
 
-saveRDS(featurecounts_all,file=sprintf("%s/%s",dirname(featurecounts_files[i,]),"featurecounts_all.rds"))
+saveRDS(featurecounts_all,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.rds"))
