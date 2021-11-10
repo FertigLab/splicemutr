@@ -106,21 +106,23 @@ for (target in targets){
   juncs <- sprintf("%s:%s:%s:%s",juncs$V1,juncs$V2,juncs$V3,strand)
   psi_dat$juncs <- juncs
   psi_dat <- psi_dat %>% dplyr::filter(juncs %in% psi_all$comp_juncs_parsed)
-  psi_all[psi_dat$chrom,sprintf("%s_tar",target)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(target,"-","."),"[+]","."))])
+  psi_all[psi_dat$chrom,target] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(target,"-","."),"[+]","."))])
   target_dat <- readRDS(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,target))
-  kmers[,sprintf("%s_tar",target)]<-target_dat$kmers
+  kmers[,target]<-target_dat$kmers
 }
-for (comp in comparators){
-  comp_dat <- readRDS(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,comp))
-  psi_all[psi_dat$chrom,sprintf("%s_comp",comp)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(comp,"-","."),"[+]","."))])
-  kmers[,sprintf("%s_comp",comp)]<-comp_dat$kmers
-}
+# for (comp in comparators){
+#   comp_dat <- readRDS(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,comp))
+#   psi_all[psi_dat$chrom,sprintf("%s_comp",comp)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(comp,"-","."),"[+]","."))])
+#   kmers[,sprintf("%s_comp",comp)]<-comp_dat$kmers
+# }
 psi_all[is.na(psi_all)]<-0
 splice_dat$rows <- seq(nrow(splice_dat))
 splice_dat_specific <- splice_dat %>% dplyr::filter(juncs %in% comp_juncs_parsed)
+splice_dat_specific <- splice_dat_specific %>% dplyr::filter(!(verdict == "annotated" & modified == "changed"))
 kmers_specific <- kmers[splice_dat_specific$rows,]
 kmers_specific_parsed <- kmers_specific
-kmers_specific_parsed<-apply(kmers_specific_parsed,1,parse_kmers)
+kmers_specific_parsed<-as.data.frame(t(apply(kmers_specific_parsed,1,parse_kmers)))
+colnames(kmers_specific_parsed) <- colnames(kmers_specific)
 psi_all <- psi_all[splice_dat_specific$juncs,]
 
 #------------------------------------------------------------------------------#
