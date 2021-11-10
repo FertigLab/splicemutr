@@ -33,5 +33,9 @@ for (i in seq(nrow(featurecount_files_file))){
     featurecounts_all[,colnames(featurecounts)[ncol(featurecounts)]] <- featurecounts[,ncol(featurecounts)]
   }
 }
-
+featurecounts_all <- featurecounts_all[,c(1,seq(7,ncol(featurecounts_all)))]
+colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))] <- vapply(colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))],
+                                                                      function(fname){
+                                                                        str_replace(basename(fname),"Aligned.out.bam","")
+                                                                      },character(1))
 saveRDS(featurecounts_all,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.rds"))
