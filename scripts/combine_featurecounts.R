@@ -38,4 +38,6 @@ colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))] <- vapply(colnames(f
                                                                       function(fname){
                                                                         str_replace(basename(fname),"Aligned.out.bam","")
                                                                       },character(1))
+rownames(featurecounts_all)<-featurecounts_all$Geneid
+featurecounts_all <- featurecounts_all[,seq(2,ncol(featurecounts_all))]
 saveRDS(featurecounts_all,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.rds"))
