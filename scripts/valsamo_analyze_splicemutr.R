@@ -34,10 +34,10 @@ counts_file <- opt$counts_file
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
-summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/predictions_1"
-splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/data_splicemutr.txt"
-counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
+# genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
+# summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/predictions_1"
+# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/data_splicemutr.txt"
+# counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
 
 #------------------------------------------------------------------------------#
 # reading in the data necessary for creating specific splicemutr data

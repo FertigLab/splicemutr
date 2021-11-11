@@ -61,12 +61,12 @@ parse_kmers <- function(kmers){
 #------------------------------------------------------------------------------#
 # local play
 
-comparison_juncs_file <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/comparison_juncs.rds"
-comparisons_file <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/comparisons.rds"
-splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/data_splicemutr.txt"
-comp_num <- 14
-junc_dir <- "/media/theron/My_Passport/Valsamo/juncs"
-leaf_dir <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD"
+# comparison_juncs_file <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/comparison_juncs.rds"
+# comparisons_file <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/comparisons.rds"
+# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/data_splicemutr.txt"
+# comp_num <- 14
+# junc_dir <- "/media/theron/My_Passport/Valsamo/juncs"
+# leaf_dir <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD"
 
 #------------------------------------------------------------------------------#
 # reading in the data
