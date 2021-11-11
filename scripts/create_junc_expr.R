@@ -12,7 +12,7 @@ arguments <- parse_args(OptionParser(usage = "",
                                      description="",
                                      option_list=list(
                                        make_option(c("-j","--junc_dir"),
-                                                   default = 1,
+                                                   default = "",
                                                    help="junction_dir"))))
 opt=arguments
 junc_dir <- opt$junc_dir
