@@ -28,7 +28,7 @@ out<-opt$out
 #------------------------------------------------------------------------------#
 # loading in necessary data
 
-diff_dat <- readRDS(diff_dat)
+diff_dat <- readRDS(diff_dat_file)
 
 #------------------------------------------------------------------------------#
 # running fgsea
