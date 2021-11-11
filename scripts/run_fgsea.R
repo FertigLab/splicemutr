@@ -36,7 +36,6 @@ diff_dat_all <- readRDS(diff_dat_file)
 fgsea_all <- list()
 for (comp in names(diff_dat_all)){
   print(comp)
-  diff_dat <- diff_dat_all[[comp]]
   entrez_to_ensembl <- data.frame(org.Hs.egENSEMBL)
   diff_dat$entrez <- unlist(lapply(rownames(diff_dat),function(gene){
     a<-which(entrez_to_ensembl$ensembl_id == gene)
@@ -57,7 +56,6 @@ for (comp in names(diff_dat_all)){
   
   diff_dat_filt <- diff_dat %>% dplyr::filter(!is.na(log2FoldChange) & !is.na(pvalue))
   ranks <- diff_dat_filt$log2FoldChange*-log10(diff_dat_filt$pvalue)
-  ranks_pos
   names(ranks)<-rownames(diff_dat_filt)
   ranks<-ranks[unname(!is.na(ranks))]
   ranks_pos<-ranks[ranks>=0]
