@@ -27,9 +27,9 @@ featurecount_files_file <- read.table(featurecount_files,header=F)
 
 for (i in seq(nrow(featurecount_files_file))){
   if (i == 1){
-    featurecounts_all <- read.table(featurecount_files_file[i,],header=T,sep="\t")
+    featurecounts_all <- read.table(featurecount_files_file[i,],header=T,sep="\t",check.names=F)
   } else {
-    featurecounts <- read.table(featurecount_files_file[i,],header=T,sep="\t")
+    featurecounts <- read.table(featurecount_files_file[i,],header=T,sep="\t",check.names=F)
     featurecounts_all[,colnames(featurecounts)[ncol(featurecounts)]] <- featurecounts[,ncol(featurecounts)]
   }
 }
