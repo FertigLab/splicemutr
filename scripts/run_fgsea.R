@@ -37,7 +37,7 @@ fgsea_all <- list()
 for (comp in names(diff_dat_all)){
   print(comp)
   entrez_to_ensembl <- data.frame(org.Hs.egENSEMBL)
-  diff_dat$entrez <- unlist(lapply(rownames(diff_dat),function(gene){
+  diff_dat_all$entrez <- unlist(lapply(rownames(diff_dat_all),function(gene){
     a<-which(entrez_to_ensembl$ensembl_id == gene)
     if(length(a)==0){
       return(NA)
@@ -46,15 +46,15 @@ for (comp in names(diff_dat_all)){
     }
   }))
   
-  ENSEMBLToGO <- mapIds(org.Hs.eg.db,keys=rownames(diff_dat),column='GO',keytype = 'ENSEMBL',multiVals = list)
+  ENSEMBLToGO <- mapIds(org.Hs.eg.db,keys=rownames(diff_dat_all),column='GO',keytype = 'ENSEMBL',multiVals = list)
   GOToENSEMBL <- sapply(reverseSplit(ENSEMBLToGO),unique)
   GOToENSEMBL <- GOToENSEMBL[sapply(GOToENSEMBL,length)>5]
   
-  ENSEMBLToKEGG <- mapIds(org.Hs.eg.db,keys=rownames(diff_dat),column='PATH',keytype = 'ENSEMBL',multiVals = list)
+  ENSEMBLToKEGG <- mapIds(org.Hs.eg.db,keys=rownames(diff_dat_all),column='PATH',keytype = 'ENSEMBL',multiVals = list)
   KEGGToENSEMBL <- sapply(reverseSplit(ENSEMBLToKEGG),unique)
   KEGGToENSEMBL <- KEGGToENSEMBL[sapply(KEGGToENSEMBL,length)>5]
   
-  diff_dat_filt <- diff_dat %>% dplyr::filter(!is.na(log2FoldChange) & !is.na(pvalue))
+  diff_dat_filt <- diff_dat_all %>% dplyr::filter(!is.na(log2FoldChange) & !is.na(pvalue))
   ranks <- diff_dat_filt$log2FoldChange*-log10(diff_dat_filt$pvalue)
   names(ranks)<-rownames(diff_dat_filt)
   ranks<-ranks[unname(!is.na(ranks))]
