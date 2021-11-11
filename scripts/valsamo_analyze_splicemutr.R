@@ -34,10 +34,10 @@ counts_file <- opt$counts_file
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-# genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
-# summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/predictions_1"
-# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/data_splicemutr.txt"
-# counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
+genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
+summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/predictions_1"
+splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/data_splicemutr.txt"
+counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
 
 #------------------------------------------------------------------------------#
 # reading in the data necessary for creating specific splicemutr data
@@ -69,13 +69,13 @@ colnames(sample_kmers) <- "rows"
 rownames(sample_kmers) <- sample_kmers$rows
 sample_kmers$kmers <- NA
 
-sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
+sample_kmers_ret <- vapply(seq(length(sample_geno))[1],function(geno_val){
   HLA<-sample_geno[geno_val]
   HLA_summ_file <- sprintf("%s/%s_tx_dict_summary_perc.txt",summary_dir,HLA)
   HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
   HLA_summ$V1 <- as.numeric(HLA_summ$V1)+1
   sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
-    dat_row_val <- HLA_summ[row_val,"V1"]+1
+    dat_row_val <- HLA_summ[row_val,"V1"]
     if (is.na(sample_kmers$kmers[dat_row_val])){
       HLA_summ[row_val,"V2"]
     } else {

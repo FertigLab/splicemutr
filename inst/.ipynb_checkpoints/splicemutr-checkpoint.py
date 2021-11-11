@@ -1,5 +1,7 @@
 # The splicemutr python script library file
 
+from binascii import hexlify, unhexlify
+
 #-----------------------------------------------------#
 
 def calculate_similarity(counts_list):

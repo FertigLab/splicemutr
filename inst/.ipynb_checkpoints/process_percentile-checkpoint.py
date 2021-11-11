@@ -42,6 +42,8 @@ def main(options):
     with open(out+'/'+HLA+'_tx_dict_perc'+str(kmer_length)+'.pickle', 'wb') as pickle_file:
         pickle.dump(tx_dict, pickle_file)
 
+    print(tx_dict[0])
+    
 if __name__ == "__main__":
 
     from optparse import OptionParser
