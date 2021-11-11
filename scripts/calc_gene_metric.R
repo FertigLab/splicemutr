@@ -46,11 +46,11 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
-splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/splice_dat_NIV3_PROG_NIV3_PROG_CR_PR.rds"
-kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/kmers_specific_NIV3_PROG_NIV3_PROG_CR_PR.rds"
-vst <-1
-junc_expr_file <- "/media/theron/My_Passport/Valsamo/juncs/junc_expr_combined_vst.rds"
+# gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/splice_dat_NIV3_PROG_NIV3_PROG_CR_PR.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/kmers_specific_NIV3_PROG_NIV3_PROG_CR_PR.rds"
+# vst <-1
+# junc_expr_file <- "/media/theron/My_Passport/Valsamo/juncs/junc_expr_combined_vst.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
