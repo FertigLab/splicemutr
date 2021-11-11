@@ -17,9 +17,13 @@ arguments <- parse_args(OptionParser(usage = "",
                          option_list=list(
                            make_option(c("-d","--diff_dat_file"),
                                        default = "",
-                                       help="diff_dat"))))
+                                       help="diff_dat"),
+                           make_option(c("-o","--out"),
+                                       default = "",
+                                       help="the out file"))))
 opt=arguments
 diff_dat_file <- opt$diff_dat_file
+out<-opt$out
 
 #------------------------------------------------------------------------------#
 # loading in necessary data
@@ -31,6 +35,7 @@ diff_dat <- readRDS(diff_dat)
 
 fgsea_all <- list()
 for (comp in names(all_diff_exp)){
+  print(comp)
   diff_dat <- all_diff_exp[[comp]]
   entrez_to_ensembl <- data.frame(org.Hs.egENSEMBL)
   diff_dat$entrez <- unlist(lapply(rownames(diff_dat),function(gene){
@@ -81,4 +86,4 @@ for (comp in names(all_diff_exp)){
 #------------------------------------------------------------------------------#
 # saving fgsea data
 
-saveRDS(fgsea_all,file="/media/theron/My_Passport/Valsamo/analysis/fgsea/fgsea_all.rds")
+saveRDS(fgsea_all,file=out)
