@@ -28,15 +28,15 @@ out<-opt$out
 #------------------------------------------------------------------------------#
 # loading in necessary data
 
-diff_dat <- readRDS(diff_dat_file)
+diff_dat_all <- readRDS(diff_dat_file)
 
 #------------------------------------------------------------------------------#
 # running fgsea
 
 fgsea_all <- list()
-for (comp in names(all_diff_exp)){
+for (comp in names(diff_dat_all)){
   print(comp)
-  diff_dat <- all_diff_exp[[comp]]
+  diff_dat <- diff_dat_all[[comp]]
   entrez_to_ensembl <- data.frame(org.Hs.egENSEMBL)
   diff_dat$entrez <- unlist(lapply(rownames(diff_dat),function(gene){
     a<-which(entrez_to_ensembl$ensembl_id == gene)
