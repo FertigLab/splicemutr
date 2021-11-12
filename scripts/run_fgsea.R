@@ -5,7 +5,6 @@ library(stringr)
 library(optparse)
 library(GO.db)
 library(KEGGREST)
-library(KEGG.db)
 library(fgsea)
 library(org.Hs.eg.db)
 
