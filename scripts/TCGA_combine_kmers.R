@@ -25,7 +25,7 @@ kmer_files <- read.table(sprintf("%s/kmer_files.txt",junc_dir))
 genotypes <- read.table(sprintf("%s/%s_genotypes.txt",junc_dir,cancer))
 
 
-for (i in seq(nrow(kmer_files[,1]))){
+for (i in seq(nrow(kmer_files))){
   file <- kmer_files[i,1]
   if (i == 1){
     kmer_counts_all <- read.table(file,sep="\t")
