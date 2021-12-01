@@ -27,7 +27,7 @@ junc_expr_comb <- junc_rse@assays@data@listData[["counts"]]
 #------------------------------------------------------------------------------#
 # creating junction expression file
 
-junc_expr_comb_vst <- varianceStabilizingTransformation(as.matrix(junc_expr_comb))
+junc_expr_comb_vst <- as.data.frame(varianceStabilizingTransformation(as.matrix(junc_expr_comb)))
 
 #------------------------------------------------------------------------------#
 # saving junction expression file
