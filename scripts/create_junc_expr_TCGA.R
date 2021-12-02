@@ -27,11 +27,10 @@ junc_expr_comb <- junc_rse@assays@data@listData[["counts"]]
 #------------------------------------------------------------------------------#
 # creating junction expression file
 
-junc_expr_comb_vst <- as.data.frame(varianceStabilizingTransformation(as.matrix(junc_expr_comb)))
+junc_expr_comb_vst <- as.data.frame(vst(as.matrix(junc_expr_comb)))
 
 #------------------------------------------------------------------------------#
 # saving junction expression file
 
 saveRDS(junc_expr_comb,file=sprintf("%s/junc_expr_combined.rds",junc_dir))
 saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst.rds",junc_dir))
-
