@@ -23,6 +23,7 @@ junc_dir <- opt$junc_dir
 cancer<-basename(junc_dir)
 junc_rse <- readRDS(sprintf("%s/%s_junc_rse.rds",junc_dir,cancer))
 junc_expr_comb <- junc_rse@assays@data@listData[["counts"]]
+rm(junc_rse)
 
 #------------------------------------------------------------------------------#
 # creating junction expression file
