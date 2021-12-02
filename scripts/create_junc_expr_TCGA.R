@@ -46,7 +46,7 @@ junc_mat_rows$start <- as.numeric(junc_mat_rows$start)-1
 junc_mat_rows$end <- as.numeric(junc_mat_rows$end)+1
 junc_linear <- sprintf("%s:%d-%d:%s",junc_mat_rows$chr,as.numeric(junc_mat_rows$start),
                        as.numeric(junc_mat_rows$end),junc_mat_rows$strand)
-# rm(junc_mat_rows)
+rm(junc_mat_rows)
 rownames(junc_expr_comb) <- junc_linear
 
 splice_dat <- read.table(sprintf("%s/%s_splicemutr_dat.txt",junc_dir,cancer),header=T,sep="\t",quote="")
@@ -67,6 +67,7 @@ junc_expr_comb_dds <- estimateSizeFactors(junc_expr_comb_dds)
 print("dispersions")
 junc_expr_comb_dds <- estimateDispersions(junc_expr_comb_dds,fitType="glmGamPoi")
 
+rm(junc_expr_comb)
 
 #------------------------------------------------------------------------------#
 # creating junction expression file
@@ -82,7 +83,7 @@ for (i in seq(1,total,100)){
   print("sub")
   junc_expr_comb_sub<-junc_expr_comb_dds[,seq(start,end)]
   print("vst")
-  junc_expr_comb_vst <- vst(junc_expr_comb_sub)
+  junc_expr_comb_vst <- varianceStabilizingTransformation(junc_expr_comb_sub,blind=F)
   junc_expr_comb_vst <- as.data.frame(junc_expr_comb_vst@assays@data@listData[[1]])
   junc_expr_comb_sub <- as.data.frame(junc_expr_comb_sub@assays@data@listData[[1]])
   saveRDS(junc_expr_comb_sub,file=sprintf("%s/junc_expr_combined_%d.rds",junc_dir,iter))
