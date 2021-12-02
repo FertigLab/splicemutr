@@ -4,7 +4,6 @@ library(dplyr)
 library(stringr)
 library(optparse)
 library(DESeq2)
-library(scran)
 
 #------------------------------------------------------------------------------#
 # handling command line input
