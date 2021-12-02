@@ -44,16 +44,10 @@ for (i in seq(1,total,100)){
   }
   junc_expr_comb_sub<-junc_expr_comb_dds[,seq(start,end)]
   junc_expr_comb_vst <- vst(junc_expr_comb_sub)
-  junc_expr_comb_vst <- as.data.frame(junc_expr_comb_vst@assays@data@listData[[1]])
-  junc_expr_comb_sub <- as.data.frame(junc_expr_comb_sub@assays@data@listData[[1]])
+  # junc_expr_comb_vst <- as.data.frame(junc_expr_comb_vst@assays@data@listData[[1]])
+  # junc_expr_comb_sub <- as.data.frame(junc_expr_comb_sub@assays@data@listData[[1]])
   saveRDS(junc_expr_comb_sub,file=sprintf("%s/junc_expr_combined_%d.rds",junc_dir,iter))
   saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst_%d.rds",junc_dir,iter))
   iter<-iter+1
 }
 
-
-#------------------------------------------------------------------------------#
-# saving junction expression file
-
-saveRDS(junc_expr_comb,file=sprintf("%s/junc_expr_combined.rds",junc_dir))
-saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst.rds",junc_dir))
