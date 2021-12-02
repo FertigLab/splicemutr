@@ -65,7 +65,7 @@ junc_expr_comb_dds <- DESeqDataSetFromMatrix(junc_expr_comb,colData = coldata,de
 print("size_fact")
 junc_expr_comb_dds <- estimateSizeFactors(junc_expr_comb_dds)
 print("dispersions")
-junc_expr_comb_dds <- estimateDispersions(junc_expr_comb_dds,fitType="glmGamPoi")
+junc_expr_comb_dds <- estimateDispersions(junc_expr_comb_dds,fitType="parametric")
 
 #------------------------------------------------------------------------------#
 # creating junction expression file
@@ -81,7 +81,7 @@ for (i in seq(1,total,100)){
   print("sub")
   junc_expr_comb_sub<-junc_expr_comb_dds[,seq(start,end)]
   print("vst")
-  junc_expr_comb_vst <- varianceStabilizingTransformation(junc_expr_comb_sub,blind=F,fitType="glmGamPoi")
+  junc_expr_comb_vst <- varianceStabilizingTransformation(junc_expr_comb_sub,blind=F,fitType="parametric")
   junc_expr_comb_vst <- as.data.frame(junc_expr_comb_vst@assays@data@listData[[1]])
   junc_expr_comb_sub <- as.data.frame(junc_expr_comb_sub@assays@data@listData[[1]])
   saveRDS(junc_expr_comb_sub,file=sprintf("%s/junc_expr_combined_%d.rds",junc_dir,iter))
