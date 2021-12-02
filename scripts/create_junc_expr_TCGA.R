@@ -67,8 +67,6 @@ junc_expr_comb_dds <- estimateSizeFactors(junc_expr_comb_dds)
 print("dispersions")
 junc_expr_comb_dds <- estimateDispersions(junc_expr_comb_dds,fitType="glmGamPoi")
 
-rm(junc_expr_comb)
-
 #------------------------------------------------------------------------------#
 # creating junction expression file
 
