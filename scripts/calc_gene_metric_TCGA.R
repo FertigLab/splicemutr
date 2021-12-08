@@ -55,7 +55,7 @@ count_kmers <- function(vals){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/gene_expression.rds"
+gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/gene_expression_vst.rds"
 splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/CHOL_splicemutr_dat.txt"
 kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/kmer_counts_all.rds"
 vst <-1
@@ -97,7 +97,7 @@ junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
 kmer_counts_filt <- kmer_counts %>% dplyr::filter(row %in% splice_dat_filt$X)
 samples <- colnames(kmer_counts_filt)[seq(3,ncol(kmer_counts_filt))]
-gene_expression_filt <- varianceStabilizingTransformation(gene_expression[,samples])
+gene_expression_filt <- gene_expression[,samples]
 junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples])
 
 rm(gene_expression)
@@ -124,7 +124,7 @@ colnames(gene_metric_mean)<-samples
 
 gene_metric_max <- as.data.frame(t(vapply(genes,function(gene_tar){
   splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
-  kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$rows)
+  kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$X)
   kmer_counts <- kmer_counts_small[,samples]
   gene_split <- strsplit(gene_tar,"-")[[1]]
   gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
