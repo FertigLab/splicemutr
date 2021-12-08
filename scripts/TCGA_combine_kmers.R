@@ -31,7 +31,7 @@ for (i in seq(nrow(kmer_files))){
     last_bit <- kmer_counts_all[,seq(ncol(kmer_counts_all)-1,ncol(kmer_counts_all))]
     kmer_counts_all<-kmer_counts_all[,seq(ncol(kmer_counts_all)-2)]
   } else {
-    kmer_counts_fill <- read.table(file,sep="\t")
+    kmer_counts_fill <- read.table(str_replace(file,".txt","_filt.txt"),sep="\t")
     kmer_counts_all <- cbind(kmer_counts_all,kmer_counts_fill[,seq(ncol(kmer_counts_fill)-2)])
   }
 }
