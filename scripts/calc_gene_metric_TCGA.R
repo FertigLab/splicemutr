@@ -97,7 +97,7 @@ junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
 kmer_counts_filt <- kmer_counts %>% dplyr::filter(row %in% splice_dat_filt$X)
 samples <- colnames(kmer_counts_filt)[seq(3,ncol(kmer_counts_filt))]
-gene_expression_filt <- gene_expression[,samples]
+gene_expression_filt <- varianceStabilizingTransformation(gene_expression[,samples])
 junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples])
 
 rm(gene_expression)
