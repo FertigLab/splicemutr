@@ -25,26 +25,26 @@ arguments <- parse_args(OptionParser(usage = "",
                                                    help="junction expression file"),
                                        make_option(c("-o","--out"),
                                                    default = "",
-                                                   help="output_file_prefix"),
-                                       make_option(c("-t","--tcga"),
-                                                   default = "F",
-                                                   help="is tcga data or not"))))
+                                                   help="output_file_prefix"))))
 opt=arguments
 gene_expression_file <- opt$gene_expression
 splice_dat_file <- opt$splice_dat_file
 kmer_counts_file <- opt$kmer_counts
 junc_expr_file <- opt$junc_expr_file
 out<-opt$out
-tcga <- logical(opt$tcga)
 
 #------------------------------------------------------------------------------#
 # internal functions
 
 calc_gene_expression <- function(gene_tar,gene_expression){
   gene_expr_target <- gene_expression[gene_tar,]
-  gene_expr_tar_min <- as.data.frame(t(apply(gene_expr_target,2,min)))
+  if (length(gene_tar)>1){
+    gene_expr_tar_min <- apply(gene_expr_target,2,min)
+  } else {
+    gene_expr_tar_min <- gene_expr_target
+  }
   gene_expr_tar_min[is.na(gene_expr_tar_min)]<-0
-  return(gene_expr_tar_min[1,])
+  return(gene_expr_tar_min)
 }
 count_kmers <- function(vals){
   vapply(strsplit(vals,":"),function(val){
@@ -79,17 +79,23 @@ if (str_detect(kmer_counts_file,".txt")){
 }
 kmer_counts[,1]<-as.numeric(kmer_counts[,1])
 
-if (tcga){
-  kmer_counts[,seq(3,ncol(kmer_counts))] <- apply(kmer_counts[,seq(3,ncol(kmer_counts))],2,count_kmers)
-}
+kmer_counts[,seq(3,ncol(kmer_counts))] <- apply(kmer_counts[,seq(3,ncol(kmer_counts))],2,count_kmers)
+splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
+splice_dat <- splice_dat %>% dplyr::filter(deltapsi>0)
+splice_dat_strands <- matrix(unlist(strsplit(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat))[,3]
+splice_dat$juncs <- sprintf("%s:%s",splice_dat$juncs,splice_dat_strands)
+splice_dat_juncs <- as.data.frame(matrix(unlist(strsplit(splice_dat$juncs,":")),byrow=T,nrow=nrow(splice_dat)))
+splice_dat$juncs <- sprintf("%s:%s-%s:%s",splice_dat_juncs$V1,
+                            splice_dat_juncs$V2,splice_dat_juncs$V3,
+                            splice_dat_juncs$V4)
 kmer_counts[,seq(3,ncol(kmer_counts))] <- mutate_all(kmer_counts[,seq(3,ncol(kmer_counts))], function(x) as.numeric(x))
-splice_dat$rows <- as.numeric(splice_dat$rows)
+splice_dat$X <- as.numeric(splice_dat$X)
 
 junc_expr_comb <- readRDS(junc_expr_file)
 junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 
 splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
-kmer_counts_filt <- kmer_counts %>% dplyr::filter(as.numeric(kmer_counts[,1]) %in% splice_dat_filt$rows)
+kmer_counts_filt <- kmer_counts %>% dplyr::filter(row %in% splice_dat_filt$X)
 samples <- colnames(kmer_counts_filt)[seq(3,ncol(kmer_counts_filt))]
 gene_expression_filt <- gene_expression[,samples]
 junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples])
@@ -105,7 +111,7 @@ genes <- unique(splice_dat_filt$gene)
 
 gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
   splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
-  kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$rows)
+  kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$X)
   kmer_counts <- kmer_counts_small[,samples]
   gene_split <- strsplit(gene_tar,"-")[[1]]
   gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
