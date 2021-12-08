@@ -9,23 +9,23 @@ library(DESeq2)
 # handling command line input
 
 arguments <- parse_args(OptionParser(usage = "",
-                 description="",
-                 option_list=list(
-                   make_option(c("-g","--gene_expression"),
-                               default = "",
-                               help="the gene expression file"),
-                   make_option(c("-s","--splice_dat_file"),
-                               default = "",
-                               help="splicemutr file"),
-                   make_option(c("-k","--kmer_counts"),
-                               default = "",
-                               help="the kmer counts file"),
-                   make_option(c("-j","--junc_expr_file"),
-                               default = "",
-                               help="junction expression file"),
-                   make_option(c("-o","--out"),
-                               default = "",
-                               help="output_file_prefix"))))
+                                     description="",
+                                     option_list=list(
+                                       make_option(c("-g","--gene_expression"),
+                                                   default = "",
+                                                   help="the gene expression file"),
+                                       make_option(c("-s","--splice_dat_file"),
+                                                   default = "",
+                                                   help="splicemutr file"),
+                                       make_option(c("-k","--kmer_counts"),
+                                                   default = "",
+                                                   help="the kmer counts file"),
+                                       make_option(c("-j","--junc_expr_file"),
+                                                   default = "",
+                                                   help="junction expression file"),
+                                       make_option(c("-o","--out"),
+                                                   default = "",
+                                                   help="output_file_prefix"))))
 opt=arguments
 gene_expression_file <- opt$gene_expression
 splice_dat_file <- opt$splice_dat_file
@@ -46,11 +46,11 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
-# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/splice_dat_NIV3_PROG_NIV3_PROG_CR_PR.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/kmers_specific_NIV3_PROG_NIV3_PROG_CR_PR.rds"
-# vst <-1
-# junc_expr_file <- "/media/theron/My_Passport/Valsamo/juncs/junc_expr_combined_vst.rds"
+gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/gene_expression.rds"
+splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/CHOL_splicemutr_dat.txt"
+kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/kmer_counts_all.rds"
+vst <-1
+junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/junc_expr_combined_vst_1.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -58,7 +58,7 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 gene_expression <- readRDS(gene_expression_file)
 
 if (str_detect(splice_dat_file,".txt")){
-  splice_dat <- read.table(splice_dat_file,header=T,sep=" ")
+  splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
 } else {
   splice_dat <- readRDS(splice_dat_file)
 }
@@ -90,15 +90,15 @@ rm(splice_dat)
 genes <- unique(splice_dat_filt$gene)
 
 gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
-    splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
-    kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(rows %in% splice_dat_small$rows)
-    kmer_counts <- kmer_counts_small[,samples]
-    gene_split <- strsplit(gene_tar,"-")[[1]]
-    gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
-    junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
-    dup_num <-nrow(splice_dat_small)
-    gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
-    a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
+  splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
+  kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(rows %in% splice_dat_small$rows)
+  kmer_counts <- kmer_counts_small[,samples]
+  gene_split <- strsplit(gene_tar,"-")[[1]]
+  gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
+  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
+  dup_num <-nrow(splice_dat_small)
+  gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
+  a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
 },numeric(length(samples)))))
 colnames(gene_metric_mean)<-samples
 

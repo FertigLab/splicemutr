@@ -22,13 +22,12 @@ junc_dir <- opt$junc_dir
 
 cancer<-basename(junc_dir)
 kmer_files <- read.table(sprintf("%s/kmer_files.txt",junc_dir))
-genotypes <- read.table(sprintf("%s/%s_genotypes.txt",junc_dir,cancer))
-
+genotypes <- read.table(sprintf("%s/%s_genotypes.txt",junc_dir,cancer),header=T)
 
 for (i in seq(nrow(kmer_files))){
   file <- kmer_files[i,1]
   if (i == 1){
-    kmer_counts_all <- read.table(file,sep="\t")
+    kmer_counts_all <- read.table(str_replace(file,".txt","_filt.txt"),sep="\t")
     last_bit <- kmer_counts_all[,seq(ncol(kmer_counts_all)-1,ncol(kmer_counts_all))]
     kmer_counts_all<-kmer_counts_all[,seq(ncol(kmer_counts_all)-2)]
   } else {
