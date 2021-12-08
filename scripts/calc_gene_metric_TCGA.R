@@ -55,12 +55,12 @@ count_kmers <- function(vals){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/gene_expression_vst.rds"
-splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/CHOL_splicemutr_dat.txt"
-kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/kmer_counts_all.rds"
-vst <-1
-junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/junc_expr_combined_vst_1.rds"
-tcga<-T
+# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/gene_expression_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/CHOL_splicemutr_dat.txt"
+# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/kmer_counts_all.rds"
+# vst <-1
+# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/junc_expr_combined_vst_1.rds"
+# tcga<-T
 
 #------------------------------------------------------------------------------#
 # reading in the files
