@@ -55,12 +55,12 @@ count_kmers <- function(vals){
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/gene_expression_vst.rds"
-# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/BLCA_splicemutr_dat.txt"
-# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/kmer_counts_all.rds"
-# vst <-1
-# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BLCA/junc_expr_combined_vst_1.rds"
-# tcga<-T
+gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/gene_expression_vst.rds"
+splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/LUAD_splicemutr_dat.txt"
+kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/kmer_counts_all.rds"
+vst <-1
+junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/junc_expr_combined_vst_7.rds"
+tcga<-T
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -81,6 +81,8 @@ kmer_counts<-kmer_counts[,!duplicated(colnames(kmer_counts))]
 kmer_counts[,1]<-as.numeric(kmer_counts[,1])
 
 kmer_counts[,seq(3,ncol(kmer_counts))] <- apply(kmer_counts[,seq(3,ncol(kmer_counts))],2,count_kmers)
+kmer_counts[,seq(3,ncol(kmer_counts))] <- mutate_all(kmer_counts[,seq(3,ncol(kmer_counts))], function(x) as.numeric(x))
+
 splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
 splice_dat <- splice_dat %>% dplyr::filter(deltapsi>0)
 splice_dat_strands <- matrix(unlist(strsplit(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat))[,3]
@@ -89,7 +91,6 @@ splice_dat_juncs <- as.data.frame(matrix(unlist(strsplit(splice_dat$juncs,":")),
 splice_dat$juncs <- sprintf("%s:%s-%s:%s",splice_dat_juncs$V1,
                             splice_dat_juncs$V2,splice_dat_juncs$V3,
                             splice_dat_juncs$V4)
-kmer_counts[,seq(3,ncol(kmer_counts))] <- mutate_all(kmer_counts[,seq(3,ncol(kmer_counts))], function(x) as.numeric(x))
 splice_dat$X <- as.numeric(splice_dat$X)
 
 junc_expr_comb <- readRDS(junc_expr_file)
@@ -99,13 +100,13 @@ splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]
 kmer_counts_filt <- kmer_counts %>% dplyr::filter(row %in% splice_dat_filt$X)
 samples <- colnames(kmer_counts_filt)[seq(3,ncol(kmer_counts_filt))]
 samples <- samples[which(samples %in% colnames(junc_expr_comb))]
-gene_expression_filt <- gene_expression[,samples]
-junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples])
-kmer_counts_filt <- kmer_counts_filt[,c("row","cluster",samples)]
+gene_expression_filt <- gene_expression[,samples,drop=F]
+junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples,drop=F])
+kmer_counts_filt <- kmer_counts_filt[,c("row","cluster",samples),drop=F]
 
-rm(gene_expression)
-rm(kmer_counts)
-rm(splice_dat)
+# rm(gene_expression)
+# rm(kmer_counts)
+# rm(splice_dat)
 
 #------------------------------------------------------------------------------#
 # calculating per-gene metric
@@ -113,28 +114,29 @@ rm(splice_dat)
 genes <- unique(splice_dat_filt$gene)
 
 gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
+  g<<-gene_tar
   splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
   kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$X)
-  kmer_counts <- kmer_counts_small[,samples]
+  kmer_count <- kmer_counts_small[,samples,drop=F]
   gene_split <- strsplit(gene_tar,"-")[[1]]
   gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
-  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
+  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,,drop=F]
   dup_num <-nrow(splice_dat_small)
   gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
-  a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
+  a<-as.numeric(apply((kmer_count*junc_expr)/gene_expr_dup,2,mean))
 },numeric(length(samples)))))
 colnames(gene_metric_mean)<-samples
 
 gene_metric_max <- as.data.frame(t(vapply(genes,function(gene_tar){
   splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
   kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$X)
-  kmer_counts <- kmer_counts_small[,samples]
+  kmer_count <- kmer_counts_small[,samples,drop=F]
   gene_split <- strsplit(gene_tar,"-")[[1]]
   gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
-  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
+  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,,drop=F]
   dup_num <-nrow(splice_dat_small)
   gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
-  a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,max))
+  a<-as.numeric(apply((kmer_count*junc_expr)/gene_expr_dup,2,max))
 },numeric(length(samples)))))
 colnames(gene_metric_max)<-samples
 

@@ -11,83 +11,142 @@ library(DESeq2)
 arguments <- parse_args(OptionParser(usage = "",
                                      description="",
                                      option_list=list(
-                                       make_option(c("-j","--junc_dir"),
+                                       make_option(c("-g","--gene_expression"),
                                                    default = "",
-                                                   help="junction_dir"))))
+                                                   help="the gene expression file"),
+                                       make_option(c("-s","--splice_dat_file"),
+                                                   default = "",
+                                                   help="splicemutr file"),
+                                       make_option(c("-k","--kmer_counts"),
+                                                   default = "",
+                                                   help="the kmer counts file"),
+                                       make_option(c("-j","--junc_expr_file"),
+                                                   default = "",
+                                                   help="junction expression file"),
+                                       make_option(c("-o","--out"),
+                                                   default = "",
+                                                   help="output_file_prefix"))))
 opt=arguments
-junc_dir <- opt$junc_dir
-splice_dat_file <- opt$splice_dat
+gene_expression_file <- opt$gene_expression
+splice_dat_file <- opt$splice_dat_file
+kmer_counts_file <- opt$kmer_counts
+junc_expr_file <- opt$junc_expr_file
+out<-opt$out
 
 #------------------------------------------------------------------------------#
-# format integers
+# internal functions
 
-# format_int <- function(vec){
-#   gsub(" ","",format(as.numeric(vec),scientific=F))
-# }
-
-#------------------------------------------------------------------------------#
-# creating and filtering junc expression
-
-cancer<-basename(junc_dir)
-junc_rse <- readRDS(sprintf("%s/%s_junc_rse.rds",junc_dir,cancer))
-print("extracting juncs")
-juncs_for_rows <- junc_rse@rowRanges@ranges@NAMES
-junc_expr_comb <- junc_rse@assays@data@listData[["counts"]]
-rownames(junc_expr_comb)<-juncs_for_rows
-rm(junc_rse)
-junc_mat_rows <- as.data.frame(matrix(unlist(strsplit(rownames(junc_expr_comb),"[:]")),
-                        byrow=T,nrow=nrow(junc_expr_comb)))
-coords <- as.data.frame(matrix(unlist(strsplit(junc_mat_rows$V2,"[-]")),nrow=nrow(junc_mat_rows),byrow=T))
-junc_mat_rows$start<-as.numeric(coords$V1)
-junc_mat_rows$end<-as.numeric(coords$V2)
-junc_mat_rows<-junc_mat_rows[,c(1,4,5,3)]
-colnames(junc_mat_rows)<-c("chr","start","end","strand")
-junc_mat_rows$start <- as.numeric(junc_mat_rows$start)-1
-junc_mat_rows$end <- as.numeric(junc_mat_rows$end)+1
-junc_linear <- sprintf("%s:%d-%d:%s",junc_mat_rows$chr,as.numeric(junc_mat_rows$start),
-                       as.numeric(junc_mat_rows$end),junc_mat_rows$strand)
-rm(junc_mat_rows)
-rownames(junc_expr_comb) <- junc_linear
-
-splice_dat <- read.table(sprintf("%s/%s_splicemutr_dat.txt",junc_dir,cancer),header=T,sep="\t",quote="")
-splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
-splice_dat <- splice_dat %>% dplyr::filter(deltapsi > 0)
-strands <- as.data.frame(matrix(unlist(strsplit(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat)))
-strands <- as.vector(strands[,3])
-juncs <- sprintf("%s:%d-%d:%s",splice_dat$chr,as.numeric(splice_dat$start),as.numeric(splice_dat$end),strands)
-splice_dat$juncs <- juncs
-juncs_unique <- unique(juncs)
-
-junc_expr_comb<-junc_expr_comb[juncs_unique,]
-
-coldata <- data.frame(factor(rep("a",ncol(junc_expr_comb))))
-colnames(coldata)<-"samp"
-print("create_deseq")
-junc_expr_comb_dds <- DESeqDataSetFromMatrix(junc_expr_comb,colData = coldata,design=~1)
-print("size_fact")
-junc_expr_comb_dds <- estimateSizeFactors(junc_expr_comb_dds)
-print("dispersions")
-junc_expr_comb_dds <- estimateDispersions(junc_expr_comb_dds,fitType="parametric")
-
-#------------------------------------------------------------------------------#
-# creating junction expression file
-
-total <- ncol(junc_expr_comb)
-iter<-1
-for (i in seq(1,total,100)){
-  start <- i
-  end <- i + 99
-  if (end > total){
-    end <- total
+calc_gene_expression <- function(gene_tar,gene_expression){
+  gene_expr_target <- gene_expression[gene_tar,]
+  if (length(gene_tar)>1){
+    gene_expr_tar_min <- apply(gene_expr_target,2,min)
+  } else {
+    gene_expr_tar_min <- gene_expr_target
   }
-  print("sub")
-  junc_expr_comb_sub<-junc_expr_comb_dds[,seq(start,end)]
-  print("vst")
-  junc_expr_comb_vst <- varianceStabilizingTransformation(junc_expr_comb_sub,blind=F,fitType="parametric")
-  junc_expr_comb_vst <- as.data.frame(junc_expr_comb_vst@assays@data@listData[[1]])
-  junc_expr_comb_sub <- as.data.frame(junc_expr_comb_sub@assays@data@listData[[1]])
-  saveRDS(junc_expr_comb_sub,file=sprintf("%s/junc_expr_combined_%d.rds",junc_dir,iter))
-  saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst_%d.rds",junc_dir,iter))
-  iter<-iter+1
+  gene_expr_tar_min[is.na(gene_expr_tar_min)]<-0
+  return(gene_expr_tar_min)
+}
+count_kmers <- function(vals){
+  vapply(strsplit(vals,":"),function(val){
+    length(which(val != "NAZZZZZZZ"))
+  },numeric(1))
 }
 
+#------------------------------------------------------------------------------#
+# local play
+
+# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/gene_expression_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/LUAD_splicemutr_dat.txt"
+# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/kmer_counts_all.rds"
+# vst <-1
+# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/junc_expr_combined_vst_7.rds"
+# tcga<-T
+
+#------------------------------------------------------------------------------#
+# reading in the files
+
+gene_expression <- readRDS(gene_expression_file)
+
+if (str_detect(splice_dat_file,".txt")){
+  splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
+} else {
+  splice_dat <- readRDS(splice_dat_file)
+}
+if (str_detect(kmer_counts_file,".txt")){
+  kmer_counts <- read.table(kmer_counts_file)
+} else {
+  kmer_counts <- readRDS(kmer_counts_file)
+}
+kmer_counts<-kmer_counts[,!duplicated(colnames(kmer_counts))]
+kmer_counts[,1]<-as.numeric(kmer_counts[,1])
+
+kmer_counts[,seq(3,ncol(kmer_counts))] <- apply(kmer_counts[,seq(3,ncol(kmer_counts))],2,count_kmers)
+kmer_counts[,seq(3,ncol(kmer_counts))] <- mutate_all(kmer_counts[,seq(3,ncol(kmer_counts))], function(x) as.numeric(x))
+
+splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
+splice_dat <- splice_dat %>% dplyr::filter(deltapsi>0)
+splice_dat_strands <- matrix(unlist(strsplit(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat))[,3]
+splice_dat$juncs <- sprintf("%s:%s",splice_dat$juncs,splice_dat_strands)
+splice_dat_juncs <- as.data.frame(matrix(unlist(strsplit(splice_dat$juncs,":")),byrow=T,nrow=nrow(splice_dat)))
+splice_dat$juncs <- sprintf("%s:%s-%s:%s",splice_dat_juncs$V1,
+                            splice_dat_juncs$V2,splice_dat_juncs$V3,
+                            splice_dat_juncs$V4)
+splice_dat$X <- as.numeric(splice_dat$X)
+
+junc_expr_comb <- readRDS(junc_expr_file)
+junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
+
+splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
+kmer_counts_filt <- kmer_counts %>% dplyr::filter(row %in% splice_dat_filt$X)
+samples <- colnames(kmer_counts_filt)[seq(3,ncol(kmer_counts_filt))]
+samples <- samples[which(samples %in% colnames(junc_expr_comb))]
+gene_expression_filt <- gene_expression[,samples,drop=F]
+junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples,drop=F])
+kmer_counts_filt <- kmer_counts_filt[,c("row","cluster",samples),drop=F]
+
+rm(gene_expression)
+rm(kmer_counts)
+rm(splice_dat)
+
+#------------------------------------------------------------------------------#
+# calculating per-gene metric
+
+genes <- unique(splice_dat_filt$gene)
+
+gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
+  g<<-gene_tar
+  splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
+  kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$X)
+  kmer_count <- kmer_counts_small[,samples,drop=F]
+  gene_split <- strsplit(gene_tar,"-")[[1]]
+  gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
+  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,,drop=F]
+  dup_num <-nrow(splice_dat_small)
+  gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
+  a<-as.numeric(apply((kmer_count*junc_expr)/gene_expr_dup,2,mean))
+},numeric(length(samples)))))
+colnames(gene_metric_mean)<-samples
+
+gene_metric_max <- as.data.frame(t(vapply(genes,function(gene_tar){
+  splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
+  kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(as.numeric(kmer_counts_filt[,1]) %in% splice_dat_small$X)
+  kmer_count <- kmer_counts_small[,samples,drop=F]
+  gene_split <- strsplit(gene_tar,"-")[[1]]
+  gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
+  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,,drop=F]
+  dup_num <-nrow(splice_dat_small)
+  gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
+  a<-as.numeric(apply((kmer_count*junc_expr)/gene_expr_dup,2,max))
+},numeric(length(samples)))))
+colnames(gene_metric_max)<-samples
+
+#------------------------------------------------------------------------------#
+# saving gene metric data
+
+saveRDS(gene_metric_mean,file=sprintf("%s_gene_metric_mean.rds",out))
+write.table(gene_metric_mean,
+            file=sprintf("%s_gene_metric_mean.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+
+saveRDS(gene_metric_max,file=sprintf("%s_gene_metric_max.rds",out))
+write.table(gene_metric_max,
+            file=sprintf("%s_gene_metric_max.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
