@@ -77,8 +77,8 @@ if (str_detect(kmer_counts_file,".txt")){
 } else {
   kmer_counts <- readRDS(kmer_counts_file)
 }
+kmer_counts<-kmer_counts[,!duplicated(colnames(kmer_counts))]
 kmer_counts[,1]<-as.numeric(kmer_counts[,1])
-colnames(kmer_counts)[seq(3,ncol(kmer_counts))] <- make.unique(colnames(kmer_counts)[seq(3,ncol(kmer_counts))],sep="_")
 
 kmer_counts[,seq(3,ncol(kmer_counts))] <- apply(kmer_counts[,seq(3,ncol(kmer_counts))],2,count_kmers)
 splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
@@ -98,8 +98,10 @@ junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
 kmer_counts_filt <- kmer_counts %>% dplyr::filter(row %in% splice_dat_filt$X)
 samples <- colnames(kmer_counts_filt)[seq(3,ncol(kmer_counts_filt))]
+samples <- samples[which(samples %in% colnames(junc_expr_comb))]
 gene_expression_filt <- gene_expression[,samples]
 junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples])
+kmer_counts_filt <- kmer_counts_filt[,c("row","cluster",samples)]
 
 rm(gene_expression)
 rm(kmer_counts)
