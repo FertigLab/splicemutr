@@ -37,7 +37,7 @@ out<-opt$out
 # internal functions
 
 calc_gene_expression <- function(gene_tar,gene_expression){
-  gene_expr_target <- gene_expression[gene_tar,]
+  gene_expr_target <- gene_expression[gene_tar,,drop=F]
   if (length(gene_tar)>1){
     gene_expr_tar_min <- apply(gene_expr_target,2,min)
   } else {
