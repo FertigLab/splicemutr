@@ -57,17 +57,6 @@ introns$chr <- str_replace(introns$chr,"chr","")
 introns<-format_introns(introns)
 
 #------------------------------------------------------------------------------#
-# local data for testing comparison juncs 159
-
-out_dir <-"/media/theron/My_Passport/Valsamo/analysis/splicemutr_output"
-intron_file <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/comparison_juncs_linear_185.rds"
-introns <- readRDS(intron_file)
-txdb_file <- "/media/theron/My_Passport/reference_genomes/SEQUENCES/GENCODE/GRCh38_Ensembl99_sparseD3_sjdbOverhang99/GRCh38_p13_txdb.sqlite"
-file_num<-159
-funcs <- "/media/theron/My_Passport/splicemute/R/functions.R"
-source(funcs)
-
-#------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
 
 print("reading in txdb")
