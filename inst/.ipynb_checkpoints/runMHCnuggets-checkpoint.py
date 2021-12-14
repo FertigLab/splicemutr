@@ -12,7 +12,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Inputting the sequences')
 parser.add_argument('-t', '--type', action="store", nargs=1, help='The MHC class: "I" or "II"', dest='type')
 parser.add_argument('-k', '--kmers', action="store", nargs=1, help='The input kmer directory path', dest='kmers')
-parser.add_argument("-m", "--mhc", action="store", nargs=1, help='The MHC allele file path, or "all" for all alleles',
+parser.add_argument("-m", "--mhc", action="store", nargs=1, help='The MHC allele',
                     dest='mhc')
 parser.add_argument("-o", "--output", action="store", nargs=1, help="The output directory to write scores to",
                     dest='output')
@@ -27,6 +27,7 @@ results = parser.parse_args()
 s = results.kmers[0]
 s_split = s.split("/")  # parsing the path
 kmer_file = s_split[len(s_split) - 1].split(".")[0]  # extracting just mhc file name
+mhc=results.mhc[0]
 with open(results.mhc[0], 'r') as f: # iterating through the mhc alleles chosen to run mhcnuggets with
     mhc = f.readline()
     while mhc != '':
