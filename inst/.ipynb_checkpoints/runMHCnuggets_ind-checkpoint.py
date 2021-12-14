@@ -33,4 +33,3 @@ mhc_print = mhc.replace(":", "-") # some operating systems do not recognize ":" 
 out_file = results.output[0] + "{}" + "{}" + "{}" + "{}" + "{}"
 out_file = out_file.format("/", mhc_print, "_", kmer_file, ".txt")
 predict(class_=results.type[0], peptides_path=s, mhc=mhc, output=out_file)
-mhc = f.readline()
