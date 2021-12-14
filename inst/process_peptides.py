@@ -33,7 +33,7 @@ def main(options):
     with open(out+'/pep_dict_'+str(kmer_length)+'.pickle', 'wb') as pickle_file:
         pickle.dump(pep_dict, pickle_file)
     with open(out+'/peps_'+str(kmer_length)+'.txt','w') as peps:
-        kmer_list = ["\t".join([str(kmer),BytesIntEncoder.decode(kmer).decode()]) for kmer in list(pep_dict.keys())]
+        kmer_list = [BytesIntEncoder.decode(kmer).decode() for kmer in list(pep_dict.keys())]
         kmer_string = "\n".join(kmer_list)
         print(kmer_string,file=peps)
     
