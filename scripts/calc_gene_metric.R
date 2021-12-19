@@ -75,9 +75,6 @@ if (str_detect(kmer_counts_file,".txt")){
 }
 kmer_counts[,1]<-as.numeric(kmer_counts[,1])
 
-if (tcga){
-  kmer_counts[,seq(3,ncol(kmer_counts))] <- apply(kmer_counts[,seq(3,ncol(kmer_counts))],2,count_kmers)
-}
 kmer_counts[,seq(3,ncol(kmer_counts))] <- mutate_all(kmer_counts[,seq(3,ncol(kmer_counts))], function(x) as.numeric(x))
 splice_dat$rows <- as.numeric(splice_dat$rows)
 
