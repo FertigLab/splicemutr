@@ -25,17 +25,13 @@ arguments <- parse_args(OptionParser(usage = "",
                                                    help="junction expression file"),
                                        make_option(c("-o","--out"),
                                                    default = "",
-                                                   help="output_file_prefix"),
-                                       make_option(c("-t","--tcga"),
-                                                   default = "F",
-                                                   help="is tcga data or not"))))
+                                                   help="output_file_prefix"))))
 opt=arguments
 gene_expression_file <- opt$gene_expression
 splice_dat_file <- opt$splice_dat_file
 kmer_counts_file <- opt$kmer_counts
 junc_expr_file <- opt$junc_expr_file
 out<-opt$out
-tcga <- logical(opt$tcga)
 
 #------------------------------------------------------------------------------#
 # internal functions
@@ -55,12 +51,12 @@ count_kmers <- function(vals){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/gene_expression.rds"
-splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/CHOL_splicemutr_dat.txt"
-kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/kmer_counts_all.rds"
-vst <-1
-junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/junc_expr_combined_vst_1.rds"
-tcga<-T
+# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/gene_expression.rds"
+# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/CHOL_splicemutr_dat.txt"
+# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/kmer_counts_all.rds"
+# vst <-1
+# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/junc_expr_combined_vst_1.rds"
+# tcga<-T
 
 #------------------------------------------------------------------------------#
 # reading in the files
