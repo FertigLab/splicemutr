@@ -51,7 +51,7 @@ parse_fraction <- function(frac){
 
 parse_kmers <- function(kmers){
   a<-unlist(lapply(strsplit(as.character(kmers[seq(3,length(kmers))]),":"),function(kmer_split){
-    # kmer_split <- unique(kmer_split)
+    kmer_split <- unique(kmer_split)
     length(kmer_split)-length(which(str_detect(kmer_split,"NAZZZZZZZ")))
   }))
   a<-c(as.character(kmers[seq(1,2)]),a)
