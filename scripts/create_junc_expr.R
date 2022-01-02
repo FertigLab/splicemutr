@@ -13,12 +13,13 @@ arguments <- parse_args(OptionParser(usage = "",
                                      option_list=list(
                                        make_option(c("-j","--junc_dir"),
                                                    default = "",
-                                                   help="junction_dir"))))
+                                                   help="junction_dir"),
+                                       make_option(c("-f","--junc_files"),
+                                                   default = "",
+                                                   help="junction_files"))))
 opt=arguments
 junc_dir <- opt$junc_dir
-
-#------------------------------------------------------------------------------#
-# creating junc expression
+junc_files <- opt$junc_files
 
 #------------------------------------------------------------------------------#
 # creating junction expression file
@@ -27,7 +28,8 @@ junc_expr <- list()
 junc_expr_file <- sprintf("%s/junc_expr.rds",junc_dir)
 juncs_all<-c()
 
-junc_files <- read.table(sprintf("%s/filenames.txt",junc_dir),header=F)
+junc_files <- read.table(junc_files,header=F)
+
 for (file in junc_files$V1){
   print(file)
   sample_juncs_counts <- read.table(file,header=F,sep="\t")
