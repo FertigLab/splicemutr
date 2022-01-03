@@ -12,9 +12,14 @@ arguments <- parse_args(OptionParser(usage = "",
                option_list=list(
                  make_option(c("-f","--featurecount_files"),
                              default = sprintf("%s",getwd()),
-                             help="featurecount_files"))))
+                             help="featurecount_files"),
+                 make_option(c("-s","--rep_str"),
+                             default = sprintf("%s",getwd()),
+                             help="string to replace")
+                 )))
 opt=arguments
 featurecount_files <- opt$featurecount_files
+rep_str <- opt$rep_str
 
 #------------------------------------------------------------------------------#
 # reading in the featurecount_files
@@ -36,7 +41,7 @@ for (i in seq(nrow(featurecount_files_file))){
 featurecounts_all <- featurecounts_all[,c(1,seq(7,ncol(featurecounts_all)))]
 colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))] <- vapply(colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))],
                                                                       function(fname){
-                                                                        str_replace(basename(fname),"Aligned.out.bam","")
+                                                                        str_replace(basename(fname),rep_str,"")
                                                                       },character(1))
 rownames(featurecounts_all)<-featurecounts_all$Geneid
 featurecounts_all <- featurecounts_all[,seq(2,ncol(featurecounts_all))]
