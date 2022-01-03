@@ -54,7 +54,7 @@ write.table(featurecounts_all,
 # variance stabilizing featurecounts
 
 featurecounts_all_vst <- as.data.frame(varianceStabilizingTransformation(featurecounts_all))
-saveRDS(featurecounts_all_vst,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.rds"))
+saveRDS(featurecounts_all_vst,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all_vst.rds"))
 write.table(featurecounts_all_vst,
-            file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.txt"),quote=F, col.names = T, row.names = T, sep = "\t")
+            file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all_vst.txt"),quote=F, col.names = T, row.names = T, sep = "\t")
 
