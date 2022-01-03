@@ -10,9 +10,9 @@ library(optparse)
 arguments <- parse_args(OptionParser(usage = "",
                    description="",
                    option_list=list(
-                     make_option(c("-g","--genotype_fille"),
+                     make_option(c("-g","--genotype_file"),
                                  default = "",
-                                 help="the genorype file"),
+                                 help="the genotype file"),
                      make_option(c("-s","--sample_file"),
                                  default = "",
                                  help="the sample file"),
