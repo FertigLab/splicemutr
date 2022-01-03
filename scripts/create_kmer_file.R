@@ -100,7 +100,7 @@ a<-vapply(names(genotypes),function(sample){
 #------------------------------------------------------------------------------#
 # creating full kmer file
 
-full_splice$rosw <- seq(nrow(full_splice))
+full_splice$rows <- seq(nrow(full_splice))
 small_splice_proto <- full_splice %>% dplyr::filter(protein_coding=="Yes")
 full_kmers <- create_full_kmers(full_splice,names(genotypes))
 full_kmers[small_splice_proto$rows,colnames(genotypes)] <- filler_mat
