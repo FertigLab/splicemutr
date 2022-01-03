@@ -46,17 +46,17 @@ colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))] <- vapply(colnames(f
 rownames(featurecounts_all)<-featurecounts_all$Geneid
 featurecounts_all <- featurecounts_all[,seq(2,ncol(featurecounts_all))]
 saveRDS(featurecounts_all,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.rds"))
-write.table(featurecounts_all,
-            file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.txt"),quote=F, col.names = T, row.names = F, sep = "\t")
+# write.table(featurecounts_all,
+#             file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.txt"),quote=F, col.names = T, row.names = T, sep = "\t")
 
 #------------------------------------------------------------------------------#
 # variance stabilizing featurecounts
 
-featurecounts_all_vst <- as.data.frame(varianceStabilizingTransformation(as.matrix(featurecounts_all),fitType="local"))
+featurecounts_all_vst <- as.data.frame(varianceStabilizingTransformation(as.matrix(featurecounts_all),fitType="mean"))
 colnames(featurecounts_all_vst) <- colnames(featurecounts_all)
 rownames(featurecounts_all_vst) <- rownames(featurecounts_all)
 
 saveRDS(featurecounts_all_vst,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all_vst.rds"))
-write.table(featurecounts_all_vst,
-            file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all_vst.txt"),quote=F, col.names = T, row.names = F, sep = "\t")
+# write.table(featurecounts_all_vst,
+#             file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all_vst.txt"),quote=F, col.names = T, row.names = T, sep = "\t")
 
