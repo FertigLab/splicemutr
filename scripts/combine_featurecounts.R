@@ -16,8 +16,7 @@ arguments <- parse_args(OptionParser(usage = "",
                              help="featurecount_files"),
                  make_option(c("-s","--rep_str"),
                              default = sprintf("%s",getwd()),
-                             help="string to replace")
-                 )))
+                             help="string to replace"))))
 opt=arguments
 featurecount_files <- opt$featurecount_files
 rep_str <- opt$rep_str
