@@ -114,5 +114,5 @@ write.table(full_kmers,
             file=sprintf("%s/full_kmers.txt",dirname(full_splice_file)),quote=F, col.names = T, row.names = F, sep = "\t")
 
 saveRDS(full_splice,file=sprintf("%s/full_splicemutr_dat.rds",dirname(full_splice_file)))
-write.table(full_kmers,
+write.table(full_splice,
             file=sprintf("%s/full_splicemutr_dat.txt",dirname(full_splice_file)),quote=F, col.names = T, row.names = F, sep = "\t")
