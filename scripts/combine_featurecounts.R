@@ -3,6 +3,7 @@
 library(dplyr)
 library(stringr)
 library(optparse)
+library(DESeq2)
 
 #------------------------------------------------------------------------------#
 # handling command line input
