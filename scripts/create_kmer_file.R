@@ -48,8 +48,8 @@ create_full_kmers <- function(splice_dat,samples){
   strand <- as.data.frame(matrix(unlist(str_split(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat)))[,3]
   juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,strand)
   filler_mat <- matrix(rep(0,total_rows*(length(samples)+2)),nrow=total_rows,ncol=length(samples)+2)
-  colnames(filler_mat)<-c("row","junc",samples)
-  filler_mat[,"row"] <- seq(total_rows)
+  colnames(filler_mat)<-c("rows","junc",samples)
+  filler_mat[,"rows"] <- seq(total_rows)
   filler_mat[,"junc"] <- juncs
   return(as.data.frame(filler_mat))
 }
@@ -100,14 +100,14 @@ a<-vapply(names(genotypes),function(sample){
 #------------------------------------------------------------------------------#
 # creating full kmer file
 
-full_splice$row <- seq(nrow(full_splice))
+full_splice$rosw <- seq(nrow(full_splice))
 small_splice_proto <- full_splice %>% dplyr::filter(protein_coding=="Yes")
 full_kmers <- create_full_kmers(full_splice,names(genotypes))
-full_kmers[small_splice_proto$row,colnames(genotypes)] <- filler_mat
+full_kmers[small_splice_proto$rows,colnames(genotypes)] <- filler_mat
 full_splice <- full_splice %>% dplyr::filter(!(verdict == "annotated" & modified == "changed") & deltapsi > 0)
-full_kmers <- full_kmers[full_splice$row,]
+full_kmers <- full_kmers[full_splice$rows,]
 
-rm(small_splice_proto,small_splice,genotypes,)
+rm(small_splice_proto,small_splice,genotypes)
 
 saveRDS(full_kmers,file=sprintf("%s/full_kmers.rds",dirname(full_splice_file)))
 write.table(full_kmers,
