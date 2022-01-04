@@ -54,13 +54,13 @@ count_kmers <- function(vals){
 
 #------------------------------------------------------------------------------#
 # local play
-
-gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/gene_expression_vst.rds"
-splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/LUAD_splicemutr_dat.txt"
-kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/kmer_counts_all.rds"
-vst <-1
-junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/junc_expr_combined_vst_7.rds"
-tcga<-T
+#
+# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/gene_expression_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/LUAD_splicemutr_dat.txt"
+# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/kmer_counts_all.rds"
+# vst <-1
+# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/junc_expr_combined_vst_7.rds"
+# tcga<-T
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -84,7 +84,7 @@ kmer_counts[,seq(3,ncol(kmer_counts))] <- apply(kmer_counts[,seq(3,ncol(kmer_cou
 kmer_counts[,seq(3,ncol(kmer_counts))] <- mutate_all(kmer_counts[,seq(3,ncol(kmer_counts))], function(x) as.numeric(x))
 
 splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
-splice_dat <- splice_dat %>% dplyr::filter(deltapsi>0)
+splice_dat <- splice_dat %>% dplyr::filter(deltapsi>0 & protein_coding=="Yes")
 splice_dat_strands <- matrix(unlist(strsplit(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat))[,3]
 splice_dat$juncs <- sprintf("%s:%s",splice_dat$juncs,splice_dat_strands)
 splice_dat_juncs <- as.data.frame(matrix(unlist(strsplit(splice_dat$juncs,":")),byrow=T,nrow=nrow(splice_dat)))
