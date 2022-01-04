@@ -62,11 +62,11 @@ format_alleles <- function(alleles){
 # #------------------------------------------------------------------------------#
 # # local files
 
-# genotype_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/genotype_vecs.rds"
-# sample_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/samples.txt"
-# allele_dir <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1"
-# full_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr.txt"
-# small_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr_protein_coding.txt"
+genotype_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/genotype_vecs.rds"
+sample_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/samples.txt"
+allele_dir <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1"
+full_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr.txt"
+small_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr_protein_coding.txt"
 
 #------------------------------------------------------------------------------#
 # reading in the genotype and samples file
@@ -104,7 +104,7 @@ full_splice$rows <- seq(nrow(full_splice))
 small_splice_proto <- full_splice %>% dplyr::filter(protein_coding=="Yes")
 full_kmers <- create_full_kmers(full_splice,names(genotypes))
 full_kmers[small_splice_proto$rows,names(genotypes)] <- filler_mat
-full_splice <- full_splice %>% dplyr::filter(!(verdict == "annotated" & modified == "changed") & deltapsi > 0)
+full_splice <- full_splice %>% dplyr::filter(!(verdict == "annotated" & modified == "changed") & deltapsi > 0 & protein_coding=="Yes")
 full_kmers <- full_kmers[full_splice$rows,]
 
 rm(small_splice_proto,small_splice,genotypes)
