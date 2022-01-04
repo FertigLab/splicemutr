@@ -27,6 +27,7 @@ featurecount_files_file <- read.table(featurecount_files,header=F)
 
 
 for (i in seq(nrow(featurecount_files_file))){
+  print(i)
   if (i == 1){
     featurecounts_all <- read.table(featurecount_files_file[i,],header=T,sep="\t",check.names=F)
   } else {
