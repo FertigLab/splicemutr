@@ -9,11 +9,10 @@ library(DESeq2)
 # handling command line input
 
 arguments <- parse_args(OptionParser(usage = "",
-               description="",
-               option_list=list(
-                 make_option(c("-f","--featurecount_files"),
-                             default = sprintf("%s",getwd()),
-                             help="featurecount_files"))))
+                                     description="",
+                                     option_list=list(make_option(c("-f","--featurecount_files"),
+                                                                  default = sprintf("%s",getwd()),
+                                                                  help="featurecount_files"))))
 opt=arguments
 featurecount_files <- opt$featurecount_files
 rep_str <- "Aligned.out.bam.sorted"
@@ -36,10 +35,7 @@ for (i in seq(nrow(featurecount_files_file))){
   }
 }
 featurecounts_all <- featurecounts_all[,c(1,seq(7,ncol(featurecounts_all)))]
-colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))] <- vapply(colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))],
-                                                                      function(fname){
-                                                                        str_replace(basename(fname),rep_str,"")
-                                                                      },character(1))
+colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))] <- vapply(colnames(featurecounts_all)[seq(2,ncol(featurecounts_all))],function(fname){str_replace(basename(fname),rep_str,"")},character(1))
 rownames(featurecounts_all)<-featurecounts_all$Geneid
 featurecounts_all <- featurecounts_all[,seq(2,ncol(featurecounts_all))]
 saveRDS(featurecounts_all,file=sprintf("%s/%s",dirname(featurecount_files_file[i,]),"featurecounts_all.rds"))
