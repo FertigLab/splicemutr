@@ -45,12 +45,12 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 
 #------------------------------------------------------------------------------#
 # local play
-
-gene_expression_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/featurecounts_out/featurecounts_all_vst.rds"
-splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/full_splicemutr_dat.rds"
-kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/full_kmers.rds"
-vst <-1
-junc_expr_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/junc_expr_combined_vst.rds"
+#
+# gene_expression_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/featurecounts_out/featurecounts_all_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/full_splicemutr_dat.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/full_kmers.rds"
+# vst <-1
+# junc_expr_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/junc_expr_combined_vst.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
