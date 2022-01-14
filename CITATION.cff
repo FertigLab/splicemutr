@@ -1,0 +1,14 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: splicemute
+message: 'If you use this software, please cite it.'
+type: software
+authors:
+  - given-names: Theron
+    family-names: Palmer
+    email: theropalm@gmail.com
+  - given-names: Elana
+    family-names: Fertig
+    email: ejfertig@jhmi.edu
