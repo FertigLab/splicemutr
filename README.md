@@ -1,4 +1,5 @@
 splicemute is a tool for evaluating how individual splice junctions affect coding transcripts from RNAseq data.
+
 splicemute is licensed under the [GNU General Public License v3](http://www.gnu.org/licenses/gpl-3.0.html)
 
 # Software USED
