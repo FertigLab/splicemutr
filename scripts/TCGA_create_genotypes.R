@@ -28,8 +28,8 @@ junc_metadata_file<- opt$junc_metadata
 #------------------------------------------------------------------------------#
 # reading in the data
 
-genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
-junc_metadata_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BRCA/BRCA_metadata.rds"
+# genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
+# junc_metadata_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BRCA/BRCA_metadata.rds"
 
 genotypes <- read.table(genotypes_files,sep=",",header=T)
 junc_metadata <- readRDS(junc_metadata_file)
@@ -88,8 +88,8 @@ tum_or_norm <- unname(vapply(genotypes$aliquot_id,function(ID){
 },character(1)))
 genotypes$tum_or_norm <- tum_or_norm
 
-genotypes_specfic$sample_id <- TCGAbarcode(genotypes$aliquot_id, sample=T)
-genotypes_specfic$sample_id <- vapply(genotypes$sample_id,function(ID){substr(ID,1,nchar(ID)-1)},character(1))
+# genotypes_specfic$sample_id <- TCGAbarcode(genotypes$aliquot_id, sample=T)
+# genotypes_specfic$sample_id <- vapply(genotypes$sample_id,function(ID){substr(ID,1,nchar(ID)-1)},character(1))
 
 genotypes_specfic$external_id <- junc_metadata$external_id
 
@@ -97,7 +97,7 @@ genotypes_specfic$external_id <- junc_metadata$external_id
 # saving the genotypes data
 
 write.table(genotypes_specfic,
-            file=sprintf("%s/%s_genotypes_specific.txt",dirname(junc_metadata_file),cancer_type),
+            file=sprintf("%s/%s_genotypes_specific.txt",dirname(junc_metadata_file),basename(dirname(junc_metadata_file))),
             sep="\t",
             quote=F,
             col.names=T,
