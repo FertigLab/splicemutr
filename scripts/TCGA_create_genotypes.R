@@ -73,7 +73,7 @@ genotypes_specfic <- as.data.frame(matrix(unlist(lapply(junc_metadata$tcga.tcga_
     return(as.character(genotypes[a[1],seq(6)]))
   }
 })),byrow=T,nrow=nrow(junc_metadata)))
-colnames(genotypes_specfic)<-colnames(genotypes)
+colnames(genotypes_specfic)<-colnames(genotypes)[seq(6)]
 genotypes_specfic$aliquot_id <- junc_metadata$tcga.tcga_barcode
 
 tum_or_norm <- unname(vapply(genotypes$aliquot_id,function(ID){
