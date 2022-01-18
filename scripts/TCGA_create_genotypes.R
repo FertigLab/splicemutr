@@ -74,7 +74,6 @@ genotypes_specfic <- as.data.frame(matrix(unlist(lapply(junc_metadata$tcga.tcga_
   }
 })),byrow=T,nrow=nrow(junc_metadata)))
 colnames(genotypes_specfic)<-colnames(genotypes)[seq(6)]
-genotypes_specfic$aliquot_id <- junc_metadata$tcga.tcga_barcode
 
 tum_or_norm <- unname(vapply(genotypes$aliquot_id,function(ID){
   type <- str_split(ID,"[-]")[[1]][4]
@@ -87,6 +86,7 @@ tum_or_norm <- unname(vapply(genotypes$aliquot_id,function(ID){
   return("C")
 },character(1)))
 genotypes$tum_or_norm <- tum_or_norm
+genotypes_specfic$aliquot_id <- junc_metadata$tcga.tcga_barcode
 
 # genotypes_specfic$sample_id <- TCGAbarcode(genotypes$aliquot_id, sample=T)
 # genotypes_specfic$sample_id <- vapply(genotypes$sample_id,function(ID){substr(ID,1,nchar(ID)-1)},character(1))
