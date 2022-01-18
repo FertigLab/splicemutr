@@ -68,9 +68,9 @@ genotypes$C2 <- unname(vapply(genotypes$C2,function(HLA){
 genotypes_specfic <- as.data.frame(matrix(unlist(lapply(junc_metadata$tcga.tcga_barcode,function(barcode){
   a<-which(barcode == genotypes$aliquot_id)
   if (length(a)==0){
-    return(rep(NA,ncol(genotypes)))
+    return(rep(NA,6))
   } else {
-    return(as.character(genotypes[a[1],]))
+    return(as.character(genotypes[a[1],seq(6)]))
   }
 })),byrow=T,nrow=nrow(junc_metadata)))
 colnames(genotypes_specfic)<-colnames(genotypes)
