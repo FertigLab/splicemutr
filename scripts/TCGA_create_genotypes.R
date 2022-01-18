@@ -28,8 +28,8 @@ junc_metadata_file<- opt$junc_metadata
 #------------------------------------------------------------------------------#
 # reading in the data
 
-# genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
-# junc_metadata_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BRCA/BRCA_metadata.rds"
+genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
+junc_metadata_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BRCA/BRCA_metadata.rds"
 
 genotypes <- read.table(genotypes_files,sep=",",header=T)
 junc_metadata <- readRDS(junc_metadata_file)
@@ -75,7 +75,7 @@ genotypes_specfic <- as.data.frame(matrix(unlist(lapply(junc_metadata$tcga.tcga_
 })),byrow=T,nrow=nrow(junc_metadata)))
 colnames(genotypes_specfic)<-colnames(genotypes)[seq(6)]
 
-tum_or_norm <- unname(vapply(genotypes$aliquot_id,function(ID){
+tum_or_norm <- unname(vapply(junc_metadata$tcga.tcga_barcode,function(ID){
   type <- str_split(ID,"[-]")[[1]][4]
   type<-as.numeric(substr(type,1,2))
   if (type >= 1 & type <= 9){
@@ -85,8 +85,8 @@ tum_or_norm <- unname(vapply(genotypes$aliquot_id,function(ID){
   }
   return("C")
 },character(1)))
-genotypes$tum_or_norm <- tum_or_norm
 genotypes_specfic$aliquot_id <- junc_metadata$tcga.tcga_barcode
+genotypes_specfic$type <- tum_or_norm
 
 # genotypes_specfic$sample_id <- TCGAbarcode(genotypes$aliquot_id, sample=T)
 # genotypes_specfic$sample_id <- vapply(genotypes$sample_id,function(ID){substr(ID,1,nchar(ID)-1)},character(1))
