@@ -129,9 +129,10 @@ def main(options, args):
         # assigning the immunogenic kmers to the specific_splice_dat
         geno_length = len(genotypes_file.index)
         iter_val = 1
-        for i in range(0,geno_length,100):
-            if i+100 <= geno_length:
-                end = i+100
+        sample_num=50
+        for i in range(0,geno_length,sample_num): # original sample_num == 100
+            if i+sample_num <= geno_length:
+                end = i+sample_num
             else:
                 end = geno_length
             genotypes_file_small = genotypes_file[i:end]

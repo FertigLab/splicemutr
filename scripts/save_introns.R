@@ -31,7 +31,7 @@ out_prefix <- opt$out_prefix
 load(intron_file)
 
 write.table(introns,
-            file=sprintf("%s/%s_introns.txt",intron_dir,output_prefix),
+            file=sprintf("%s/%s_introns.txt",dirname(intron_file),out_prefix),
             sep="\t",
             quote=F,
             col.names=T,
