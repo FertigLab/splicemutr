@@ -139,23 +139,23 @@ def main(options, args):
                                                                           rows,
                                                                           hla_dir,
                                                                           os.path.basename(cancer_dir))
-            if i == 0:
-                tumor_kmers = tumor_kmers_fill
-                normal_kmers = normal_kmers_fill
-            else:
-                for i in range(len(rows)):
-                    tumor_kmers[i] = tumor_kmers[i].union(tumor_kmers_fill[i])
-                    normal_kmers[i] = normal_kmers[i].union(normal_kmers_fill[i])
+#             if i == 0:
+#                 tumor_kmers = tumor_kmers_fill
+#                 normal_kmers = normal_kmers_fill
+#             else:
+#                 for i in range(len(rows)):
+#                     tumor_kmers[i] = tumor_kmers[i].union(tumor_kmers_fill[i])
+#                     normal_kmers[i] = normal_kmers[i].union(normal_kmers_fill[i])
             
-            # turning tumor and normal kmers into pandas dataframe for saving
+#             # turning tumor and normal kmers into pandas dataframe for saving
             
             specific_splice_kmers.to_csv("%s/%s_kmers_%d.txt"%(cancer_dir,os.path.basename(cancer_dir),iter_val),sep='\t')
             iter_val+=1
             
-        tumor_normal_kmers = {"tumor":[":".join(list(i)) for i in tumor_kmers],
-                              "normal":[":".join(list(i)) for i in normal_kmers]}
-        tumor_normal_kmers = pd.DataFrame(tumor_normal_kmers)
-        tumor_normal_kmers.to_csv("%s/%s_tumor_normal_kmers.txt"%(cancer_dir,os.path.basename(cancer_dir)),sep='\t')
+#         tumor_normal_kmers = {"tumor":[":".join(list(i)) for i in tumor_kmers],
+#                               "normal":[":".join(list(i)) for i in normal_kmers]}
+#         tumor_normal_kmers = pd.DataFrame(tumor_normal_kmers)
+#         tumor_normal_kmers.to_csv("%s/%s_tumor_normal_kmers.txt"%(cancer_dir,os.path.basename(cancer_dir)),sep='\t')
         
 if __name__ == "__main__":
 
