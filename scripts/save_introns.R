@@ -30,9 +30,4 @@ out_prefix <- opt$out_prefix
 
 load(intron_file)
 
-write.table(introns,
-            file=sprintf("%s/%s_introns.txt",dirname(intron_file),out_prefix),
-            sep="\t",
-            quote=F,
-            col.names=T,
-            row.names=F)
+saveRDS(introns,file=sprintf("%s/%s_introns.rds",dirname(intron_file),out_prefix))
