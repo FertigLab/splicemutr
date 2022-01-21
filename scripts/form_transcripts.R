@@ -6,13 +6,6 @@
 # The purpose of this script is to modify reference transcripts using
 # reference transcript information
 
-
-#------------------------------------------------------------------------------#
-# BSgenome stuff, you modify as needed
-
-library(BSgenome.Hsapiens.GENCODE.GRCh38.p13)
-bsgenome<-BSgenome.Hsapiens.GENCODE.GRCh38.p13
-
 #------------------------------------------------------------------------------#
 # loading libraries
 
@@ -37,24 +30,33 @@ library(AnnotationDbi)
 arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups_file",
   description="form transcripts per junction for the given input junction file",
   option_list=list(
-   make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
+   make_option(c("-o","--out_prefix"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
    make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
    make_option(c("-f","--funcs"), default=NULL, help="The splicemute functions to source"),
-   make_option(c("-n","--num"), default=NULL, help="file number"))))
+   make_option(c("-n","--num"), default=NULL, help="file number"),
+   make_option(c("-b","--bsgenome_name"),default = "bsgenome_name",help="the bsgenome object name"))))
 
 opt=arguments
 
-out_dir<-opt$output_directory
+out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
 file_num<-opt$num
 funcs<-opt$funcs
-file_num<-as.numeric(opt$num)
 source(funcs)
+
+file_num<-as.numeric(opt$num)
+bsgenome_name <- opt$bsgenome_name
 
 introns <-readRDS(opt$juncs) # loading in the introns data
 introns$chr <- str_replace(introns$chr,"chr","")
 introns<-format_introns(introns)
+
+#------------------------------------------------------------------------------#
+# assigning bsgenome object to "bsgenome" variable
+
+library(bsgenome_name,character.only = T)
+assign("bsgenome",get(bsgenome_name))
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
@@ -230,7 +232,7 @@ for (i in seq(intron_length)){
                 names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
                                      gene,paste(unique(trans_pair),collapse="-")),collapse=":")
                 sequences<-c(sequences, sequ)
-                mod<-mod_made(data.frame(combo_cds), cds_mod)
+                mod<-mod_made(data.frame(combo_cds), cds_mod)BSgenome.Hsapiens.GENCODE.GRCh38.p13
               } else if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]==junc[2]) {
                 combo_cds<-create_cds(combo_exons,UTR5,UTR3,tx_junc)
                 cds_mod_info <- list()
@@ -567,9 +569,9 @@ for (i in seq(intron_length)){
 #------------------------------------------------------------------------------------------------------------------------------------------------#
 # saving data
 
-out<-sprintf("%s/%s%s%s",out_dir,"data_splicemutr",file_num,".txt")
-out_fasta<-sprintf("%s/%s%s%s",out_dir,"sequences",file_num,".fa")
-out_cds <- sprintf("%s/cds_stored_%s.rds",out_dir,file_num)
+out<-sprintf("%s_%s%s%s",out_prefix,"data_splicemutr",file_num,".txt")
+out_fasta<-sprintf("%s_%s%s%s",out_prefix,"sequences",file_num,".fa")
+out_cds <- sprintf("%s_cds_stored_%s.rds",out_prefix,file_num)
 write.table(data_canon,file=out,col.names=T,row.names=F,quote=F)
 sequences<-DNAStringSet(sequences)
 writeXStringSet(sequences,out_fasta)
