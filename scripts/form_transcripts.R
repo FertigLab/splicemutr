@@ -232,7 +232,7 @@ for (i in seq(intron_length)){
                 names(sequ)<-paste(c(curr_introns$chr,as.character(curr_introns$start),as.character(curr_introns$end),
                                      gene,paste(unique(trans_pair),collapse="-")),collapse=":")
                 sequences<-c(sequences, sequ)
-                mod<-mod_made(data.frame(combo_cds), cds_mod)BSgenome.Hsapiens.GENCODE.GRCh38.p13
+                mod<-mod_made(data.frame(combo_cds), cds_mod)
               } else if (str_detect(junc[1],"p") & str_detect(junc[2],"p") & junc[1]==junc[2]) {
                 combo_cds<-create_cds(combo_exons,UTR5,UTR3,tx_junc)
                 cds_mod_info <- list()
