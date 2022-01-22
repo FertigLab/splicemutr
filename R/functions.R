@@ -771,3 +771,21 @@ format_introns <- function(introns){
   introns_fill <- cbind(introns_fill,introns[,!important_info])
 }
 
+#' @name map_chroms
+#' @title map_chroms
+#' @param granges_obj object
+#' @return GRanges object
+#' @export
+map_chroms <- function(granges_obj,chr_map){
+  granges_obj <- as.data.frame(granges_obj)
+  granges_obj$seqnames <- vapply(granges_obj$seqnames,function(chrom){
+    if (chrom %in% chr_map$chr){
+      return(chr_map$mapped[chr_map$chr==chrom])
+    } else {
+      return(as.character(chrom))
+    }
+  },character(1))
+  granges_obj <- makeGRangesFromDataFrame(granges_obj)
+  return(granges_obj)
+}
+

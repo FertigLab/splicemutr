@@ -3,7 +3,6 @@
 library(dplyr)
 library(stringr)
 library(optparse)
-library(DESeq2)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -18,6 +17,15 @@ opt=arguments
 junc_dir <- opt$junc_dir
 
 #------------------------------------------------------------------------------#
+# internal functions
+
+count_kmers <- function(vals){
+  vapply(strsplit(vals,":"),function(val){
+    length(which(val != "NAZZZZZZZ"))
+  },numeric(1))
+}
+
+#------------------------------------------------------------------------------#
 # creating junc expression
 
 cancer<-basename(junc_dir)
@@ -30,9 +38,11 @@ for (i in seq(nrow(kmer_files))){
     kmer_counts_all <- read.table(str_replace(file,".txt","_filt.txt"),sep="\t")
     last_bit <- kmer_counts_all[,seq(ncol(kmer_counts_all)-1,ncol(kmer_counts_all))]
     kmer_counts_all<-kmer_counts_all[,seq(ncol(kmer_counts_all)-2)]
+    kmer_counts_all <- data.frame(apply(kmer_counts_all,2,count_kmers))
   } else {
     kmer_counts_fill <- read.table(str_replace(file,".txt","_filt.txt"),sep="\t")
-    kmer_counts_all <- cbind(kmer_counts_all,kmer_counts_fill[,seq(ncol(kmer_counts_fill)-2)])
+    kmer_counts_fill <- data.frame(apply(kmer_counts_fill[,seq(ncol(kmer_counts_fill)-2)],2,count_kmers))
+    kmer_counts_all <- cbind(kmer_counts_all,kmer_counts_fill)
   }
 }
 kmer_counts_all <- cbind(last_bit,kmer_counts_all)
