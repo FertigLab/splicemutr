@@ -40,7 +40,7 @@ for (i in seq(nrow(kmer_files))){
     kmer_counts_all<-kmer_counts_all[,seq(2,ncol(kmer_counts_all))]
     kmer_counts_all <- data.frame(apply(kmer_counts_all,2,count_kmers))
   } else {
-    kmer_counts_fill <- read.table(file,sep="\t")
+    kmer_counts_all <- read.table(file,sep="\t",header=T)
     kmer_counts_fill<-kmer_counts_fill[,seq(2,ncol(kmer_counts_fill))]
     kmer_counts_fill <- data.frame(apply(kmer_counts_fill,2,count_kmers))
     kmer_counts_all <- cbind(kmer_counts_all,kmer_counts_fill)
