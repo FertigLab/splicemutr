@@ -88,8 +88,8 @@ junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 
 splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
 if (tcga){
+  kmer_counts<-kmer_counts[,!duplicated(colnames(kmer_counts))]
   kmer_counts_filt <- kmer_counts %>% dplyr::filter(rows %in% splice_dat_filt$X)
-
 } else {
   kmer_counts_filt <- kmer_counts %>% dplyr::filter(rows %in% splice_dat_filt$rows)
 }
