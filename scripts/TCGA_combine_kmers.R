@@ -30,7 +30,7 @@ count_kmers <- function(vals){
 
 cancer<-basename(junc_dir)
 kmer_files <- read.table(sprintf("%s/kmer_files.txt",junc_dir))
-genotypes <- read.table(sprintf("%s/%s_genotypes.txt",junc_dir,cancer),header=T)
+genotypes <- read.table(sprintf("%s/%s_genotypes_specific.txt",junc_dir,cancer),header=T)
 
 for (i in seq(nrow(kmer_files))){
   file <- kmer_files[i,1]
