@@ -94,6 +94,7 @@ if (tcga){
   kmer_counts_filt <- kmer_counts %>% dplyr::filter(rows %in% splice_dat_filt$rows)
 }
 samples <- colnames(kmer_counts_filt)[seq(2,ncol(kmer_counts_filt))]
+samples <- samples[which(samples %in% colnames(junc_expr_comb))]
 gene_expression_filt <- gene_expression[,samples,drop=F]
 
 if ("juncs" %in% colnames(splice_dat_filt)){
@@ -114,7 +115,6 @@ rm(splice_dat)
 genes <- unique(splice_dat_filt$gene)
 
 gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
-    g <<- gene_tar
     splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
     if(tcga){
       kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(rows %in% splice_dat_small$X)
