@@ -1,6 +1,7 @@
 # The splicemutr python script library file
 
 from binascii import hexlify, unhexlify
+import numpy as np
 
 #-----------------------------------------------------#
 
@@ -151,3 +152,18 @@ def assign_kmers(genotypes_file,rows,hla_dir,cancer):
                 normal_kmers[i].update(kmers[i].split(":"))
     all_kmers = pd.DataFrame(all_kmers)
     return(all_kmers,tumor_kmers,normal_kmers)
+
+#-----------------------------------------------------#
+
+def kmerize(pep,kmer_length):
+    # kmerize() : kmerize a peptide
+    # inputs:
+     # pep: the peptide to be kmerized
+     # kmer_length: the kmer length to kmerize the peptide over
+    # outputs: 
+     # the list of kmers from the peptide
+    pep_len=len(pep)
+    if len(pep) < kmer_length:
+        pep += "Z"*(kmer_length-pep_len)
+        pep_len=len(pep)
+    return([pep[i:i+kmer_length] for i in range(pep_len-kmer_length+1)])
