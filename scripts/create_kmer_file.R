@@ -42,15 +42,20 @@ create_filler <- function(splice_dat,samples){
   return(as.data.frame(filler_mat))
 }
 
+create_kmer_filler <- function(splice_dat,samples){
+  filler_num <- nrow(splice_dat)
+  filler_mat <- matrix(rep("",filler_num*length(samples)),nrow=filler_num,ncol=length(samples))
+  colnames(filler_mat)<-samples
+  return(as.data.frame(filler_mat))
+}
+
 create_full_kmers <- function(splice_dat,samples){
   total_rows <- nrow(splice_dat)
   num_samples <- length(samples)+2
-  strand <- as.data.frame(matrix(unlist(str_split(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat)))[,3]
-  juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,strand)
   filler_mat <- matrix(rep(0,total_rows*(length(samples)+2)),nrow=total_rows,ncol=length(samples)+2)
-  colnames(filler_mat)<-c("rows","junc",samples)
+  colnames(filler_mat)<-c("rows","cluster",samples)
   filler_mat[,"rows"] <- seq(total_rows)
-  filler_mat[,"junc"] <- juncs
+  filler_mat[,"cluster"] <- splice_dat$cluster
   return(as.data.frame(filler_mat))
 }
 
@@ -62,11 +67,11 @@ format_alleles <- function(alleles){
 # #------------------------------------------------------------------------------#
 # # local files
 
-# genotype_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/genotype_vecs.rds"
-# sample_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/samples.txt"
-# allele_dir <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1"
-# full_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr.txt"
-# small_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr_protein_coding.txt"
+genotype_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/genotype_vecs.rds"
+sample_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/samples.txt"
+allele_dir <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1"
+full_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr.txt"
+small_splice_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/data_splicemutr_protein_coding.txt"
 
 #------------------------------------------------------------------------------#
 # reading in the genotype and samples file
@@ -79,12 +84,17 @@ full_splice <- read.table(full_splice_file, sep=" ",header=T)
 full_splice$deltapsi <- as.numeric(full_splice$deltapsi)
 small_splice <- read.table(small_splice_file, sep="\t",header=F)
 colnames(small_splice) <- colnames(full_splice)
+small_splice$rows <- seq(nrow(small_splice))
+small_splice_ann <- small_splice %>% dplyr::filter(error == "tx" & verdict == "annotated")
+small_splice <- small_splice %>% dplyr::filter(verdict != "annotated")
+small_splice <- rbind(small_splice,small_splice_ann)
 
 #------------------------------------------------------------------------------#
-# reading in the genotypes per file
+# reading in the genotypes per file and processing
 
 filler_mat <- create_filler(small_splice,names(genotypes))
 a<-vapply(names(genotypes),function(sample){
+  print(sample)
   alleles <- genotypes[[sample]]
   alleles <- alleles[which(str_detect(alleles,"HLA-A") | str_detect(alleles,"HLA-B") | str_detect(alleles,"HLA-C"))]
   alleles <- format_alleles(alleles)

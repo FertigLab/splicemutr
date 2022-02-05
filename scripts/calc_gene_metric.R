@@ -49,12 +49,15 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 
 #------------------------------------------------------------------------------#
 # local play
-#
-# gene_expression_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/featurecounts_out/featurecounts_all_vst.rds"
-# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/full_splicemutr_dat.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/full_kmers.rds"
-# vst <-1
-# junc_expr_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/junc_expr_combined_vst.rds"
+
+gene_expression_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/featurecounts_out/featurecounts_all_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
+splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat_norm.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
+kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_norm.rds"
+tcga<-F
+junc_expr_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/junc_expr_combined_vst.rds"
+out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -87,6 +90,10 @@ junc_expr_comb <- readRDS(junc_expr_file)
 junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 
 splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
+splicemutr_data_ann <- splice_dat_filt %>% dplyr::filter(error == "tx" & verdict == "annotated")
+splicemutr_data <- splice_dat_filt %>% dplyr::filter(verdict != "annotated")
+splice_dat_filt <- rbind(splicemutr_data,splicemutr_data_ann)
+
 if (tcga){
   kmer_counts<-kmer_counts[,!duplicated(colnames(kmer_counts))]
   kmer_counts_filt <- kmer_counts %>% dplyr::filter(rows %in% splice_dat_filt$X)
@@ -97,13 +104,9 @@ samples <- colnames(kmer_counts_filt)[seq(2,ncol(kmer_counts_filt))]
 samples <- samples[which(samples %in% colnames(junc_expr_comb))]
 gene_expression_filt <- gene_expression[,samples,drop=F]
 
-if ("juncs" %in% colnames(splice_dat_filt)){
-  junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples])
-} else {
-  strands <- as.data.frame(matrix(unlist(str_split(splice_dat_filt$cluster,"_")),byrow=T,nrow=nrow(splice_dat_filt)))[,3]
-  splice_dat_filt$juncs <- sprintf("%s:%s:%s:%s",splice_dat_filt$chr,splice_dat_filt$start,splice_dat_filt$end,strands)
-  junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples,drop=F])
-}
+strands <- as.data.frame(matrix(unlist(str_split(splice_dat_filt$cluster,"_")),byrow=T,nrow=nrow(splice_dat_filt)))[,3]
+splice_dat_filt$juncs <- sprintf("%s:%s:%s:%s",splice_dat_filt$chr,splice_dat_filt$start,splice_dat_filt$end,strands)
+junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples,drop=F])
 
 rm(gene_expression)
 rm(kmer_counts)

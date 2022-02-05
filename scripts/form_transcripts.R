@@ -34,7 +34,6 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
    make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
    make_option(c("-f","--funcs"), default=NULL, help="The splicemute functions to source"),
-   make_option(c("-n","--num"), default=NULL, help="file number"),
    make_option(c("-b","--bsgenome_name"),default = "bsgenome_name",help="the bsgenome object name"),
    make_option(c("-m","--chr_map"),default=NA,help="the chromosome map"))))
 
@@ -42,14 +41,12 @@ opt=arguments
 
 out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
-file_num<-opt$num
 funcs<-opt$funcs
 source(funcs)
 chr_map_file <- opt$chr_map
 chr_map <- read.table(chr_map_file)
 colnames(chr_map)<-c("chr","mapped")
 
-file_num<-as.numeric(opt$num)
 bsgenome_name <- opt$bsgenome_name
 
 introns <-readRDS(opt$juncs) # loading in the introns data
@@ -587,9 +584,11 @@ for (i in seq(intron_length)){
 #------------------------------------------------------------------------------------------------------------------------------------------------#
 # saving data
 
-out<-sprintf("%s_%s%s%s",out_prefix,"data_splicemutr",file_num,".txt")
-out_fasta<-sprintf("%s_%s%s%s",out_prefix,"sequences",file_num,".fa")
-out_cds <- sprintf("%s_cds_stored_%s.rds",out_prefix,file_num)
+out<-sprintf("%s_%s%s",out_prefix,"data_splicemutr",".txt")
+out_rds <- sprintf("%s_%s%s",out_prefix,"data_splicemutr",".rds")
+out_fasta<-sprintf("%s_%s%s",out_prefix,"sequences",".fa")
+out_cds <- sprintf("%s_cds_stored.rds",out_prefix)
+saveRDS(data_canon,file=out_rds)
 write.table(data_canon,file=out,col.names=T,row.names=F,quote=F)
 sequences<-DNAStringSet(sequences)
 writeXStringSet(sequences,out_fasta)
