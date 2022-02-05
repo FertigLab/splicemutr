@@ -35,7 +35,7 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
    make_option(c("-f","--funcs"), default=NULL, help="The splicemute functions to source"),
    make_option(c("-b","--bsgenome_name"),default = "bsgenome_name",help="the bsgenome object name"),
-   make_option(c("-m","--chr_map"),default=NA,help="the chromosome map"))))
+   make_option(c("-m","--chr_map"),default=F,help="the chromosome map"))))
 
 opt=arguments
 
@@ -43,19 +43,19 @@ out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
 funcs<-opt$funcs
 source(funcs)
-chr_map_file <- opt$chr_map
-chr_map <- read.table(chr_map_file)
-colnames(chr_map)<-c("chr","mapped")
+# chr_map_file <- opt$chr_map
+# chr_map <- read.table(chr_map_file)
+# colnames(chr_map)<-c("chr","mapped")
 
 bsgenome_name <- opt$bsgenome_name
 
 introns <-readRDS(opt$juncs) # loading in the introns data
 introns$chr <- str_replace(introns$chr,"chr","")
-if (typeof(chr_map)!="logical"){
-  introns$chr <- vapply(introns$chr,function(chrom){
-    return(chr_map$mapped[chr_map$chr==chrom])
-  },character(1))
-}
+# if (typeof(chr_map)!="logical"){
+#   introns$chr <- vapply(introns$chr,function(chrom){
+#     return(chr_map$mapped[chr_map$chr==chrom])
+#   },character(1))
+# }
 introns<-format_introns(introns)
 
 #------------------------------------------------------------------------------#
@@ -69,15 +69,15 @@ assign("bsgenome",get(bsgenome_name))
 
 print("reading in txdb")
 txdb<-loadDb(txdb_file) # making the txdb from gtf
-if (typeof(chr_map)!="logical"){
-  all_genes<-map_chroms(genes(txdb),chr_map)
-  exons_by_gene<-map_chroms(exonsBy(txdb,by="gene"),chr_map)
-  exons_by_tx<-map_chroms(exonsBy(txdb,by=c("tx"),use.names=T),chr_map)
-  tx_by_gene<-map_chroms(transcriptsBy(txdb,by="gene"),chr_map)
-  five_by_tx<-map_chroms(fiveUTRsByTranscript(txdb,use.names=T),chr_map)
-  three_by_tx<-map_chroms(threeUTRsByTranscript(txdb,use.names=T),chr_map)
-  cds_by_tx <- map_chroms(cdsBy(txdb,by="tx",use.names=T),chr_map)
-}
+# if (typeof(chr_map)!="logical"){
+#   all_genes<-map_chroms(genes(txdb),chr_map)
+#   exons_by_gene<-map_chroms(exonsBy(txdb,by="gene"),chr_map)
+#   exons_by_tx<-map_chroms(exonsBy(txdb,by=c("tx"),use.names=T),chr_map)
+#   tx_by_gene<-map_chroms(transcriptsBy(txdb,by="gene"),chr_map)
+#   five_by_tx<-map_chroms(fiveUTRsByTranscript(txdb,use.names=T),chr_map)
+#   three_by_tx<-map_chroms(threeUTRsByTranscript(txdb,use.names=T),chr_map)
+#   cds_by_tx <- map_chroms(cdsBy(txdb,by="tx",use.names=T),chr_map)
+# }
 all_genes<-genes(txdb)
 exons_by_gene<-exonsBy(txdb,by="gene")
 exons_by_tx<-exonsBy(txdb,by=c("tx"),use.names=T)
