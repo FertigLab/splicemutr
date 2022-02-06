@@ -18,7 +18,7 @@ def main(options):
     mhc_print = mhc.replace(":", "-") # some operating systems do not recognize ":" in file names, so replace.
     out_file = options.output + "{}" + "{}" + "{}" + "{}" + "{}"
     out_file = out_file.format("/", mhc_print, "_", kmer_file, ".txt")
-    predict(class_=results.type, peptides_path=s, mhc=mhc, output=out_file)
+    predict(class_=options.type, peptides_path=s, mhc=mhc, output=out_file)
 
 if __name__ == "__main__":
 
