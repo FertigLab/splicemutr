@@ -34,7 +34,7 @@ if __name__ == "__main__":
                       dest='kmers')
     parser.add_option("-m", "--mhc",
                       help='The MHC allele file',
-                      dest='mhc',help="the kmer length")
+                      dest='mhc')
     parser.add_option("-o", "--output",
                       help="The output directory to write scores to",
                       dest='output')
