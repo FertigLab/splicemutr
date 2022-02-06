@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 
 # python python runMHCnuggets.py -t "I" -k /media/theron/My_Passport/data/references/kmers_15 -m
 # /media/theron/My_Passport/splicemutr/MHC_I_alleles.txt -o /media/theron/My_Passport/data/references/scores
@@ -9,7 +9,6 @@ import tensorflow
 from mhcnuggets.src.predict import predict
 import os
 
-
 def main(options):
     s = options.kmers
     s_split = s.split("/")  # parsing the path
@@ -19,7 +18,7 @@ def main(options):
     mhc_print = mhc.replace(":", "-") # some operating systems do not recognize ":" in file names, so replace.
     out_file = options.output + "{}" + "{}" + "{}" + "{}" + "{}"
     out_file = out_file.format("/", mhc_print, "_", kmer_file, ".txt")
-    predict(class_=options.type, peptides_path=s, mhc=mhc, output=out_file)
+    predict(class_=results.type, peptides_path=s, mhc=mhc, output=out_file)
 
 if __name__ == "__main__":
 
@@ -27,7 +26,7 @@ if __name__ == "__main__":
 
     parser = OptionParser()
 
-    parser.add_option("-t", "--type", dest="peptides",
+    parser.add_option("-t", "--type",
                       help='The MHC class: "I" or "II"',
                       dest='type')
     parser.add_option("-k", "--kmers",
