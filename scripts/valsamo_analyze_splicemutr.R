@@ -82,16 +82,18 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
   } else {
     HLA_summ_file <- sprintf("%s/%s_tx_dict_summary.txt",summary_dir,HLA,summary_type)
   }
-  HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
-  HLA_summ$V1 <- as.numeric(HLA_summ$V1)+1
-  sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
-    dat_row_val <- HLA_summ[row_val,"V1"]
-    if (is.na(sample_kmers$kmers[dat_row_val])){
-      HLA_summ[row_val,"V2"]
-    } else {
-      paste(c(sample_kmers$kmers[dat_row_val],HLA_summ[row_val,"V2"]),collapse=":")
-    }
-  },character(1))
+  if (file.size(HLA_summ_file)!=0){
+    HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
+    HLA_summ$V1 <- as.numeric(HLA_summ$V1)+1
+    sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
+      dat_row_val <- HLA_summ[row_val,"V1"]
+      if (is.na(sample_kmers$kmers[dat_row_val])){
+        HLA_summ[row_val,"V2"]
+      } else {
+        paste(c(sample_kmers$kmers[dat_row_val],HLA_summ[row_val,"V2"]),collapse=":")
+      }
+    },character(1))
+  }
   return(TRUE)
 },logical(1))
 
