@@ -50,14 +50,14 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/featurecounts_out/featurecounts_all_vst.rds"
-# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
-splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat_norm.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
-kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_norm.rds"
-tcga<-F
-junc_expr_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/junc_expr_combined_vst.rds"
-out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
+# gene_expression_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/featurecounts_out/featurecounts_all_vst.rds"
+# # splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
+# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat_norm.rds"
+# # kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_norm.rds"
+# tcga<-F
+# junc_expr_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/junc_expr_combined_vst.rds"
+# out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
 
 #------------------------------------------------------------------------------#
 # reading in the files

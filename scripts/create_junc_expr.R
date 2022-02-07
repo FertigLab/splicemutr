@@ -16,10 +16,14 @@ arguments <- parse_args(OptionParser(usage = "",
                                                    help="junction_dir"),
                                        make_option(c("-f","--junc_files"),
                                                    default = "",
-                                                   help="junction_files"))))
+                                                   help="junction_files"),
+                                       make_option(c("-o","--out_dir"),
+                                                   default = "",
+                                                   help="output directory"))))
 opt=arguments
 junc_dir <- opt$junc_dir
 junc_files <- opt$junc_files
+out_dir <- opt$out_dir
 
 #------------------------------------------------------------------------------#
 # creating junction expression file
@@ -56,6 +60,6 @@ junc_expr_comb_vst <- as.data.frame(varianceStabilizingTransformation(as.matrix(
 #------------------------------------------------------------------------------#
 # saving junction expression file
 
-saveRDS(junc_expr_comb,file=sprintf("%s/junc_expr_combined.rds",junc_dir))
-saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst.rds",junc_dir))
+saveRDS(junc_expr_comb,file=sprintf("%s/junc_expr_combined.rds",out_dir))
+saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst.rds",out_dir))
 
