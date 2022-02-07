@@ -22,12 +22,16 @@ arguments <- parse_args(OptionParser(usage = "",
                                help="splicemutr file"),
                    make_option(c("-c","--counts_file"),
                                default = sprintf("%s",getwd()),
-                               help="sample junc file"))))
+                               help="sample junc file"),
+                   make_option(c("-o","--out_dir"),
+                               default = sprintf("%s",getwd()),
+                               help="output directory"))))
 opt=arguments
 genotypes_file <- opt$genotypes_file
 summary_dir <- opt$summary_dir
 splice_dat_file <- opt$splice_dat_file
 counts_file <- opt$counts_file
+out_dir <- opt$out_dir
 
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
@@ -41,7 +45,7 @@ counts_file <- opt$counts_file
 # reading in the data necessary for creating specific splicemutr data
 
 genotypes <- readRDS(genotypes_file)
-splice_dat <- read.table(splice_dat_file,header=T,sep=" ")
+splice_dat <- readRDS(splice_dat_file)
 counts <- read.table(counts_file)
 
 #------------------------------------------------------------------------------#
@@ -95,5 +99,5 @@ sample_kmers$counts <- counts[sample_kmers$juncs,"V5"]
 #------------------------------------------------------------------------------#
 # saving samples_kmers file
 
-sample_kmers_file <- sprintf("%s/%s_splicemutr_kmers.rds",dirname(counts_file),sample)
+sample_kmers_file <- sprintf("%s/%s_splicemutr_kmers.rds",out_dir,sample)
 saveRDS(sample_kmers,file=sample_kmers_file)
