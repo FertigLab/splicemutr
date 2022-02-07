@@ -25,13 +25,17 @@ arguments <- parse_args(OptionParser(usage = "",
                                help="sample junc file"),
                    make_option(c("-o","--out_dir"),
                                default = sprintf("%s",getwd()),
-                               help="output directory"))))
+                               help="output directory"),
+                   make_option(c("-t","--summary_type"),
+                               default = "",
+                               help="summary type"))))
 opt=arguments
 genotypes_file <- opt$genotypes_file
 summary_dir <- opt$summary_dir
 splice_dat_file <- opt$splice_dat_file
 counts_file <- opt$counts_file
 out_dir <- opt$out_dir
+summary_type <- opt$summary_type
 
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
@@ -73,7 +77,11 @@ sample_kmers$kmers <- NA
 
 sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
   HLA<-sample_geno[geno_val]
-  HLA_summ_file <- sprintf("%s/%s_tx_dict_summary_perc.txt",summary_dir,HLA)
+  if (summary_type == "perc"){
+    HLA_summ_file <- sprintf("%s/%s_tx_dict_summary_perc.txt",summary_dir,HLA,summary_type)
+  } else {
+    HLA_summ_file <- sprintf("%s/%s_tx_dict_summary.txt",summary_dir,HLA,summary_type)
+  }
   HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
   HLA_summ$V1 <- as.numeric(HLA_summ$V1)+1
   sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
