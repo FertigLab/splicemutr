@@ -152,7 +152,7 @@ if (comparison %in% names(comparison_juncs)){
 
   saveRDS(splice_dat_specific,file=sprintf("%s/splice_dat_%s.rds",out_dir,comparison))
   saveRDS(kmers_specific_parsed,file=sprintf("%s/kmers_specific_%s.rds",out_dir,comparison))
-  saveRDS(psi_all,file=sprintf("%s/psi_all_%s.rds",save_dir,comparison))
+  saveRDS(psi_all,file=sprintf("%s/psi_all_%s.rds",out_dir,comparison))
 } else {
   print(sprintf("%s not determined",comparison))
 }
