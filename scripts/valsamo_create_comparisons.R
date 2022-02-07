@@ -1,9 +1,6 @@
 #!/usr/bin/env Rscript
 
 library(dplyr)
-library(ggplot2)
-library(TCGAutils)
-library(maftools)
 library(stringr)
 library(optparse)
 
