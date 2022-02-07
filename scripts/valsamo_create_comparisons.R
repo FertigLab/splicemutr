@@ -27,13 +27,17 @@ arguments <- parse_args(OptionParser(usage = "",
                                help="the comparisons number"),
                    make_option(c("-j","--junc_dir"),
                                default = sprintf("%s",getwd()),
-                               help="the junctions directory"))))
+                               help="the junctions directory"),
+                   make_option(c("-o","--out_dir"),
+                               default = sprintf("%s",getwd()),
+                               help="the output directory"))))
 opt=arguments
 comparison_juncs_file <- opt$comparison_juncs_file
 splice_dat_file <- opt$splice_dat_file
 comparisons_file <- opt$comparisons_file
 comp_num <- as.numeric(opt$comp_num)
 junc_dir <- opt$junc_dir
+out_dir <- opt$out_dir
 
 #------------------------------------------------------------------------------#
 # internal functions
@@ -145,9 +149,8 @@ if (comparison %in% names(comparison_juncs)){
   #------------------------------------------------------------------------------#
   # saving comparison info
 
-  save_dir <- dirname(splice_dat_file)
-  saveRDS(splice_dat_specific,file=sprintf("%s/splice_dat_%s.rds",save_dir,comparison))
-  saveRDS(kmers_specific_parsed,file=sprintf("%s/kmers_specific_%s.rds",save_dir,comparison))
+  saveRDS(splice_dat_specific,file=sprintf("%s/splice_dat_%s.rds",out_dir,comparison))
+  saveRDS(kmers_specific_parsed,file=sprintf("%s/kmers_specific_%s.rds",out_dir,comparison))
   # saveRDS(psi_all,file=sprintf("%s/psi_all_%s.rds",save_dir,comparison))
 } else {
   print(sprintf("%s not determined",comparison))
