@@ -71,7 +71,7 @@ parse_kmers <- function(kmers){
 comparison_juncs <- readRDS(comparison_juncs_file)
 names(comparison_juncs) <- str_remove_all(names(comparison_juncs),"_pVals.txt")
 
-splice_dat <- read.table(splice_dat_file,header=T,sep=" ")
+splice_dat <- readRDS(splice_dat_file)
 comparisons <- readRDS(comparisons_file)
 
 splice_dat$juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$strand)
