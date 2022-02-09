@@ -26,7 +26,7 @@ library(optparse)
 library(dplyr)
 library(rlist)
 library(AnnotationDbi)
-# library(splicemute)
+library(splicemute)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -160,6 +160,7 @@ for (i in seq(intron_length)){
 
             priority="No"
             if (trans_fir == trans_sec){if (abs(start_loc-end_loc)==1){priority="Yes"}}
+            if (ann=="annotated" & priority=="No"){next}
 
             combo_exons<-c(start_exons[1:start_loc],
                            end_exons[end_loc:length(end_exons)])
@@ -355,7 +356,7 @@ for (i in seq(intron_length)){
   gene_combos$start_gene<-as.character(gene_combos$start_gene)
   gene_combos$end_gene<-as.character(gene_combos$end_gene)
   gene_combos<-gene_combos %>% dplyr::filter(start_gene != end_gene)
-  if (length(genes$trans$start) != 0 & length(genes$trans$end) != 0){
+  if (length(genes$trans$start) != 0 & length(genes$trans$end) != 0 & ann != "annotated"){
     for (pair in seq(nrow(gene_combos))){
       gene_pair<-as.character(unname(gene_combos[pair,]))
       # find the exons that are associated with the junction start and junction end, handles cryptic junctions
