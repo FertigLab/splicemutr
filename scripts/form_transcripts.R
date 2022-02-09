@@ -46,6 +46,7 @@ opt=arguments
 out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
 funcs<-opt$funcs
+chr_map<-opt$chr_map
 source(funcs) # this is done because I can't seem to get the library to work
 
 bsgenome_name <- opt$bsgenome_name # bsgenome_name so that can create bsgenome object
