@@ -592,34 +592,46 @@ for (i in seq(intron_length)){
 
 juncs <- sprintf("%s:%s:%s:%s",data_canon$chr,data_canon$start,data_canon$end,data_canon$strand)
 data_canon$juncs <- juncs
+data_canon$rows <- seq(nrow(data_canon))
+data_canon <- data_canon %>% dplyr::filter(protein_coding=="Yes")
 data_canon_ann <- data_canon %>% dplyr::filter(annotated=="annotated" & error=="tx" & priority=="Yes")
 data_canon_unan <- data_canon %>% dplyr::filter(annotated=="unannotated")
+sequences_unan <- sequences[data_canon_unan$rows]
+sequences_ann <- sequences[data_canon_ann$rows]
+
 data_canon_unan$rows <- seq(nrow(data_canon_unan))
-unique_juncs <- unique(data_canon$juncs)
+unique_juncs <- unique(data_canon_unan$juncs)
 locs <- lapply(seq(length(unique_juncs)),function(junc_val){
   junc <- unique_juncs[junc_val]
   print(junc)
   if (junc_val==1){
     data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
+    sequences_small <- sequences_unan[data_canon_unan_small$rows]
     a<-which(data_canon_unan_small$priority=="Yes")
     if (length(a)==0){
       data_canon_fill<<-data_canon_unan_small
+      sequences_fill<<-sequences_small
     } else {
       data_canon_fill<<-data_canon_unan_small[a,]
+      sequences_fill<<-sequences_small[a]
     }
   } else {
     data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
     a<-which(data_canon_unan_small$priority=="Yes")
+    sequences_small <- sequences_unan[data_canon_unan_small$rows]
     if (length(a)==0){
       data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small)
+      sequences_fill<<-c(sequences_fill,sequences_small)
     } else {
       data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small[a,])
+      sequences_fill<<-c(sequences_fill,sequences_small[a])
     }
   }
   return(T)
 })
 data_canon <- rbind(data_canon_ann,data_canon_fill[,seq(ncol(data_canon_ann))])
-data_canon <- data_canon[,seq(ncol(data_canon)-1)]
+sequences <- c(sequences_ann,sequences_fill)
+data_canon$coding_potential<-vapply(sequences,calc_coding_potential,numeric(1))
 
 #------------------------------------------------------------------------------#
 # saving data

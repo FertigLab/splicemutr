@@ -5,7 +5,7 @@ author:
 - Theron Palmer, Elana Fertig
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
-  word_document: 
+  #word_document: 
   html_document: 
     df_print: paged
 fontfamily: mathpazo
@@ -36,11 +36,32 @@ abstract: |
 
 ## The Splicemutr Pipeline
 
-|     To fully use splicemutr, the pipeline requires a set of splice-junctions identified per sample, target junctions to focus on, a gene expression matrix per sample, and genotype information for the samples being analyzed. To use splicemutr in its most basic form requires only a a set of target junctions. Splicemutr first performs transcript modification using the set of target junctions identified. Per target junction, the flanking exons associated with the target junction are identified. The pair of flanking exons are used to identify the flanking genes that the pair of exons can exist in. Using the pair of genes, of which there can either be two unique or a single gene, those transcripts from the flanking genes that contain the flanking exons are identified. The flanking transcripts are then joined together based on the flanking exon locations within each transcript. The end coordinate of the leading exon is modified to reflect the start coordinate of the splice-junction, while the start coordinate of the trailing exon is modified to reflect the end coordinate of the splice-junction. After both transcripts are joined, the five-prime UTR of the leading transcript is removed and the three-prime UTR of the trailing transcript is removed. UTR removal is strand dependent. 
+| To fully use splicemutr, the pipeline requires a set of splice-junctions identified per sample, target junctions to focus on, a gene expression matrix per sample, and genotype information for the samples being analyzed. To use splicemutr in its most basic form requires only a a set of target junctions. Splicemutr first performs transcript modification using the set of target junctions identified. Per target junction, the flanking exons associated with the target junction are identified. The pair of flanking exons are used to identify the flanking genes that the pair of exons can exist in. Using the pair of genes, of which there can either be two unique or a single gene, those transcripts from the flanking genes that contain the flanking exons are identified. The flanking transcripts are then joined together based on the flanking exon locations within each transcript. The end coordinate of the leading exon is modified to reflect the start coordinate of the splice-junction, while the start coordinate of the trailing exon is modified to reflect the end coordinate of the splice-junction. After both transcripts are joined, the five-prime UTR of the leading transcript is removed and the three-prime UTR of the trailing transcript is removed. UTR removal is strand dependent. 
 
-|     After UTR removal the splice-junction modified transcript is translated. As unnanotated splice-junctions can cause the annotated orf to be overwritten, splicemutr find the modified orf and documents the changes that have occured. The modified orf is found by scanning for the first ATG start codon in the modified transcript. Once the first start codon is found, the transcript is scanned for the next in-frame TAG, TAA, or TGA stop codon. From start codon, to stop codon, the transcript is translated and stored in a fasta file along with the junction metadata for MHC binding affinity prediction. If no orf can be formed due to the junction modification, the transcript, but not the protein is stored. The junction metadata contains all modifications the junction makes to the transcripts that it modifies. 
+| After UTR removal the splice-junction modified transcript is translated. As unnanotated splice-junctions can cause the annotated orf to be overwritten, splicemutr find the modified orf and documents the changes that have occured. The modified orf is found by scanning for the first ATG start codon in the modified transcript. Once the first start codon is found, the transcript is scanned for the next in-frame TAG, TAA, or TGA stop codon. From start codon, to stop codon, the transcript is translated and stored in a fasta file along with the junction metadata for MHC binding affinity prediction. If no orf can be formed due to the junction modification, the transcript, but not the protein is stored. The junction metadata contains all modifications the junction makes to the transcripts that it modifies. 
 
 | The set of junction-modified proteins are then processed for MHC binding affinity predictions. The translated proteins are kmerized, then splicemutr extracts out the unique set of kmers found in the set of translated proteins. Splicemutr then uses mhcnuggets to predict the raw binding affinity of each kmer using the HLA alleles specific to the samples being analyzed. Splicemutr then extracts out those kmers with a percentile rank less than or equal to two percent per HLA allele. This percentile rank is unique to the specific HLA allele and has been shown to reduce the number of false positive hits from MHC binding affinity predictors. Using the sample genotype, the number of immunogenic kmers per junction-modified transcript and per sample are determined. Splicemutr then uses this information to calculate a per-gene splicing antigenicity metric. 
 
-|   The gene splicing antigenicity metric is calculated as follows: $G=\frac{\sum_{j \in J}\frac{R_{j}}{R_G}*k_{j}}{|J|}$ where $R_{j}$ is the variance stabilized read count for the outlier splice-junction j, $k_{j}$ is the number of immunogenic kmers predicted from the transcript associated with the junction j, $R_{G}$ is the variance-stabilized read count for the specific gene G, and J is the set of junctions associated with the gene G. This metric serves as a weighted sum for the splicing-based immunogenic impact a gene has.
+| The gene splicing antigenicity metric is calculated as follows: $G=\frac{\sum_{j \in J}\frac{R_{j}}{R_G}*k_{j}}{|J|}$ where $R_{j}$ is the variance stabilized read count for the outlier splice-junction j, $k_{j}$ is the number of immunogenic kmers predicted from the transcript associated with the junction j, $R_{G}$ is the variance-stabilized read count for the specific gene G, and J is the set of junctions associated with the gene G. This metric serves as a weighted sum for the splicing-based immunogenic impact a gene has.
 
+## Coding potential prediction using the LGG method
+
+$L=log2(\frac{P_{C}}{P_{NC}})=log2(\frac{(1-f_{c})^{n-1}f_{c}}{(1-f_{nc})^{n-1}f_{nc}})$ 
+
+$f=a_{0} + a_{1}P_{GC} + a_{2}P_{GC}^{2} + a_{3}P_{GC}^{3}$
+
+$P_{GC}=P_{C}+P_{G}$
+
+$P_{C}$ is the probability of cytosine
+
+$P_{G}$ is the probability of guanine
+
+$P_{c}$ is the probability of the of ORF in the coding sequence
+
+$P_{nc}$ is the probability of ORF in non-coding sequence
+
+$f_{c}$ is the probability of finding a stop codon in coding sequence
+
+$f_{nc}$ is the probability of finding a stop codon in non-coding sequence
+
+L > 0 indicates it is a protein-coding RNA and L < 0 indicates that it is a non-coding RNA
