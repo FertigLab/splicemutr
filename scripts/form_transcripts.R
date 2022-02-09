@@ -25,8 +25,8 @@ library(stringr)
 library(optparse)
 library(dplyr)
 library(rlist)
-# library(splicemute)
 library(AnnotationDbi)
+# library(splicemute)
 
 #------------------------------------------------------------------------------#
 # handling command line input

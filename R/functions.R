@@ -1,13 +1,13 @@
 
+
 #' @name find_genes
 #' @title find_genes
 #' @param target_junc the target junction c(chr, strand, start, end)
 #' @param all_genes the GenomicRanges::GRanges object of genes
 #' @return  list of cis, trans_start, and trans_end genes associated with the junction
 #' @export
-#'
+#' @importFrom BiocGenerics %in%
 find_genes<-function(target_junc,all_genes){
-
   junc_start<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[4],
                       ranges = IRanges::IRanges(start = as.numeric(target_junc[2]), width = c(1)))
   junc_end<-GenomicRanges::GRanges(seqnames = target_junc[1], strand = target_junc[4],
@@ -447,7 +447,7 @@ check_tx<-function(seq){
 #' @param gene_tar a vector pair of gene targets, left is first or only gene, right is second gene. Single element vector if only one gene.
 #' @return the unique start and end junction exons
 #' @export
-#'
+#' @importFrom BiocGenerics %in%
 choose_exons<-function(target_junc, exons_by_gene, gene_tar){
   junc_start<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[4],
                       ranges = IRanges::IRanges(start = as.numeric(target_junc[2]), width = c(1)))

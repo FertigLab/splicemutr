@@ -46,6 +46,8 @@ abstract: |
 
 ## Coding potential prediction using the LGG method
 
+Comes from "Characterization and identification of long non-coding RNAs based on feature relationship."
+
 $L=log2(\frac{P_{C}}{P_{NC}})=log2(\frac{(1-f_{c})^{n-1}f_{c}}{(1-f_{nc})^{n-1}f_{nc}})$ 
 
 $f=a_{0} + a_{1}P_{GC} + a_{2}P_{GC}^{2} + a_{3}P_{GC}^{3}$
