@@ -6,6 +6,10 @@
 # The purpose of this script is to modify reference transcripts using
 # reference transcript information
 
+# build in exons next to one another function checking if the target exons are directly next to one another in the reference transcript
+# this implies that the intron modification is only taking place in a single reference transcript
+# look to see if there are different
+
 #------------------------------------------------------------------------------#
 # loading libraries
 
@@ -42,42 +46,38 @@ opt=arguments
 out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
 funcs<-opt$funcs
-source(funcs)
-# chr_map_file <- opt$chr_map
-# chr_map <- read.table(chr_map_file)
-# colnames(chr_map)<-c("chr","mapped")
+source(funcs) # this is done because I can't seem to get the library to work
 
-bsgenome_name <- opt$bsgenome_name
+bsgenome_name <- opt$bsgenome_name # bsgenome_name so that can create bsgenome object
+library(bsgenome_name,character.only = T) # assigning bsgenome object to "bsgenome" variable
+assign("bsgenome",get(bsgenome_name))
 
 introns <-readRDS(opt$juncs) # loading in the introns data
-introns$chr <- str_replace(introns$chr,"chr","")
-# if (typeof(chr_map)!="logical"){
-#   introns$chr <- vapply(introns$chr,function(chrom){
-#     return(chr_map$mapped[chr_map$chr==chrom])
-#   },character(1))
-# }
+introns$chr <- str_replace(introns$chr,"chr","") # replacing the chr with ""
+if (typeof(chr_map)!="logical"){ # this is done in the case that there is a specific chromosome mapping that needs to be done
+  chr_map_file <- opt$chr_map
+  chr_map <- read.table(chr_map_file)
+  colnames(chr_map)<-c("chr","mapped")
+  introns$chr <- vapply(introns$chr,function(chrom){
+    return(chr_map$mapped[chr_map$chr==chrom])
+  },character(1))
+}
 introns<-format_introns(introns)
-
-#------------------------------------------------------------------------------#
-# assigning bsgenome object to "bsgenome" variable
-
-library(bsgenome_name,character.only = T)
-assign("bsgenome",get(bsgenome_name))
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
 
 print("reading in txdb")
 txdb<-loadDb(txdb_file) # making the txdb from gtf
-# if (typeof(chr_map)!="logical"){
-#   all_genes<-map_chroms(genes(txdb),chr_map)
-#   exons_by_gene<-map_chroms(exonsBy(txdb,by="gene"),chr_map)
-#   exons_by_tx<-map_chroms(exonsBy(txdb,by=c("tx"),use.names=T),chr_map)
-#   tx_by_gene<-map_chroms(transcriptsBy(txdb,by="gene"),chr_map)
-#   five_by_tx<-map_chroms(fiveUTRsByTranscript(txdb,use.names=T),chr_map)
-#   three_by_tx<-map_chroms(threeUTRsByTranscript(txdb,use.names=T),chr_map)
-#   cds_by_tx <- map_chroms(cdsBy(txdb,by="tx",use.names=T),chr_map)
-# }
+if (typeof(chr_map)!="logical"){ # read in the gtf information but map the chromosomes
+  all_genes<-map_chroms(genes(txdb),chr_map)
+  exons_by_gene<-map_chroms(exonsBy(txdb,by="gene"),chr_map)
+  exons_by_tx<-map_chroms(exonsBy(txdb,by=c("tx"),use.names=T),chr_map)
+  tx_by_gene<-map_chroms(transcriptsBy(txdb,by="gene"),chr_map)
+  five_by_tx<-map_chroms(fiveUTRsByTranscript(txdb,use.names=T),chr_map)
+  three_by_tx<-map_chroms(threeUTRsByTranscript(txdb,use.names=T),chr_map)
+  cds_by_tx <- map_chroms(cdsBy(txdb,by="tx",use.names=T),chr_map)
+}
 all_genes<-genes(txdb)
 exons_by_gene<-exonsBy(txdb,by="gene")
 exons_by_tx<-exonsBy(txdb,by=c("tx"),use.names=T)
@@ -111,25 +111,23 @@ cds_storage <- list()
 intron_length<-nrow(introns)
 for (i in seq(intron_length)){
   print(sprintf("%d introns out of %d total introns",i,intron_length))
-  curr_introns<-introns[i,]
-  ann<-curr_introns$ann
+  curr_introns<-introns[i,] # get the current intron
+  ann<-curr_introns$ann # whether annotated or not, determined in the previous step
   target_junc <- unname(as.character(introns[i,seq(4)]))
-  if (!(target_junc[4] %in% c("+","-"))){next}
-  genes<-find_genes(target_junc,all_genes)
+  if (!(target_junc[4] %in% c("+","-"))){next} # self explanatory
+  genes<-find_genes(target_junc,all_genes) # finding the trailing genes for the target junction
   all_tx<-extract_transcripts(genes, tx_by_gene) # the genes and transcripts associated with the junction
 
-  if (length(genes$cis) != 0){
+  if (length(genes$cis) != 0){ # if there are cis events for the intron
     # form cis and intragene trans-splcing events if they exist
     for (gene in genes$cis){
       # find the exons that are associated with the junction start and junction end, handles cryptic junctions
-      exons<-choose_exons(target_junc,exons_by_gene,gene)
-      if (length(exons$exons_start) == 0 | length(exons$exons_end) == 0){next}
-      # find the transcripts per exon for start and end splice sites associated with each exon
-      tx_starts_ends<-choose_transcripts(exons,all_tx$cis[[gene]],c(),exons_by_tx)
-      # iterate through all exons for start and all exons for end
-      for (start_exon in names(tx_starts_ends$starts)){
+      exons<-choose_exons(target_junc,exons_by_gene,gene) # selecting the trailing exons
+      if (length(exons$exons_start) == 0 | length(exons$exons_end) == 0){next} # find the transcripts per exon for start and end splice sites associated with each exon
+      tx_starts_ends<-choose_transcripts(exons,all_tx$cis[[gene]],c(),exons_by_tx) # find the transcripts per exon for start and end splice sites associated with each exon
+      for (start_exon in names(tx_starts_ends$starts)){ # iterate through all exons for start and all exons for end
         for (end_exon in names(tx_starts_ends$ends)){
-            # pair transcripts together
+          # pair transcripts together
           start_trans<-tx_starts_ends$starts[[start_exon]]
           end_trans<-tx_starts_ends$ends[[end_exon]]
           trans_combos<-data.frame(expand.grid(start_trans,end_trans))
@@ -159,6 +157,9 @@ for (i in seq(intron_length)){
             end_loc<- which(start(ranges(end_exons))==end_exon_split[1]
                             & end(ranges(end_exons))==end_exon_split[2])
 
+            priority="No"
+            if (trans_fir == trans_sec){if (abs(start_loc-end_loc)==1){priority="Yes"}}
+
             combo_exons<-c(start_exons[1:start_loc],
                            end_exons[end_loc:length(end_exons)])
             tx_junc<-start_loc
@@ -172,7 +173,7 @@ for (i in seq(intron_length)){
               cds_mod_info[[2]] <- junc
               cds_mod<-cds_mod_info[[1]]
               tx_junc_loc<-cds_mod_info[[2]]
-              if (cds_mod$strand[1] == "-") { # not intuitive, but necessary for getSeq()
+              if (cds_mod$strand[1] == "-"){ # not intuitive, but necessary for getSeq()
                 cds_mod<-cds_mod[order(cds_mod[,2],decreasing=TRUE),]
               }
               sequence<-getSeq(bsgenome,makeGRangesFromDataFrame(cds_mod,keep.extra.columns=TRUE))
@@ -187,7 +188,6 @@ for (i in seq(intron_length)){
                 deltapsi<-curr_introns$deltapsi # deltapsi
               } else {
                 deltapsi<-NA
-
               }
               if ("verdict" %in% colnames(curr_introns)){
                 verdict<-curr_introns$verdict # verdict
@@ -219,7 +219,8 @@ for (i in seq(intron_length)){
                           protein_coding,
                           start_exon,
                           end_exon,
-                          ann)
+                          ann,
+                          priority)
             } else {
               protein_coding <- "Yes"
               if (any(as.character(strand(combo_exons)) == "-")) {
@@ -321,7 +322,8 @@ for (i in seq(intron_length)){
                           protein_coding,
                           start_exon,
                           end_exon,
-                          ann)
+                          ann,
+                          priority)
             }
 
             # for (r in seq(3)){
@@ -329,7 +331,7 @@ for (i in seq(intron_length)){
             col_names<-c("cluster","chr","start","end","strand","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
                          "error","peptide","tx_length","start_stop","protein_coding",
-                         "start_exon","end_exon","annotated") # introns cols are c("chr","start","end","gene","verdict")
+                         "start_exon","end_exon","annotated","priority") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names
@@ -376,6 +378,7 @@ for (i in seq(intron_length)){
           trans_combos<-unique(trans_combos)
           # iterate through every combination and pair the transcript GRanges object together
           for (pair in seq(nrow(trans_combos))){
+            priority="No"
             protein_coding <- "No"
             data_canon_fill<-data.frame()
 
@@ -454,7 +457,8 @@ for (i in seq(intron_length)){
                           protein_coding,
                           start_exon,
                           end_exon,
-                          ann)
+                          ann,
+                          priority)
             } else {
               protein_coding <- "Yes"
               if (any(as.character(strand(combo_exons)) == "-")) {
@@ -555,14 +559,15 @@ for (i in seq(intron_length)){
                           protein_coding,
                           start_exon,
                           end_exon,
-                          ann)
+                          ann,
+                          priority)
             }
 
             # filling the data_canon dataframe with the junction information
             col_names<-c("cluster","chr","start","end","strand","gene","tx_id","modified","is_UTR",
                          "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
                          "error","peptide","tx_length","start_stop","protein_coding",
-                         "start_exon","end_exon","annotated") # introns cols are c("chr","start","end","gene","verdict")
+                         "start_exon","end_exon","annotated","priority") # introns cols are c("chr","start","end","gene","verdict")
             if (nrow(data_canon_fill)==0){
               data_canon_fill<-rbind(data_canon_fill,next_row)
               colnames(data_canon_fill)<-col_names
@@ -581,7 +586,41 @@ for (i in seq(intron_length)){
   }
 }
 
-#------------------------------------------------------------------------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
+# filtering out incorrectly formed transcripts
+
+juncs <- sprintf("%s:%s:%s:%s",data_canon$chr,data_canon$start,data_canon$end,data_canon$strand)
+data_canon$juncs <- juncs
+data_canon_ann <- data_canon %>% dplyr::filter(annotated=="annotated" & error=="tx" & priority=="Yes")
+data_canon_unan <- data_canon %>% dplyr::filter(annotated=="unannotated")
+data_canon_unan$rows <- seq(nrow(data_canon_unan))
+unique_juncs <- unique(data_canon$juncs)
+locs <- lapply(seq(length(unique_juncs)),function(junc_val){
+  junc <- unique_juncs[junc_val]
+  print(junc)
+  if (junc_val==1){
+    data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
+    a<-which(data_canon_unan_small$priority=="Yes")
+    if (length(a)==0){
+      data_canon_fill<<-data_canon_unan_small
+    } else {
+      data_canon_fill<<-data_canon_unan_small[a,]
+    }
+  } else {
+    data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
+    a<-which(data_canon_unan_small$priority=="Yes")
+    if (length(a)==0){
+      data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small)
+    } else {
+      data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small[a,])
+    }
+  }
+  return(T)
+})
+data_canon <- rbind(data_canon_ann,data_canon_fill[,seq(ncol(data_canon_ann))])
+data_canon <- data_canon[,seq(ncol(data_canon)-1)]
+
+#------------------------------------------------------------------------------#
 # saving data
 
 out<-sprintf("%s_%s%s",out_prefix,"data_splicemutr",".txt")

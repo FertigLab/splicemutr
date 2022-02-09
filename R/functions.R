@@ -502,6 +502,7 @@ choose_exons<-function(target_junc, exons_by_gene, gene_tar){
 #' @param transcripts_1 the character vector of transcripts for the start gene
 #' @param transcripts_2 the character vector of transcripts for the end gene
 #' @param exons_by_tx the exons per transcript
+#' @param ann the annotation status: annotated or unnanotated
 #' @return a list of start junction and end junction transcripts that can be paired
 #' @export
 #'
