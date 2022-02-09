@@ -37,7 +37,6 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
    make_option(c("-o","--out_prefix"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
    make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
-   make_option(c("-f","--funcs"), default=NULL, help="The splicemute functions to source"),
    make_option(c("-b","--bsgenome_name"),default = "bsgenome_name",help="the bsgenome object name"),
    make_option(c("-m","--chr_map"),default=F,help="the chromosome map"))))
 
@@ -45,9 +44,7 @@ opt=arguments
 
 out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
-funcs<-opt$funcs
 chr_map<-opt$chr_map
-source(funcs) # this is done because I can't seem to get the library to work
 
 bsgenome_name <- opt$bsgenome_name # bsgenome_name so that can create bsgenome object
 library(bsgenome_name,character.only = T) # assigning bsgenome object to "bsgenome" variable
