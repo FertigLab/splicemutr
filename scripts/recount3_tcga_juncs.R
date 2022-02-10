@@ -17,8 +17,8 @@ library(optparse)
 arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups_file",
                  description="form transcripts per junction for the given input junction file",
                  option_list=list(
-                   make_option(c("-o","--output_directory"), 
-                               default = sprintf("%s",getwd()), 
+                   make_option(c("-o","--output_directory"),
+                               default = sprintf("%s",getwd()),
                                help="The output directory for the tcga directory"))))
 
 opt=arguments
@@ -37,7 +37,7 @@ create_junc_file <- function(all_juncs){
   colnames(coords)<-c("start","end")
   coords$start <- as.numeric(coords$start)
   coords$end <- as.numeric(coords$end)
-  
+
   split_data <- cbind(split_data, coords)
   junc_file <- data.frame(split_data[,1],
                           split_data$start-1,
@@ -51,11 +51,11 @@ create_junc_file <- function(all_juncs){
 #------------------------------------------------------------------------------#
 # reading in the recount3 tcga objects
 
-# human_projects <- available_projects()
-# proj_info <- subset(
-#   human_projects,
-#   file_source == "tcga"
-# )
+human_projects <- available_projects()
+proj_info <- subset(
+  human_projects,
+  file_source == "tcga"
+)
 proj_info <-  readRDS("/home/tpalme15/splicemutr_project/scripts/tcga/proj_info.rds")
 
 #------------------------------------------------------------------------------#
@@ -85,12 +85,12 @@ for (iter in seq(2,nrow(proj_info))){
   },character(1))
   colnames(junc_dat) <- tcga_barcode
   cancer <- junc_metadata$study[1]
-  
+
   all_juncs <- rownames(junc_dat)
   pre_junc_file <- create_junc_file(all_juncs)
-  
+
   cancer_dir <- sprintf("%s/%s",tcga_junc_dir, cancer)
-  
+
   if (!dir.exists(cancer_dir)){
     dir.create(cancer_dir)
   }
