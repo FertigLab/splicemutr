@@ -601,7 +601,6 @@ data_canon_unan$rows <- seq(nrow(data_canon_unan))
 unique_juncs <- unique(data_canon_unan$juncs)
 locs <- lapply(seq(length(unique_juncs)),function(junc_val){
   junc <- unique_juncs[junc_val]
-  print(junc)
   if (junc_val==1){
     data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
     sequences_small <- sequences_unan[data_canon_unan_small$rows]
