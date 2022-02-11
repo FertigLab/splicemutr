@@ -57,14 +57,14 @@ calc_kmers <- function(peptides){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
-# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
-splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/splice_dat_NIV1_IPI3_PD_NE_PD_PRE.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
-kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_NE_PD_PRE.rds"
-tcga<-F
-junc_expr_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_junc_expr_combined_out/junc_expr_combined_vst.rds"
-out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
+# gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
+# # splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
+# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/splice_dat_NIV1_IPI3_PD_NE_PD_PRE.rds"
+# # kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_NE_PD_PRE.rds"
+# tcga<-F
+# junc_expr_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_junc_expr_combined_out/junc_expr_combined_vst.rds"
+# out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
 
 #------------------------------------------------------------------------------#
 # reading in the files
