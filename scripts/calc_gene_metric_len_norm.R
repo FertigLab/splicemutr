@@ -105,6 +105,7 @@ splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]
 splicemutr_data_ann <- splice_dat_filt %>% dplyr::filter(error == "tx" & annotated == "annotated")
 splicemutr_data <- splice_dat_filt %>% dplyr::filter(annotated != "annotated")
 splice_dat_filt <- rbind(splicemutr_data,splicemutr_data_ann)
+splice_dat_filt <- splice_dat_filt %>% dplyr::filter(nchar(peptide)-1>50)
 
 if (tcga){
   kmer_counts<-kmer_counts[,!duplicated(colnames(kmer_counts))]
