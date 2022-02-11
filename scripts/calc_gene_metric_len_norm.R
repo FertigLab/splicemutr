@@ -55,8 +55,7 @@ calc_kmers <- function(peptides){
       stringi::stri_sub(str = pep,from = seq(1, nchar(pep) - K + 1,by = 1),length = K)
     } else {
       return(1)
-    }
-    })
+    }})
   return(length(unique(unlist(peptides))))
 }
 
