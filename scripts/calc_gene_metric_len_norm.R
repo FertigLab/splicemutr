@@ -50,7 +50,13 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 calc_kmers <- function(peptides){
   K<-9
   peptides <- vapply(peptides,function(pep){substr(pep,1,nchar(pep)-1)},character(1))
-  peptides<-lapply(peptides,function(pep){stringi::stri_sub(str = pep,from = seq(1, nchar(pep) - K + 1,by = 1),length = K)})
+  peptides<-lapply(peptides,function(pep){
+    if (nchar(pep)>K){
+      stringi::stri_sub(str = pep,from = seq(1, nchar(pep) - K + 1,by = 1),length = K)
+    } else {
+      return(1)
+    }
+    })
   return(length(unique(unlist(peptides))))
 }
 
