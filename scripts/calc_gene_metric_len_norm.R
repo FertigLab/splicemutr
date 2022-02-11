@@ -148,6 +148,6 @@ colnames(gene_metric_mean)<-samples
 #------------------------------------------------------------------------------#
 # saving gene metric data
 
-saveRDS(gene_metric_mean,file=sprintf("%s_gene_metric_mean.rds",out))
+saveRDS(gene_metric_mean,file=sprintf("%s_gene_metric_mean_len_norm.rds",out))
 write.table(gene_metric_mean,
-            file=sprintf("%s_gene_metric_mean.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+            file=sprintf("%s_gene_metric_mean_len_norm.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
