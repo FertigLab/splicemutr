@@ -69,5 +69,9 @@ colnames(kmers_parsed) <- colnames(kmers)
 #------------------------------------------------------------------------------#
 # saving comparison info
 
-saveRDS(splice_dat,file=sprintf("%s_splice_dat.rds",out_prefix))
+splice_dat$delatapsi<-as.numeric(splice_dat$delatapsi)
+splice_dat_norm <- splice_dat %>% dplyr::filter(deltapsi<0)
+splice_dat_tumor <- splice_dat %>% dplyr::filter(deltapsi>0)
+saveRDS(splice_dat_norm,file=sprintf("%s_splice_dat_norm.rds",out_prefix))
+saveRDS(splice_dat_tumor,file=sprintf("%s_splice_dat_tumor.rds",out_prefix))
 saveRDS(kmers_parsed,file=sprintf("%s_kmers.rds",out_prefix))
