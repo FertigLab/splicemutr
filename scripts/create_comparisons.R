@@ -21,7 +21,7 @@ arguments <- parse_args(OptionParser(usage = "",
                                help="the output prefix"))))
 opt=arguments
 splice_dat_file <- opt$splice_dat_file
-sample_files<-read.table(optp$sample_files)
+sample_files<-read.table(opt$sample_files)
 out_prefix <- opt$out_prefix
 
 #------------------------------------------------------------------------------#
