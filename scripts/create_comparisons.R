@@ -40,8 +40,6 @@ parse_kmers <- function(kmers){
 # reading in the data
 
 splice_dat <- readRDS(splice_dat_file)
-comparisons <- readRDS(comparisons_file)
-
 splice_dat$juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$strand)
 
 #------------------------------------------------------------------------------#
