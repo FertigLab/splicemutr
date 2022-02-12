@@ -35,7 +35,7 @@ summary_dir <- opt$summary_dir
 splice_dat_file <- opt$splice_dat_file
 out_dir <- opt$out_dir
 summary_type <- opt$summary_type
-sample_num <- opt$sample_num
+sample_num <- as.numeric(opt$sample_num)
 
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
