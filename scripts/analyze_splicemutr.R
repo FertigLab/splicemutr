@@ -93,8 +93,38 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
 # annotating sample_kmers with junctions
 
 juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$strand)
+groups <- splice_dat$cluster
 splice_dat$juncs <- juncs
 sample_kmers$juncs <- juncs
+sample_kmers$groups <- groups
+sample_kmers$deltapsi <- as.numeric(splice_dat$deltapsi)
+
+#------------------------------------------------------------------------------#
+# filtering the sample kmers
+
+unique_groups <- unique(groups)
+normal_kmers <- list()
+tumor_kmers <- list()
+a<-vapply(seq(length(unique_groups)),function(i){
+  print(i)
+  group <- groups[i]
+  normal_rows <- which((sample_kmers$groups==group) & (sample_kmers$deltapsi<0))
+  tumor_rows <- which((sample_kmers$groups==group) & (sample_kmers$deltapsi>0))
+  sample_kmers_small <- sample_kmers[sample_kmers$groups==group,]
+  sample_kmers_small_norm <- sample_kmers_small[sample_kmers$deltapsi<0,]
+  sample_kmers_small_tumor <- sample_kmers_small[sample_kmers$deltapsi>0,]
+  normal_kmers[[group]] <- unlist(strsplit(sample_kmers_small_norm$kmers,":"))
+  tumor_kmers[[group]] <- unlist(strsplit(sample_kmers_small_tumor$kmers,":"))
+  a<-vapply(normal_rows,function(norm_row){
+    a<-unlist(strsplit(sample_kmers[norm_row,"kmers"],":"))
+    sample_kmers[norm_row,"kmers"] <<- paste(a[!(a %in% tumor_kmers[[group]])],collapse=":")
+  },character(1))
+  a<-vapply(tumor_rows,function(tum_row){
+    a<-unlist(strsplit(sample_kmers[tum_row,"kmers"],":"))
+    sample_kmers[tum_row,"kmers"] <<- paste(a[!(a %in% normal_kmers[[group]])],collapse=":")
+  },character(1))
+  return(T)
+},logical(1))
 
 #------------------------------------------------------------------------------#
 # saving samples_kmers file
