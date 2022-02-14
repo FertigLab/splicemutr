@@ -62,14 +62,14 @@ calc_kmers <- function(peptides){
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
-# # splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
-# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/splice_dat_NIV1_IPI3_PD_NE_PD_PRE.rds"
-# # kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_NE_PD_PRE.rds"
-# tcga<-F
-# junc_expr_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_junc_expr_combined_out/junc_expr_combined_vst.rds"
-# out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
+gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
+splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/splice_dat_NIV1_IPI3_PD_NE_PD_PRE.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
+kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_NE_PD_PRE.rds"
+tcga<-F
+junc_expr_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_junc_expr_combined_out/junc_expr_combined_vst.rds"
+out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -131,23 +131,22 @@ rm(splice_dat)
 genes <- unique(splice_dat_filt$gene)
 
 gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
+    g<<-gene_tar
     splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
     splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
     splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
     if(tcga){
-      kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(rows %in% splice_dat_small$X)
+      kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$X,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
     } else {
-      kmer_counts_small <- kmer_counts_filt %>% dplyr::filter(rows %in% splice_dat_small$rows)
+      kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
     }
-    kmer_counts <- kmer_counts_small[,samples,drop=F]
+    kmer_counts <- kmer_counts_small[,samples,drop=F]/splice_dat_small$junc_kmers
     gene_split <- strsplit(gene_tar,"-")[[1]]
     gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
     junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
-    junc_expr_norm <- junc_expr/splice_dat_small$junc_kmers
     dup_num <-nrow(splice_dat_small)
     gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
-    gene_expr_dup_norm <- gene_expr_dup/splice_dat_small$gene_kmers
-    a<-as.numeric(apply((kmer_counts*junc_expr_norm)/gene_expr_dup_norm,2,mean))
+    a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
 },numeric(length(samples)))))
 colnames(gene_metric_mean)<-samples
 
