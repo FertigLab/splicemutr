@@ -62,14 +62,14 @@ calc_kmers <- function(peptides){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
-# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
-splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/splice_dat_NIV1_IPI3_PD_NE_PD_PRE.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
-kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_NE_PD_PRE.rds"
-tcga<-F
-junc_expr_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_junc_expr_combined_out/junc_expr_combined_vst.rds"
-out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
+# gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
+# # splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
+# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/splice_dat_NIV1_IPI3_PD_NE_PD_PRE.rds"
+# # kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_NE_PD_PRE.rds"
+# tcga<-F
+# junc_expr_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_junc_expr_combined_out/junc_expr_combined_vst.rds"
+# out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -102,9 +102,6 @@ junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 colnames(junc_expr_comb) <- str_remove(colnames(junc_expr_comb),".junc")
 
 splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
-splicemutr_data_ann <- splice_dat_filt %>% dplyr::filter(error == "tx" & annotated == "annotated")
-splicemutr_data <- splice_dat_filt %>% dplyr::filter(annotated != "annotated")
-splice_dat_filt <- rbind(splicemutr_data,splicemutr_data_ann)
 splice_dat_filt <- splice_dat_filt %>% dplyr::filter(nchar(peptide)-1>50)
 
 if (tcga){
