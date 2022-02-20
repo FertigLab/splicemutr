@@ -10,7 +10,7 @@ library(optparse)
 #------------------------------------------------------------------------------#
 # command line input
 
-arguments <- parse_args(OptionParser(usage = "", 
+arguments <- parse_args(OptionParser(usage = "",
                description="split introns into separate intron files",
                option_list=list(
                  make_option(c("-o","--output_directory"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
@@ -33,7 +33,7 @@ load(introns_file)
 total_rows<-nrow(introns)
 breakdown<-seq(1,total_rows,by=split_num)
 logs<-lapply(seq(length(breakdown)),function(x){
-  if ((x+split_num-1) > total_rows){
+  if ((breakdown[x]+split_num-1) > total_rows){
     saveRDS(introns[seq(breakdown[x],total_rows),],sprintf("%s/intron%s.rds",out_dir,x))
   } else {
     saveRDS(introns[seq(breakdown[x],breakdown[x]+split_num-1),],sprintf("%s/intron%s.rds",out_dir,x))
