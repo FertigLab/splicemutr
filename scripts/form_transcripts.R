@@ -85,6 +85,14 @@ three_by_tx<-threeUTRsByTranscript(txdb,use.names=T)
 cds_by_tx <- cdsBy(txdb,by="tx",use.names=T)
 
 #------------------------------------------------------------------------------#
+# correcting chromosomes
+
+if (any(str_detect(as.character(seqnames(all_genes)),"chr"))){
+  introns$chr <- sprintf("chr%s",introns$chr)
+  options(warn = -1)
+}
+
+#------------------------------------------------------------------------------#
 # annotating junctions using reference introns
 
 introns_by_tx<-data.frame(unlist(intronsByTranscript(txdb,use.names=T)))

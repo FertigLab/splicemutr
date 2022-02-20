@@ -77,18 +77,13 @@ L > 0 indicates it is a protein-coding RNA while L < 0 indicates that the transc
 
 |   The gene splicing antigenicity metric is calculated as follows: 
 
-$G=(\sum_{j \in J}\frac{R_{j}}{R_G}*k_{i})/|J|$ 
+$G_{T}=\frac{\sum_{i \in I}\frac{R_{i}}{R_{G}}*Tbf_{i}}{|I|}$ 
 
 where $R_{j}$ is the variance stabilized read count for the splice-junction j, $k_{j}$ is the number of immunogenic kmers predicted from the transcript associated with the junction j, $R_{G}$ is the variance-stabilized read count for the specific gene G, and J is the set of junctions associated with the gene G. This metric serves as a weighted sum for the splicing-based immunogenic impact a gene has.
 
 | Additionally, the gene splicing antigenicity shows a ORF length dependency, therefore a normalization has been added to the metric. The updated metric is calculated as follows:
 
-$G=(\sum_{j \in J}\frac{\frac{R_{j}}{k_{j}}}{\frac{R_G}{k_{G}}}*k_{i})/|J|$
-
-or rather:
-
-$G=(\sum_{j \in J}\frac{R_{j}}{k_{uj}}*\frac{k_{uG}}{R_{G}}*k_{j})/|J|$
-
+$G_{T}=\frac{\sum_{i \in I}\frac{R_{i}}{R_{G}}*\frac{Tbf_{i}}{k_{i}}}{|I|}$ 
 
 # Results
 

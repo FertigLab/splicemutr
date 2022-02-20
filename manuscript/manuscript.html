@@ -11,7 +11,7 @@
 
 <meta name="author" content="Theron Palmer, Elana Fertig" />
 
-<meta name="date" content="2022-02-11" />
+<meta name="date" content="2022-02-14" />
 
 <title>Characterization of splicing-derived neoantigens using splicemutr shows their independence from TMB and potential as a biomarker for immunotherapy response</title>
 
@@ -179,7 +179,7 @@ pre code {
 
 <h1 class="title toc-ignore"><p><strong>Characterization of splicing-derived neoantigens using splicemutr shows their independence from TMB and potential as a biomarker for immunotherapy response</strong></p></h1>
 <h4 class="author">Theron Palmer, Elana Fertig</h4>
-<h4 class="date">February 11, 2022</h4>
+<h4 class="date">February 14, 2022</h4>
 <div class="abstract">
 <p class="abstract">Abstract</p>
 <p>Alternative-splicing dysregulation has been shown to play a role in cancer oncogenesis, conferring survival benefits to tumors. Yet, similar to mutation-caused tumor immunity, alternative-splicing dysregulation in cancer has also been shown to create neoepitopes capable of causing an immune response. In this work, we develop a new bioinformatics pipeline, splicemutr, to characterize alternative splicing as a missing source of antigens in cancer from a splice-junction perspective. The splicemutr pipeline identifies antigenic, splice variants by kmerizing differentially spliced transcripts and performing mhc-binding affinity prediction using mhcnuggets. To benchmark this algorithm on established splicing alterations, we first apply our approach to HPV-positive head and neck tumors and find that splicemutr shows enrichment of immunogenic trans-splicing events and evidence for selection against immunogen-causing splice-junctions when compared to normal. Further expanding this to pan-cancer analysis in The Cancer Genome Analysis (TCGA) enables us to evaluate the extent to which alternative splicing relates to common immunogenic biomarkers, including notably tumor mutation burden. Using splicemutr, we show that within 14 cancer types, splicing antigenicity does not correlate with the tumor mutation burden, showing splicing antigenicity to be independent from a common biomarker of tumor response to treatment. To further relate splicing antigens to the efficacy of immunotherapy, we apply our pipeline to compare splicing-based antigenicity in PD1 resistant 4T1MSI implanted Balb/cJ mice sensitized to nivolumab immunotherapy through combination therapy with a BET inhibitor (BETi) and in post-treament samples from an advanced melanoma clinical trial cohort treated with combination nivolumab and ipimulimab. In the mouse experiment, the nivolumab-BETi combination arm showed marked tumor shrinkage compared to the control and nivolumab alone arms. Using splicemutr, we show that the splicing antigenicity increases from combination therapy to nivolumab alone to the untreated arm, suggesting depletion of splicing-based antigens in those samples that respond well to treatment. In the advanced melanoma clinical trial cohort treated with combination nivolumab and ipimulimab, we show that the splicing-based antigenicity is higher in the non-responders than responders. Based upon our mouse data, we hypothezies that the post-treament human data has decreased splicing-based antigens as the tumor clones containing them may be targeted by the immune system and depleted during successful immunotherapy response. Altogether, these data suggest the potential role of splicing as candidate antigens in cancer and use of our splicemutr pipeline for biomarker discovery based upon splicing antigenicity.</p>
@@ -216,12 +216,10 @@ pre code {
 <p>L &gt; 0 indicates it is a protein-coding RNA while L &lt; 0 indicates that the transcript is a non-coding RNA.</p>
 <div class="line-block">  The set of proteins output from transcript modification are then processed for MHC binding affinity predictions are performed. The translated proteins are kmerized, then splicemutr extracts out the unique set of kmers found in the set of translated proteins. Splicemutr then uses mhcnuggets to predict the raw binding affinity of each kmer using the HLA alleles specific to the samples being analyzed. Splicemutr then extracts out those kmers with a predicted IC50 less than or equal to 500 nM per HLA allele. Conversely a percentile rank less than or equal to two percent per HLA allele can be used. This percentile rank is unique to the specific HLA allele and has been shown to reduce the number of false positive hits from MHC binding affinity predictors. Using the sample genotype, the number of immunogenic kmers per junction-modified transcript and per sample are determined. Splicemutr then uses this information to calculate a per-gene splicing antigenicity metric.</div>
 <div class="line-block">  The gene splicing antigenicity metric is calculated as follows:</div>
-<p><span class="math inline">\(G=(\sum_{j \in J}\frac{R_{j}}{R_G}*k_{i})/|J|\)</span></p>
+<p><span class="math inline">\(G_{T}=\frac{\sum_{i \in I}\frac{R_{i}}{R_{G}}*Tbf_{i}}{|I|}\)</span></p>
 <p>where <span class="math inline">\(R_{j}\)</span> is the variance stabilized read count for the splice-junction j, <span class="math inline">\(k_{j}\)</span> is the number of immunogenic kmers predicted from the transcript associated with the junction j, <span class="math inline">\(R_{G}\)</span> is the variance-stabilized read count for the specific gene G, and J is the set of junctions associated with the gene G. This metric serves as a weighted sum for the splicing-based immunogenic impact a gene has.</p>
 <div class="line-block">Additionally, the gene splicing antigenicity shows a ORF length dependency, therefore a normalization has been added to the metric. The updated metric is calculated as follows:</div>
-<p><span class="math inline">\(G=(\sum_{j \in J}\frac{\frac{R_{j}}{k_{j}}}{\frac{R_G}{k_{G}}}*k_{i})/|J|\)</span></p>
-<p>or rather:</p>
-<p><span class="math inline">\(G=(\sum_{j \in J}\frac{R_{j}}{k_{uj}}*\frac{k_{uG}}{R_{G}}*k_{j})/|J|\)</span></p>
+<p><span class="math inline">\(G_{T}=\frac{\sum_{i \in I}\frac{R_{i}}{R_{G}}*\frac{Tbf_{i}}{k_{i}}}{|I|}\)</span></p>
 </div>
 </div>
 <div id="results" class="section level1">
