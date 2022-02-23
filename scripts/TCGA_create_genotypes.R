@@ -108,5 +108,5 @@ write.table(alleles,
             file=sprintf("%s/%s_class1_alleles.txt",dirname(junc_metadata_file),basename(dirname(junc_metadata_file))),
             sep="\t",
             quote=F,
-            col.names=T,
+            col.names=F,
             row.names=F)
