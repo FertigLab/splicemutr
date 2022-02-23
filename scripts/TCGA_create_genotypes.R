@@ -6,7 +6,7 @@
 library(stringr)
 library(dplyr)
 library(optparse)
-library(TCGAutils)
+# library(TCGAutils)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -28,8 +28,8 @@ junc_metadata_file<- opt$junc_metadata
 #------------------------------------------------------------------------------#
 # reading in the data
 
-genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
-junc_metadata_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BRCA/BRCA_metadata.rds"
+# genotypes_files <- "/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv"
+# junc_metadata_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/BRCA/BRCA_metadata.rds"
 
 genotypes <- read.table(genotypes_files,sep=",",header=T)
 junc_metadata <- readRDS(junc_metadata_file)
@@ -92,12 +92,20 @@ genotypes_specfic$type <- tum_or_norm
 # genotypes_specfic$sample_id <- vapply(genotypes$sample_id,function(ID){substr(ID,1,nchar(ID)-1)},character(1))
 
 genotypes_specfic$external_id <- junc_metadata$external_id
+alleles <- data.frame(alleles=unique(c(genotypes_specfic$A1,genotypes_specfic$A2,genotypes_specfic$B1,genotypes_specfic$B2,genotypes_specfic$C1,genotypes_specfic$C2)))
+alleles <- alleles[!is.na(alleles$alleles),]
 
 #------------------------------------------------------------------------------#
 # saving the genotypes data
 
 write.table(genotypes_specfic,
             file=sprintf("%s/%s_genotypes_specific.txt",dirname(junc_metadata_file),basename(dirname(junc_metadata_file))),
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+write.table(alleles,
+            file=sprintf("%s/%s_class1_alleles.txt",dirname(junc_metadata_file),basename(dirname(junc_metadata_file))),
             sep="\t",
             quote=F,
             col.names=T,
