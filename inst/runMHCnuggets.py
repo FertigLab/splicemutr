@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 # python python runMHCnuggets.py -t "I" -k /media/theron/My_Passport/data/references/kmers_15 -m
 # /media/theron/My_Passport/splicemutr/MHC_I_alleles.txt -o /media/theron/My_Passport/data/references/scores
 

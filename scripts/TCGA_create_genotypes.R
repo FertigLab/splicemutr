@@ -96,6 +96,16 @@ alleles <- data.frame(alleles=unique(c(genotypes_specfic$A1,genotypes_specfic$A2
 alleles <- alleles[!is.na(alleles$alleles),]
 
 #------------------------------------------------------------------------------#
+# creating genotypes list
+
+geno_names <- genotypes_specific$external_id
+genotype_data <- lapply(geno_names,function(ID){
+  return(as.character(genotypes_specific[genotypes_specific$external_id==ID,c("A1","A2","B1","B2","C1","C2")]))
+})
+names(genotype_data) <- geno_names
+
+
+#------------------------------------------------------------------------------#
 # saving the genotypes data
 
 write.table(genotypes_specfic,
@@ -110,3 +120,4 @@ write.table(alleles,
             quote=F,
             col.names=F,
             row.names=F)
+saveRDS(genotype_data,file=sprintf("%s/%s_genotypes.rds",dirname(junc_metadata_file),basename(dirname(junc_metadata_file))))
