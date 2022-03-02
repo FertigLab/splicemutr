@@ -65,6 +65,7 @@ genotypes$C2 <- unname(vapply(genotypes$C2,function(HLA){
 #------------------------------------------------------------------------------#
 # matching TCGA samples between mutation counts and genotypes
 
+print("here")
 genotypes_specfic <- as.data.frame(matrix(unlist(lapply(junc_metadata$tcga.tcga_barcode,function(barcode){
   a<-which(barcode == genotypes$aliquot_id)
   if (length(a)==0){
@@ -75,6 +76,7 @@ genotypes_specfic <- as.data.frame(matrix(unlist(lapply(junc_metadata$tcga.tcga_
 })),byrow=T,nrow=nrow(junc_metadata)))
 colnames(genotypes_specfic)<-colnames(genotypes)[seq(6)]
 
+print("here 1")
 tum_or_norm <- unname(vapply(junc_metadata$tcga.tcga_barcode,function(ID){
   type <- str_split(ID,"[-]")[[1]][4]
   type<-as.numeric(substr(type,1,2))
@@ -88,6 +90,7 @@ tum_or_norm <- unname(vapply(junc_metadata$tcga.tcga_barcode,function(ID){
 genotypes_specfic$aliquot_id <- junc_metadata$tcga.tcga_barcode
 genotypes_specfic$type <- tum_or_norm
 
+print("here 2")
 # genotypes_specfic$sample_id <- TCGAbarcode(genotypes$aliquot_id, sample=T)
 # genotypes_specfic$sample_id <- vapply(genotypes$sample_id,function(ID){substr(ID,1,nchar(ID)-1)},character(1))
 
@@ -98,6 +101,7 @@ alleles <- alleles[!is.na(alleles$alleles),]
 #------------------------------------------------------------------------------#
 # creating genotypes list
 
+print("here 3")
 geno_names <- genotypes_specific$external_id
 genotype_data <- lapply(geno_names,function(ID){
   return(as.character(genotypes_specific[genotypes_specific$external_id==ID,c("A1","A2","B1","B2","C1","C2")]))
@@ -107,7 +111,7 @@ names(genotype_data) <- geno_names
 
 #------------------------------------------------------------------------------#
 # saving the genotypes data
-
+print("here 4")
 write.table(genotypes_specfic,
             file=sprintf("%s/%s_genotypes_specific.txt",dirname(junc_metadata_file),basename(dirname(junc_metadata_file))),
             sep="\t",
