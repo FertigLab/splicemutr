@@ -115,7 +115,7 @@ def main(options, args):
     hla_dir = options.summary_dir
     output_dir = options.output_dir
     summary_type = options.summary_type
-    sample_num = int(options.sample_num)
+    sample_num = int(options.sample_num)-1
     
     # processing command line arguments
     rows = range(len(splice_dat.index))
