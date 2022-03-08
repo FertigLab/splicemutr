@@ -73,9 +73,9 @@ def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
     hlas = genotypes_file[0][0:6]
     sample_type = genotypes_file[0][7]
     sample_name = genotypes_file[0][8]
-
     for hla in hlas:
         if (type(hla) is float):
+            print("%s: break"%hla)
             break
         else:
             with open(hla_file%(hla_dir,hla)) as geno_file:
@@ -88,8 +88,8 @@ def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
                 if rows[j] in geno_dat:
                     kmers[j].append(geno_dat[rows[j]])
         
-            kmers = [":".join(k) for k in kmers]
-            return(kmers,sample_name)
+    kmers = [":".join(k) for k in kmers]
+    return(kmers,sample_name)
 
 def filter_kmers(kmers,groups_dframe):
     groups_unique=list(set(groups_dframe.groups.tolist()))
