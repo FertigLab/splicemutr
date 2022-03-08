@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# author: Theron Palmer
+# created: 08/13/2021
+
+# This script takes in the genotypes file for the specific cancer type, the full splicemutr data file, the leafcutter groups file for the specific cancer, the cancer intron file, and the HLA allele summary file directory. Then it assigns kmers to the appropriate intron rows based on the genotype. 
+
 import pandas as pd
 import numpy as np
 import os
@@ -58,23 +63,23 @@ def create_specific_splicemutr(splice_dat, intron_file):
     
     return(splice_dat_new)
 
-def assign_kmers(genotypes_file,rows,hla_dir):
+def assign_kmers(genotypes_file,rows,hla_dir,cancer):
     # genotypes_file: the genotypes_file, including path
     # rows: the specific_splice_dat rows
     # outputs:
         # specific_splice_dat with imm. kmers per sample columns
         
-    hla_file = "%s/%s"
+    hla_file = "%s/%s_tx_dict_summary_perc.txt"
     genotypes_file = genotypes_file.values.tolist()
     all_kmers = {}
     hla_dict = {}
     tumor_kmers = [set() for i in range(len(rows))]
     normal_kmers = [set() for i in range(len(rows))]
     for i in range(len(genotypes_file)):
-        print("%d:%d"%(i,len(genotypes_file)-1),flush=True)
+        print("%s:%d:%d"%(cancer,i,len(genotypes_file)),flush=True)
         kmers = [[] for i in range(len(rows))]
-        hlas = genotypes_file[i][1]
-        print(hlas)
+        hlas = genotypes_file[i][0:6]
+        sample_type = genotypes_file[i][7]
         for hla in hlas:
             if (type(hla) is float):
                 break
@@ -95,46 +100,64 @@ def assign_kmers(genotypes_file,rows,hla_dir):
         
         kmers = [":".join(k) for k in kmers]
         all_kmers[i] = kmers
+        if sample_type == "T":
+            for i in range(len(rows)):
+                tumor_kmers[i].update(kmers[i].split(":"))
+        else:
+            for i in range(len(rows)):
+                normal_kmers[i].update(kmers[i].split(":"))
     all_kmers = pd.DataFrame(all_kmers)
-    return(all_kmers)
+    return(all_kmers,tumor_kmers,normal_kmers)
         
 def main(options, args):
-    
-    genotype_file_str = "%s_tx_dict_summary_perc.txt"
-    genotypes_file = pd.read_table(options.genotypes_file)
-    genotypes_file["alleles"] = [[genotype_file_str%(j.replace(":","-")) for j in i.split(";")] for i in genotypes_file["alleles"].tolist()]
-    splice_dat = pd.read_table(options.splice_dat,sep="\t")
-    groups_file = pd.read_table(options.groups_file,header=None)
-    groups_file.columns = ["file_name","tumor_normal"]
-    hla_dir = options.hla_dir
-    rows = splice_dat.rows.tolist()
-
-    geno_length = len(genotypes_file.index)
-    iter_val = 1
-    sample_num=50
-    for i in range(0,geno_length,sample_num): # original sample_num == 100
-        if i+sample_num <= geno_length:
-            end = i+sample_num
-        else:
-            end = geno_length
-        genotypes_file_small = genotypes_file[i:end]
-        specific_splice_kmers = assign_kmers(genotypes_file_small,rows,hla_dir)
-        print(specific_splice_kmers[0])
-#         if i == 0:
-#             tumor_kmers = tumor_kmers_fill
-#             normal_kmers = normal_kmers_fill
-#         else:
-#             for i in range(len(rows)):
-#                 tumor_kmers[i] = tumor_kmers[i].union(tumor_kmers_fill[i])
-#                 normal_kmers[i] = normal_kmers[i].union(normal_kmers_fill[i])
+        
+        genotypes_file = pd.read_table(options.genotypes_file)
+        splice_dat = pd.read_table(options.splice_dat,sep=" ")
+        groups_file = pd.read_table(options.groups_file)
+        intron_file = pd.read_table(options.intron_file)
+        hla_dir = options.hla_dir
+        cancer_dir = os.path.dirname(options.intron_file)
+        groups_file.columns = ["file_name","tumor_normal"]
+        num_samples = len(groups_file.index)
+        
+        intron_file = intron_file[intron_file["verdict"] != "unknown_strand"]
+        
+        # creating the specific splicemutr dat that corresponds to the cancer being analyzed
+        specific_splice_dat = create_specific_splicemutr(splice_dat,intron_file)
+        specific_splice_dat.to_csv("%s/%s_splicemutr_dat.txt"%(cancer_dir,os.path.basename(cancer_dir)),sep='\t')
+        rows = specific_splice_dat.rows.tolist()
+        
+        # assigning the immunogenic kmers to the specific_splice_dat
+        geno_length = len(genotypes_file.index)
+        iter_val = 1
+        sample_num=50
+        for i in range(0,geno_length,sample_num): # original sample_num == 100
+            if i+sample_num <= geno_length:
+                end = i+sample_num
+            else:
+                end = geno_length
+            genotypes_file_small = genotypes_file[i:end]
+            specific_splice_kmers,tumor_kmers_fill,normal_kmers_fill = assign_kmers(genotypes_file_small,
+                                                                          rows,
+                                                                          hla_dir,
+                                                                          os.path.basename(cancer_dir))
+#             if i == 0:
+#                 tumor_kmers = tumor_kmers_fill
+#                 normal_kmers = normal_kmers_fill
+#             else:
+#                 for i in range(len(rows)):
+#                     tumor_kmers[i] = tumor_kmers[i].union(tumor_kmers_fill[i])
+#                     normal_kmers[i] = normal_kmers[i].union(normal_kmers_fill[i])
             
-#             specific_splice_kmers.to_csv("%s/kmers_%d.txt"%(hla_dir,iter_val),sep='\t')
-#             iter_val+=1
+#             # turning tumor and normal kmers into pandas dataframe for saving
             
-#     tumor_normal_kmers = {"tumor":[":".join(list(i)) for i in tumor_kmers],
-#                           "normal":[":".join(list(i)) for i in normal_kmers]}
-#     tumor_normal_kmers = pd.DataFrame(tumor_normal_kmers)
-#     tumor_normal_kmers.to_csv("%s/tumor_normal_kmers.txt"%(hla_dir,sep='\t'))
+            specific_splice_kmers.to_csv("%s/%s_kmers_%d.txt"%(cancer_dir,os.path.basename(cancer_dir),iter_val),sep='\t')
+            iter_val+=1
+            
+#         tumor_normal_kmers = {"tumor":[":".join(list(i)) for i in tumor_kmers],
+#                               "normal":[":".join(list(i)) for i in normal_kmers]}
+#         tumor_normal_kmers = pd.DataFrame(tumor_normal_kmers)
+#         tumor_normal_kmers.to_csv("%s/%s_tumor_normal_kmers.txt"%(cancer_dir,os.path.basename(cancer_dir)),sep='\t')
         
 if __name__ == "__main__":
 
@@ -148,6 +171,8 @@ if __name__ == "__main__":
                       help="full splicemutr data")
     parser.add_option("-r", "--groups_file", dest="groups_file",
                       help="the groups file")
+    parser.add_option("-i", "--intron_file", dest="intron_file",
+                       help = "the intron file")
     parser.add_option("-a", "--hla_dir", dest = "hla_dir",
                      help = "the hla summary directory")
     (options, args) = parser.parse_args()
