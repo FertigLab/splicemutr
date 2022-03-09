@@ -16,15 +16,18 @@ arguments <- parse_args(OptionParser(usage = "",
                                                    help="junction rse file"),
                                        make_option(c("-s","--splice_dat_file"),
                                                    default = "",
-                                                   help="the splicemutr data file"))))
+                                                   help="the splicemutr data file"),
+                                       make_option(c("-o","--output_dir"),
+                                                   default = "",
+                                                   help="output_dir"))))
 opt=arguments
 junc_rse <- opt$junc_rse
 splice_dat_file <- opt$splice_dat_file
+output_dir <- opt$output_dir
 
 #------------------------------------------------------------------------------#
 # creating and filtering junc expression
 
-cancer<-basename(junc_dir)
 junc_rse <- readRDS(junc_rse)
 juncs_for_rows <- junc_rse@rowRanges@ranges@NAMES
 junc_expr_comb <- junc_rse@assays@data@listData[["counts"]]
@@ -84,7 +87,7 @@ for (i in seq(1,total,100)){
   junc_expr_comb_vst <- varianceStabilizingTransformation(junc_expr_comb_sub,blind=F,fitType="parametric")
   junc_expr_comb_vst <- as.data.frame(junc_expr_comb_vst@assays@data@listData[[1]])
   junc_expr_comb_sub <- as.data.frame(junc_expr_comb_sub@assays@data@listData[[1]])
-  saveRDS(junc_expr_comb_sub,file=sprintf("%s/junc_expr_combined_%d.rds",junc_dir,iter))
-  saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst_%d.rds",junc_dir,iter))
+  saveRDS(junc_expr_comb_sub,file=sprintf("%s/junc_expr_combined_%d.rds",output_dir,iter))
+  saveRDS(junc_expr_comb_vst,file=sprintf("%s/junc_expr_combined_vst_%d.rds",output_dir,iter))
   iter<-iter+1
 }
