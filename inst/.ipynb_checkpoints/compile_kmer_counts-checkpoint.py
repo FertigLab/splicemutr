@@ -31,7 +31,7 @@ def main(options, args):
             all_kmers_counts[i] = [len([k_filt for k_filt in k.split(":") if k_filt != ""]) for k in kmers]
         all_kmers_counts = pd.DataFrame(all_kmers_counts).transpose()
         all_kmers_counts.columns = sample_names
-        all_kmers_counts.to_csv("%s/all_kmers.txt"%(output_dir),sep='\t',index=False)
+        all_kmers_counts.to_csv("%s/all_kmers_counts.txt"%(output_dir),sep='\t',index=False)
     
 if __name__ == "__main__":
 

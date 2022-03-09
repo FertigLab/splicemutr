@@ -11,26 +11,21 @@ library(DESeq2)
 arguments <- parse_args(OptionParser(usage = "",
                                      description="",
                                      option_list=list(
-                                       make_option(c("-j","--junc_dir"),
+                                       make_option(c("-j","--junc_rse"),
                                                    default = "",
-                                                   help="junction_dir"))))
+                                                   help="junction rse file"),
+                                       make_option(c("-s","--splice_dat_file"),
+                                                   default = "",
+                                                   help="the splicemutr data file"))))
 opt=arguments
-junc_dir <- opt$junc_dir
-splice_dat_file <- opt$splice_dat
-
-#------------------------------------------------------------------------------#
-# format integers
-
-# format_int <- function(vec){
-#   gsub(" ","",format(as.numeric(vec),scientific=F))
-# }
+junc_rse <- opt$junc_rse
+splice_dat_file <- opt$splice_dat_file
 
 #------------------------------------------------------------------------------#
 # creating and filtering junc expression
 
 cancer<-basename(junc_dir)
-junc_rse <- readRDS(sprintf("%s/%s_junc_rse.rds",junc_dir,cancer))
-print("extracting juncs")
+junc_rse <- readRDS(junc_rse)
 juncs_for_rows <- junc_rse@rowRanges@ranges@NAMES
 junc_expr_comb <- junc_rse@assays@data@listData[["counts"]]
 rownames(junc_expr_comb)<-juncs_for_rows
@@ -49,9 +44,12 @@ junc_linear <- sprintf("%s:%d-%d:%s",junc_mat_rows$chr,as.numeric(junc_mat_rows$
 rm(junc_mat_rows)
 rownames(junc_expr_comb) <- junc_linear
 
-splice_dat <- read.table(sprintf("%s/%s_splicemutr_dat.txt",junc_dir,cancer),header=T,sep="\t",quote="")
+#------------------------------------------------------------------------------#
+# processing splice dat
+
+splice_dat <- readRDS(splice_dat_file)
 splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
-splice_dat <- splice_dat %>% dplyr::filter(deltapsi > 0)
+# splice_dat <- splice_dat %>% dplyr::filter(deltapsi > 0)
 strands <- as.data.frame(matrix(unlist(strsplit(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat)))
 strands <- as.vector(strands[,3])
 juncs <- sprintf("%s:%d-%d:%s",splice_dat$chr,as.numeric(splice_dat$start),as.numeric(splice_dat$end),strands)
