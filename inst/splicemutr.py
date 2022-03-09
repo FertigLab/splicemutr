@@ -104,54 +104,66 @@ def create_specific_splicemutr(splice_dat, intron_file):
 
 #-----------------------------------------------------#
 
-def assign_kmers(genotypes_file,rows,hla_dir,cancer):
+def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
     # assign_kmers(): assign kmers from mhc binding affinity data
     # inputs:
       # genotypes_file: the genotypes_file, including path
       # rows: the specific_splice_dat rows
       # hla_dir: the directory of the hla data
-      # cancer: the tcga cancer type to be analyzed
+      # hla_file: the specific hla file without path
     # outputs:
-      # specific_splice_dat with imm. kmers per sample columns
+      # kmers: imm. kmers for specific sample
+      # sample_name: the specific sample name
         
-    hla_file = "%s/%s_tx_dict_summary_perc.txt"
     genotypes_file = genotypes_file.values.tolist()
     all_kmers = {}
-    hla_dict = {}
     tumor_kmers = [set() for i in range(len(rows))]
     normal_kmers = [set() for i in range(len(rows))]
-    for i in range(len(genotypes_file)):
-        print("%s:%d:%d"%(cancer,i,len(genotypes_file)),flush=True)
-        kmers = [[] for i in range(len(rows))]
-        hlas = genotypes_file[i][0:6]
-        sample_type = genotypes_file[i][7]
-        for hla in hlas:
-            if (type(hla) is float):
-                break
-            else:
-                if hla in hla_dict:
-                    geno_dat = hla_dict[hla]
-                else:
-                    with open(hla_file%(hla_dir,hla)) as geno_file:
-                        geno_list = geno_file.read().splitlines()
-                        geno_rows = [i.split('\t')[0] for i in geno_list]
-                        geno_kmers = [i.split('\t')[1] for i in geno_list]
-                        hla_dict[hla] = {int(geno_rows[i]):geno_kmers[i] for i in range(len(geno_rows))}
-                        geno_dat = hla_dict[hla]
-                for j in range(len(rows)):
-                    if rows[j] in geno_dat:
-                        kmers[j].append(geno_dat[rows[j]])
-        
-        kmers = [":".join(k) for k in kmers]
-        all_kmers[i] = kmers
-        if sample_type == "T":
-            for i in range(len(rows)):
-                tumor_kmers[i].update(kmers[i].split(":"))
+    kmers = [[] for i in range(len(rows))]
+    hlas = genotypes_file[0][0:6]
+    sample_type = genotypes_file[0][7]
+    sample_name = genotypes_file[0][8]
+    for hla in hlas:
+        if (type(hla) is float):
+            print("%s: break"%hla)
+            continue
         else:
-            for i in range(len(rows)):
-                normal_kmers[i].update(kmers[i].split(":"))
-    all_kmers = pd.DataFrame(all_kmers)
-    return(all_kmers,tumor_kmers,normal_kmers)
+            with open(hla_file%(hla_dir,hla)) as geno_file:
+                print(hla_file%(hla_dir,hla))
+                geno_list = geno_file.read().splitlines()
+                geno_rows = [i.split('\t')[0] for i in geno_list]
+                geno_kmers = [i.split('\t')[1] for i in geno_list]
+                geno_dat = {int(geno_rows[i]):geno_kmers[i] for i in range(len(geno_rows))}
+            for j in range(len(rows)):
+                if rows[j] in geno_dat:
+                    kmers[j].append(geno_dat[rows[j]])
+        
+    kmers = [":".join(k) for k in kmers]
+    return(kmers,sample_name)
+
+#-----------------------------------------------------#
+
+def filter_kmers(kmers,groups_dframe):
+    # inputs:
+     # kmers: the kmers list
+     # groups_dframe: the groups dataframe with columns groups, deltapsi, and rows
+    # outputs:
+     # kmers: the kmers with each row filtered by group and tumor or normal specificity
+        
+    groups_unique=list(set(groups_dframe.groups.tolist()))
+    for group in groups_unique:
+        groups_dframe_small=groups_dframe[groups_dframe["groups"]==group]
+        normal_rows=groups_dframe_small[groups_dframe_small["deltapsi"]>0].rows.tolist()
+        tumor_rows=groups_dframe_small[groups_dframe_small["deltapsi"]<0].rows.tolist()
+        normal_kmers = set()
+        [normal_kmers.update(kmers[i].split(":")) for i in normal_rows]
+        tumor_kmers = set()
+        [tumor_kmers.update(kmers[i].split(":")) for i in tumor_rows]
+        for row in tumor_rows:
+            kmers[row] = ":".join(list(set(kmers[row].split(":")).difference(normal_kmers)))
+        for row in normal_rows:
+            kmers[row] = ":".join(list(set(kmers[row].split(":")).difference(tumor_kmers)))
+    return(kmers)
 
 #-----------------------------------------------------#
 
