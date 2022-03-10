@@ -52,7 +52,7 @@ rownames(junc_expr_comb) <- junc_linear
 
 splice_dat <- readRDS(splice_dat_file)
 splice_dat$deltapsi <- as.numeric(splice_dat$deltapsi)
-# splice_dat <- splice_dat %>% dplyr::filter(deltapsi > 0)
+splice_dat <- splice_dat %>% dplyr::filter(deltapsi > 0)
 strands <- as.data.frame(matrix(unlist(strsplit(splice_dat$cluster,"_")),byrow=T,nrow=nrow(splice_dat)))
 strands <- as.vector(strands[,3])
 juncs <- sprintf("%s:%d-%d:%s",splice_dat$chr,as.numeric(splice_dat$start),as.numeric(splice_dat$end),strands)

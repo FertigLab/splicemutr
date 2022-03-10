@@ -25,16 +25,12 @@ arguments <- parse_args(OptionParser(usage = "",
                                help="junction expression file"),
                    make_option(c("-o","--out"),
                                default = "",
-                               help="output_file_prefix"),
-                   make_option(c("-t","--tcga"),
-                               default = F,
-                               help="tcga or not"))))
+                               help="output_file_prefix"))))
 opt=arguments
 gene_expression_file <- opt$gene_expression
 splice_dat_file <- opt$splice_dat_file
 kmer_counts_file <- opt$kmer_counts
 junc_expr_file <- opt$junc_expr_file
-tcga <- as.logical(opt$tcga)
 out<-opt$out
 
 #------------------------------------------------------------------------------#
@@ -59,17 +55,31 @@ calc_kmers <- function(peptides){
   return(length(unique(unlist(peptides))))
 }
 
+format_juncs <- function(juncs){
+  junc_split <- strsplit(juncs[1],":")[[1]]
+  if (length(junc_split)==3){
+    return(unlist(lapply(juncs,function(junc){
+      a<-unlist(strsplit(junc,":"))
+      a[2]<-str_replace(a[2],"-",":")
+      paste(a,collapse=":")
+    })))
+  } else {
+    return(juncs)
+  }
+}
+
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- "/media/theron/My_Passport/Valsamo/featurecounts_all_vst.rds"
+# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/gene_expression_vst.rds"
 # # splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
-# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/splice_dat_NIV1_IPI3_PD_NE_PD_PRE.rds"
+# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep.rds"
+# # splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep_nov_corr.txt"
 # # kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_NE_PD_PRE.rds"
+# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/kmer_counts/all_kmers.txt"
 # tcga<-F
-# junc_expr_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_02102022/create_junc_expr_combined_out/junc_expr_combined_vst.rds"
-# out<- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/HNSCC_filt_norm"
+# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/junction_counts/junc_expr_combined_vst_1.rds"
+# out<- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/GENE_METRIC/CHOL"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -77,45 +87,39 @@ calc_kmers <- function(peptides){
 gene_expression <- readRDS(gene_expression_file)
 
 if (str_detect(splice_dat_file,".txt")){
-  splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
+  splice_dat <- read.table(splice_dat_file,header=T,sep=" ")
+  splice_dat$juncs <- format_juncs(splice_dat$juncs)
 } else {
   splice_dat <- readRDS(splice_dat_file)
+  splice_dat$juncs <- format_juncs(splice_dat$juncs)
 }
-splice_dat$juncs <- sprintf("%s:%s-%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$strand)
 if (str_detect(kmer_counts_file,".txt")){
-  kmer_counts <- read.table(kmer_counts_file)
-  colnames(kmer_counts) <- c("rows",colnames(kmer_counts)[seq(2,ncol(kmer_counts))])
+  kmer_counts <- read.table(kmer_counts_file,header=T,check.names=F)
+  kmer_counts$rows <- seq(nrow(kmer_counts))
 } else {
   kmer_counts <- readRDS(kmer_counts_file)
-  colnames(kmer_counts) <- c("rows",colnames(kmer_counts)[seq(2,ncol(kmer_counts))])
+  kmer_counts$rows <- seq(nrow(kmer_counts))
 }
-kmer_counts$rows<-as.numeric(kmer_counts$rows)
-kmer_counts[,seq(2,ncol(kmer_counts))] <- mutate_all(kmer_counts[,seq(2,ncol(kmer_counts))], function(x) as.numeric(x))
-if (tcga){
-  splice_dat$X <- as.numeric(splice_dat$X)
-} else {
-  splice_dat$rows <- as.numeric(splice_dat$rows)
-}
+kmer_counts<- mutate_all(kmer_counts, function(x) as.numeric(x))
+
+splice_dat$rows <- as.numeric(seq(nrow(splice_dat)))
+
 
 junc_expr_comb <- readRDS(junc_expr_file)
 junc_expr_comb <- mutate_all(junc_expr_comb, function(x) as.numeric(x))
 colnames(junc_expr_comb) <- str_remove(colnames(junc_expr_comb),".junc")
+rownames(junc_expr_comb) <- format_juncs(rownames(junc_expr_comb))
 
-splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-1)]),]
+splice_dat_filt <- splice_dat[!duplicated(splice_dat[,seq(1,ncol(splice_dat)-5)]),]
 splice_dat_filt <- splice_dat_filt %>% dplyr::filter(nchar(peptide)-1>50)
 
-if (tcga){
-  kmer_counts<-kmer_counts[,!duplicated(colnames(kmer_counts))]
-  kmer_counts_filt <- kmer_counts %>% dplyr::filter(rows %in% splice_dat_filt$X)
-} else {
-  kmer_counts_filt <- kmer_counts %>% dplyr::filter(rows %in% splice_dat_filt$rows)
-}
-samples <- colnames(kmer_counts_filt)[seq(2,ncol(kmer_counts_filt))]
+kmer_counts_filt <- kmer_counts[splice_dat_filt$rows,]
+
+samples <- colnames(kmer_counts_filt)
 samples <- samples[which(samples %in% colnames(junc_expr_comb))]
 gene_expression_filt <- gene_expression[,samples,drop=F]
 
-strands <- splice_dat_filt$strand
-splice_dat_filt$juncs <- sprintf("%s:%s:%s:%s",splice_dat_filt$chr,splice_dat_filt$start,splice_dat_filt$end,strands)
+splice_dat_filt <- splice_dat_filt[splice_dat_filt$juncs %in% rownames(junc_expr_comb),]
 junc_expr_comb_filt <- unique(junc_expr_comb[splice_dat_filt$juncs,samples,drop=F])
 
 rm(gene_expression)
@@ -125,11 +129,14 @@ rm(splice_dat)
 #------------------------------------------------------------------------------#
 # calculating per-gene metric
 
-genes <- unique(splice_dat_filt$gene)
+splice_dat_filt_normal <- splice_dat_filt[splice_dat_filt$deltapsi<0,]
+splice_dat_filt_tumor <- splice_dat_filt[splice_dat_filt$deltapsi>0,]
+genes_normal <- unique(splice_dat_filt_normal$gene)
+genes_tumor <- unique(splice_dat_filt_tumor$gene)
 
-gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
+gene_metric_mean_normal <- as.data.frame(t(vapply(genes_normal,function(gene_tar){
     g<<-gene_tar
-    splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
+    splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
     splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
     splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
     if(tcga){
@@ -145,11 +152,35 @@ gene_metric_mean <- as.data.frame(t(vapply(genes,function(gene_tar){
     gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
     a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
 },numeric(length(samples)))))
-colnames(gene_metric_mean)<-samples
+colnames(gene_metric_mean_normal)<-samples
+
+gene_metric_mean_tumor <- as.data.frame(t(vapply(genes_tumor,function(gene_tar){
+  g<<-gene_tar
+  splice_dat_small <- splice_dat_filt_tumor %>% dplyr::filter(gene==gene_tar)
+  splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
+  splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
+  if(tcga){
+    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$X,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
+  } else {
+    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
+  }
+  kmer_counts <- kmer_counts_small[,samples,drop=F]/splice_dat_small$junc_kmers
+  gene_split <- strsplit(gene_tar,"-")[[1]]
+  gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
+  junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
+  dup_num <-nrow(splice_dat_small)
+  gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
+  a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
+},numeric(length(samples)))))
+colnames(gene_metric_mean_tumor)<-samples
 
 #------------------------------------------------------------------------------#
 # saving gene metric data
 
-saveRDS(gene_metric_mean,file=sprintf("%s_gene_metric_mean_len_norm.rds",out))
-write.table(gene_metric_mean,
-            file=sprintf("%s_gene_metric_mean_len_norm.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+saveRDS(gene_metric_mean_normal,file=sprintf("%s_gene_metric_mean_len_norm_normal.rds",out))
+write.table(gene_metric_mean_normal,
+            file=sprintf("%s_gene_metric_mean_len_norm_normal.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+
+saveRDS(gene_metric_mean_tumor,file=sprintf("%s_gene_metric_mean_len_norm_tumor.rds",out))
+write.table(gene_metric_mean_tumor,
+            file=sprintf("%s_gene_metric_mean_len_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
