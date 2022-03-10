@@ -139,11 +139,7 @@ gene_metric_mean_normal <- as.data.frame(t(vapply(genes_normal,function(gene_tar
     splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
     splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
     splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
-    if(tcga){
-      kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$X,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
-    } else {
-      kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
-    }
+    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
     kmer_counts <- kmer_counts_small[,samples,drop=F]/splice_dat_small$junc_kmers
     gene_split <- strsplit(gene_tar,"-")[[1]]
     gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
@@ -159,11 +155,7 @@ gene_metric_mean_tumor <- as.data.frame(t(vapply(genes_tumor,function(gene_tar){
   splice_dat_small <- splice_dat_filt_tumor %>% dplyr::filter(gene==gene_tar)
   splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
   splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
-  if(tcga){
-    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$X,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
-  } else {
-    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
-  }
+  kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
   kmer_counts <- kmer_counts_small[,samples,drop=F]/splice_dat_small$junc_kmers
   gene_split <- strsplit(gene_tar,"-")[[1]]
   gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
