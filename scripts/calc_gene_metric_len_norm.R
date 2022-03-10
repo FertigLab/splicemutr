@@ -37,7 +37,7 @@ out<-opt$out
 # internal functions
 
 calc_gene_expression <- function(gene_tar,gene_expression){
-  gene_expr_target <- gene_expression[gene_tar,]
+  gene_expr_target <- gene_expression[gene_tar,,drop=F]
   gene_expr_tar_min <- as.data.frame(t(apply(gene_expr_target,2,min)))
   gene_expr_tar_min[is.na(gene_expr_tar_min)]<-0
   return(gene_expr_tar_min[1,])
@@ -71,15 +71,15 @@ format_juncs <- function(juncs){
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/gene_expression_vst.rds"
+# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/gene_expression_vst.rds"
 # # splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
-# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep.rds"
+# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep.rds"
 # # splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep_nov_corr.txt"
 # # kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/kmer_counts/all_kmers.txt"
+# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/kmer_counts/all_kmers.txt"
 # tcga<-F
-# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/junction_counts/junc_expr_combined_vst_1.rds"
-# out<- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/GENE_METRIC/CHOL"
+# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/junction_counts/junc_expr_combined_vst_7.rds"
+# out<- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/GENE_METRIC/LUAD"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -150,6 +150,11 @@ gene_metric_mean_normal <- as.data.frame(t(vapply(genes_normal,function(gene_tar
 },numeric(length(samples)))))
 colnames(gene_metric_mean_normal)<-samples
 
+saveRDS(gene_metric_mean_normal,file=sprintf("%s_gene_metric_mean_len_norm_normal.rds",out))
+write.table(gene_metric_mean_normal,
+            file=sprintf("%s_gene_metric_mean_len_norm_normal.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+rm(gene_metric_mean_normal)
+
 gene_metric_mean_tumor <- as.data.frame(t(vapply(genes_tumor,function(gene_tar){
   g<<-gene_tar
   splice_dat_small <- splice_dat_filt_tumor %>% dplyr::filter(gene==gene_tar)
@@ -166,13 +171,7 @@ gene_metric_mean_tumor <- as.data.frame(t(vapply(genes_tumor,function(gene_tar){
 },numeric(length(samples)))))
 colnames(gene_metric_mean_tumor)<-samples
 
-#------------------------------------------------------------------------------#
-# saving gene metric data
-
-saveRDS(gene_metric_mean_normal,file=sprintf("%s_gene_metric_mean_len_norm_normal.rds",out))
-write.table(gene_metric_mean_normal,
-            file=sprintf("%s_gene_metric_mean_len_norm_normal.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
-
 saveRDS(gene_metric_mean_tumor,file=sprintf("%s_gene_metric_mean_len_norm_tumor.rds",out))
 write.table(gene_metric_mean_tumor,
             file=sprintf("%s_gene_metric_mean_len_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+
