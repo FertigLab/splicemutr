@@ -71,15 +71,15 @@ format_juncs <- function(juncs){
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/gene_expression_vst.rds"
-# # splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
-# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep.rds"
-# # splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep_nov_corr.txt"
-# # kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
-# kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/kmer_counts/all_kmers.txt"
-# tcga<-F
-# junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/junction_counts/junc_expr_combined_vst_7.rds"
-# out<- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/LUAD/JHPCE/GENE_METRIC/LUAD"
+gene_expression_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/HNSC/JHPCE/gene_expression_vst.rds"
+# splice_dat_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_splicemutr_dat.rds"
+splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/HNSC/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep.rds"
+# splice_dat_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/JHPCE/combine_splicemutr_out/data_splicemutr_all_pep_nov_corr.txt"
+# kmer_counts_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/GENE_METRIC_01032022/full_kmers_no_junc.rds"
+kmer_counts_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/HNSC/JHPCE/kmer_counts/all_kmers.txt"
+tcga<-F
+junc_expr_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/HNSC/JHPCE/junction_counts/junc_expr_combined_vst_1.rds"
+out<- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/HNSC/JHPCE/GENE_METRIC/HNSC"
 
 #------------------------------------------------------------------------------#
 # reading in the files
