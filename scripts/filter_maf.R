@@ -37,10 +37,13 @@ target_genes_file<- opt$target_genes_file
 
 print("maf")
 mc3_maf = read.table(maf_file,,header=T,sep="\t",quote="")
+print("here1")
 target_genes <- read.table(target_genes_file,header=F)
+print("here2")
 target_genes <- as.character(target_genes[,1])
+print("here3")
 target_gene_maf = mc3_maf[mc3_maf$Hugo_Symbol %in% target_genes,]
-
+print("here4")
 #------------------------------------------------------------------------------#
 # saving maf summary
 
