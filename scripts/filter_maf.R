@@ -36,12 +36,10 @@ target_genes_file<- opt$target_genes_file
 # summarizing missense mutations
 
 print("maf")
-mc3_maf = read.maf(maf_file)
-print("target")
+mc3_maf = read.table(maf_file,,header=T,sep="\t",quote="")
 target_genes <- read.table(target_genes_file,header=F)
 target_genes <- as.character(target_genes[,1])
-print("subset")
-target_gene_maf = subsetMaf(mc3_maf,genes=target_genes)
+target_gene_maf = mc3_maf[mc3_maf$Hugo_Symbol %in% target_genes,]
 
 #------------------------------------------------------------------------------#
 # saving maf summary
