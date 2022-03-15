@@ -35,10 +35,12 @@ target_genes_file<- opt$target_genes_file
 #------------------------------------------------------------------------------#
 # summarizing missense mutations
 
+print("maf")
 mc3_maf = read.maf(maf_file)
+print("target")
 target_genes <- read.table(target_genes_file,header=F)
 target_genes <- as.character(target_genes[,1])
-
+print("subset")
 target_gene_maf = subsetMaf(mc3_maf,genes=target_genes)
 
 #------------------------------------------------------------------------------#
