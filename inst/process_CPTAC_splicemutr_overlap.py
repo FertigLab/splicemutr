@@ -15,7 +15,7 @@ def main(options, args):
     out_dir = options.out_dir
 
     external_id = cptac_data["TCGA_external_id"].tolist()[cptac_row]
-    cptac_peptides = cptac_data["peptides"].split(":")
+    cptac_peptides = cptac_data["peptides"].tolist()[0].split(":")
     K=9
     cptac_peptides_below_Kmer = []
     cptac_peptides_Kmer = []
