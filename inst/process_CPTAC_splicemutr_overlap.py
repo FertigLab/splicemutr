@@ -11,7 +11,7 @@ import sys
 def main(options, args):
     cptac_data = pd.read_table(options.cptac_file,sep="\t")
     cptac_row = int(options.cptac_row)
-    splicemutr_files = pd.read.table(options.splicemutr_files,header=None,names=["file"])
+    splicemutr_files = pd.read_table(options.splicemutr_files,header=None,names=["file"])
     out_dir = options.out_dir
 
     external_id = cptac_data["TCGA_external_id"].tolist()[cptac_row]
