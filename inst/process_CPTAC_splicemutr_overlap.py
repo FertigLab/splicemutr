@@ -23,7 +23,7 @@ def main(options, args):
         if len(pep)<K:
             cptac_peptides_below_Kmer.append(pep)
         else:
-            cptac_peptides_Kmer+=[pep[i:(i+K)] for i in range(0,len(a)-K,1)]
+            cptac_peptides_Kmer+=[pep[i:(i+K)] for i in range(0,len(pep)-K,1)]
     
     splicemutr_file=[i for i in splicemutr_files["file"].tolist() if external_id in i]
     splicemutr_file=splicemutr_file[0]
