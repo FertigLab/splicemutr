@@ -57,8 +57,10 @@ if __name__ == "__main__":
     
     parser.add_option("-c","--cptac_file",dest="cptac_file",
                      help="the .peptides.tsv file from cptac")
-    parser.add_option("-g","--genotypes",dest="genotypes",
-                 help="the genotypes file that contains the associated TCGA barcodes")
+    parser.add_option("-r","--cptac_row",dest="cptac_row",
+                 help="the cptac file row to process")
+    parser.add_option("-s","--splicemutr_files",dest="splicemutr_files",
+                 help="the splicemutr files")
     parser.add_option("-o","--out_dir",dest="out_dir",
                  help="the output directory to write the summary to")
     (options, args) = parser.parse_args()
