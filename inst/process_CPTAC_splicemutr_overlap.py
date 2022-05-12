@@ -45,11 +45,11 @@ def main(options, args):
     # print(len(set(kmers)))
     # print(len(Kmers_in_exact)/len(set(kmers)))
 
-    splicemutr_Kmers_in_cptac = Kmers_in_exact
-    splicemutr_Kmers_in_cptac += Kmers_not_in_exact
+    # splicemutr_Kmers_in_cptac = Kmers_in_exact
+    # splicemutr_Kmers_in_cptac += Kmers_not_in_exact
 
-    splicemutr_Kmers_in_cptac_df = pd.DataFrame({"splicemutr_kmers_count":len(set(kmers)),
-    "splicemutr_kmers_in_cptac_count":len(Kmers_in_exact)})
+    splicemutr_Kmers_in_cptac_df = pd.DataFrame({"splicemutr_kmers_count":[len(set(kmers))],
+    "splicemutr_kmers_in_cptac_count":[len(Kmers_in_exact)],"cptac_count/kmers":[len(Kmers_in_exact)/len(set(kmers))]})
 
     splicemutr_Kmers_in_cptac_df.to_csv(out_dir+"/"+external_id+"_splicemutr_kmers_in_cptac.txt",sep="\t", index=False)
     
