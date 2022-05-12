@@ -29,6 +29,7 @@ def main(options, args):
     splicemutr_file=splicemutr_file[0]
     splicemutr_data=pd.read_table(splicemutr_file,sep="\t")
     kmers=splicemutr_data["kmers"].tolist()
+    kmers=[i for i in kmers if type(i)!=float]
     kmers=":".join(kmers)
     kmers=kmers.split(":")
 
