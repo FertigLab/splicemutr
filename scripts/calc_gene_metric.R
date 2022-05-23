@@ -62,7 +62,11 @@ calc_gene_expression <- function(gene_tar,gene_expression){
 #------------------------------------------------------------------------------#
 # reading in the files
 
-gene_expression <- readRDS(gene_expression_file)
+if (str_detect(gene_expression_file,"vst")){
+  gene_expression <- readRDS(gene_expression_file)
+} else {
+  gene_expression <- data.frame(readRDS(gene_expression_file),check.names=F,check.rows=F)
+}
 
 if (str_detect(splice_dat_file,".txt")){
   splice_dat <- read.table(splice_dat_file,header=T,sep="\t")

@@ -14,7 +14,7 @@ def main(options, args):
     splicemutr_files = pd.read_table(options.splicemutr_files,header=None,names=["file"])
     
     out_dir = options.out_dir
-
+    print(len(cptac_data["TCGA_external_id"].tolist()))
     external_id = cptac_data["TCGA_external_id"].tolist()[cptac_row]
     cptac_peptides = cptac_data["peptides"].tolist()[0].split(":")
     K=9
