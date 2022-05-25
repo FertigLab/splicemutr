@@ -71,10 +71,10 @@ format_juncs <- function(juncs){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- mod_path("/mnt/f/Valsamo/featurecounts_all.rds")
-splice_dat_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_comparisons_out/splice_dat_NIV1_IPI3_PD_PR_PD_POST.rds")
-kmer_counts_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_PR_PD_POST.rds")
-junc_expr_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_junc_expression_out/junc_expr_combined.rds")
+# gene_expression_file <- mod_path("/mnt/f/Valsamo/featurecounts_all.rds")
+# splice_dat_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_comparisons_out/splice_dat_NIV1_IPI3_PD_PR_PD_POST.rds")
+# kmer_counts_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_PR_PD_POST.rds")
+# junc_expr_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_junc_expression_out/junc_expr_combined.rds")
 
 #------------------------------------------------------------------------------#
 # reading in the files
