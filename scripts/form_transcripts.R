@@ -636,6 +636,7 @@ locs <- lapply(seq(length(unique_juncs)),function(junc_val){
 })
 data_canon <- rbind(data_canon_ann,data_canon_fill[,seq(ncol(data_canon_ann))])
 sequences <- c(sequences_ann,sequences_fill)
+data_canon$coding_potential_LGC<-vapply(sequences,calc_coding_potential_LGC,numeric(1))
 data_canon$coding_potential<-vapply(sequences,calc_coding_potential,numeric(1))
 
 #------------------------------------------------------------------------------#

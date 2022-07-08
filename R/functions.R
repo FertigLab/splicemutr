@@ -798,14 +798,35 @@ map_chroms <- function(granges_obj,chr_map){
 #' @return the LGG socre
 #' @export
 #'
-calc_coding_potential <- function(transcript){
+calc_coding_potential_LGC <- function(transcript,sense_codons){
   if (nchar(transcript)<100){
     return(-1)
   }
-  coding_params <- c(0.0247,-0.1109,0.1781,0.0933)
+  coding_params <- c(0.0247,-0.1109,0.1781,-0.0933)
   non_coding_params <- c(0.0018,0.0256,-0.0577,0.0356)
   GC=(str_count(transcript,"C")+str_count(transcript,"G"))/nchar(transcript)
   f_c=coding_params[1] + coding_params[2]*GC + coding_params[3]*(GC**2) + coding_params[4]*(GC**3)
   f_nc=non_coding_params[1] + non_coding_params[2]*GC + non_coding_params[3]*(GC**2) + non_coding_params[4]*(GC**3)
-  return(log2(f_c/f_nc))
+  potential_c <- ((1-f_c)**(sense_codons-1))*f_c
+  potential_nc <- ((1-f_nc)**(sense_codons-1))*f_nc
+  return(log2(potential_c/potential_nc))
+}
+
+#' @name calc_coding_potential
+#' @title calc_coding_potential
+#' @param transcript the introns file
+#' @param start_codon the start codon location
+#' @param end_codon the stop codon location
+#' @return the LGG socre
+#' @export
+#'
+calc_coding_potential <- function(transcript,sense_codons){
+  if (nchar(transcript)<100){
+    return(-1)
+  }
+  coding_params <- c(0.0247,-0.1109,0.1781,-0.0933)
+  GC=(str_count(transcript,"C")+str_count(transcript,"G"))/nchar(transcript)
+  f_c=coding_params[1] + coding_params[2]*GC + coding_params[3]*(GC**2) + coding_params[4]*(GC**3)
+  potential_c <- ((1-f_c)**(sense_codons-1))*f_c
+  return(potential_c)
 }
