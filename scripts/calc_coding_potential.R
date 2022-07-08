@@ -16,7 +16,7 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
                option_list=list(
                  make_option(c("-s","--splicemutr_data"), default = sprintf("%s",getwd()), help="The splicemutr data file"),
                  make_option(c("-f","--transcript_fasta"), default=NULL, help="The transcript fasta"),
-                 make_option(c("-o","--out_prefix"), default = sprintf("%s",getwd()), help="The output directory for the splicemutr data"))))
+                 make_option(c("-o","--out_dir"), default = sprintf("%s",getwd()), help="The output directory for the splicemutr data"))))
 
 
 
@@ -24,6 +24,7 @@ opt=arguments
 
 splicemutr_data_file <- opt$splicemutr_data
 transcript_data_file <- opt$transcript_data
+out_dir <- opt$out_prefix
 
 #------------------------------------------------------------------------------#
 # playing with internal data
@@ -50,8 +51,8 @@ coding_potential <- vapply(seq(nrow(splicemutr_data)),function(row_val){
 splicemutr_data$coding_potential <- coding_potential
 splicemutr_data$coding_potential_LGC <- coding_potential_LGC
 
-out<-sprintf("%s_%s%s",out_prefix,"data_splicemutr_cp_corrected",".txt")
-out_rds <- sprintf("%s_%s%s",out_prefix,"data_splicemutr_cp_corrected",".rds")
+out_txt<-sprintf("%s/%s_%s%s",out_dir,str_remove(basename(splicemutr_data_file),".rds"),"_cp_corrected",".txt")
+out_rds <- sprintf("%s/%s_%s%s",out_dir,str_remove(basename(splicemutr_data_file),".rds"),"_cp_corrected",".rds")
 saveRDS(splicemutr_data,file=out_rds)
-write.table(splicemutr_data,file=out,col.names=T,row.names=F,quote=F,sep="\t")
+write.table(splicemutr_data,file=out_txt,col.names=T,row.names=F,quote=F,sep="\t")
 
