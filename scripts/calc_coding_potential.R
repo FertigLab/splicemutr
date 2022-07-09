@@ -24,7 +24,7 @@ opt=arguments
 
 splicemutr_data_file <- opt$splicemutr_data
 transcript_data_file <- opt$transcript_data
-out_dir <- opt$out_prefix
+out_dir <- opt$out_dir
 
 #------------------------------------------------------------------------------#
 # playing with internal data
@@ -35,7 +35,11 @@ out_dir <- opt$out_prefix
 #------------------------------------------------------------------------------#
 # reading in the splicemutr data and transcript fasta
 
-splicemutr_data <- readRDS(splicemutr_data_file)
+if (str_detect(splicemutr_data_file,".rds")){
+  splicemutr_data <- readRDS(splicemutr_data_file)
+} else if (str_detect(splicemutr_data_file,".txt")){
+  splicemutr_data <- read.table(splicemutr_data_file,header=T,sep="\t")
+}
 transcript_data <- as.character(readDNAStringSet(transcript_data_file))
 
 #------------------------------------------------------------------------------#
