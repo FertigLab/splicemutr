@@ -791,7 +791,7 @@ map_chroms <- function(granges_obj,chr_map){
 }
 
 #' @name calc_coding_potential_LGC
-#' @title calc_coding_potential
+#' @title calc_coding_potential_LGC
 #' @param transcript the introns file
 #' @param start_codon the start codon location
 #' @param end_codon the stop codon location
