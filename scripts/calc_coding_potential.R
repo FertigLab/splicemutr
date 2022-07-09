@@ -23,7 +23,7 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
 opt=arguments
 
 splicemutr_data_file <- opt$splicemutr_data
-transcript_data_file <- opt$transcript_data
+transcript_fasta_file <- opt$transcript_fasta
 out_dir <- opt$out_dir
 
 #------------------------------------------------------------------------------#
@@ -40,17 +40,17 @@ if (str_detect(splicemutr_data_file,".rds")){
 } else if (str_detect(splicemutr_data_file,".txt")){
   splicemutr_data <- read.table(splicemutr_data_file,header=T,sep="\t")
 }
-transcript_data <- as.character(readDNAStringSet(transcript_data_file))
+transcript_fasta <- as.character(readDNAStringSet(transcript_fasta_file))
 
 #------------------------------------------------------------------------------#
 # calculating the coding potential
 
 sense_codons <- unname(vapply(splicemutr_data$peptide,function(pep){return(nchar(pep)-1)},numeric(1)))
 coding_potential_LGC <- vapply(seq(nrow(splicemutr_data)),function(row_val){
-  calc_coding_potential_LGC(transcript_data[row_val],sense_codons[row_val])
+  calc_coding_potential_LGC(transcript_fasta[row_val],sense_codons[row_val])
 },numeric(1))
 coding_potential <- vapply(seq(nrow(splicemutr_data)),function(row_val){
-  calc_coding_potential(transcript_data[row_val],sense_codons[row_val])
+  calc_coding_potential(transcript_fasta[row_val],sense_codons[row_val])
 },numeric(1))
 splicemutr_data$coding_potential <- coding_potential
 splicemutr_data$coding_potential_LGC <- coding_potential_LGC
