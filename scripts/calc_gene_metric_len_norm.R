@@ -71,10 +71,10 @@ format_juncs <- function(juncs){
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- mod_path("/mnt/f/Valsamo/featurecounts_all.rds")
-# splice_dat_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_comparisons_out/splice_dat_NIV1_IPI3_PD_PR_PD_POST.rds")
-# kmer_counts_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_PR_PD_POST.rds")
-# junc_expr_file <- mod_path("/mnt/f/Valsamo/analysis/JHPCE/create_junc_expression_out/junc_expr_combined.rds")
+# gene_expression_file <- "F:/Valsamo/featurecounts_all.rds"
+# splice_dat_file <- "F:/Valsamo/analysis/JHPCE/create_comparisons_out/splice_dat_NIV1_IPI3_PD_PR_PD_POST.rds"
+# kmer_counts_file <- "F:/Valsamo/analysis/JHPCE/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_PR_PD_POST.rds"
+# junc_expr_file <- "F:/Valsamo/analysis/JHPCE/create_junc_expression_out/junc_expr_combined.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -142,16 +142,40 @@ if (all(is.na(splice_dat_filt$deltapsi))){
     junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
     dup_num <-nrow(splice_dat_small)
     gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
-    a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
+    junc_expr[junc_expr<0]<-NA
+    gene_expr_dup[gene_expr_dup<0]<-NA
+    a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean,na.rm=T))
   },numeric(length(samples)))))
   colnames(gene_metric_mean)<-samples
 
   saveRDS(gene_metric_mean,file=sprintf("%s_gene_metric_mean_len_norm.rds",out))
   write.table(gene_metric_mean,
               file=sprintf("%s_gene_metric_mean_len_norm.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+
+  gene_metric_mean_no_gene_norm <- as.data.frame(t(vapply(genes,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
+    splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
+    splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
+    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
+    kmer_counts <- kmer_counts_small[,samples,drop=F]/splice_dat_small$junc_kmers
+    gene_split <- strsplit(gene_tar,"-")[[1]]
+    gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
+    junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
+    dup_num <-nrow(splice_dat_small)
+    gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
+    junc_expr[junc_expr<0]<-NA
+    gene_expr_dup[gene_expr_dup<0]<-NA
+    a<-as.numeric(apply((kmer_counts*junc_expr),2,mean,na.rm=T))
+  },numeric(length(samples)))))
+  colnames(gene_metric_mean)<-samples
+
+  saveRDS(gene_metric_mean_no_gene_norm,file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm.rds",out))
+  write.table(gene_metric_mean_no_gene_norm,
+              file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
 } else {
-  splice_dat_filt_normal <- splice_dat_filt[splice_dat_filt$deltapsi<0,]
-  splice_dat_filt_tumor <- splice_dat_filt[splice_dat_filt$deltapsi>0,]
+  splice_dat_filt_normal <- splice_dat_filt[as.numeric(splice_dat_filt$deltapsi)<0,]
+  splice_dat_filt_tumor <- splice_dat_filt[as.numeric(splice_dat_filt$deltapsi)>0,]
   genes_normal <- unique(splice_dat_filt_normal$gene)
   genes_tumor <- unique(splice_dat_filt_tumor$gene)
 
@@ -167,6 +191,8 @@ if (all(is.na(splice_dat_filt$deltapsi))){
       junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
       dup_num <-nrow(splice_dat_small)
       gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
+      junc_expr[junc_expr<0]<-NA
+      gene_expr_dup[gene_expr_dup<0]<-NA
       a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
   },numeric(length(samples)))))
   colnames(gene_metric_mean_normal)<-samples
@@ -175,6 +201,27 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   write.table(gene_metric_mean_normal,
               file=sprintf("%s_gene_metric_mean_len_norm_normal.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
   rm(gene_metric_mean_normal)
+
+  gene_metric_mean_normal_no_gene_norm <- as.data.frame(t(vapply(genes_normal,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
+    splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
+    splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
+    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
+    kmer_counts <- kmer_counts_small[,samples,drop=F]/splice_dat_small$junc_kmers
+    gene_split <- strsplit(gene_tar,"-")[[1]]
+    gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
+    junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
+    dup_num <-nrow(splice_dat_small)
+    junc_expr[junc_expr<0]<-NA
+    a<-as.numeric(apply((kmer_counts*junc_expr),2,mean))
+  },numeric(length(samples)))))
+  colnames(gene_metric_mean_normal_no_gene_norm)<-samples
+
+  saveRDS(gene_metric_mean_normal_no_gene_norm,file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_normal.rds",out))
+  write.table(gene_metric_mean_normal_no_gene_norm,
+              file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_normal.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+  rm(gene_metric_mean_normal_no_gene_norm)
 
   gene_metric_mean_tumor <- as.data.frame(t(vapply(genes_tumor,function(gene_tar){
     g<<-gene_tar
@@ -188,6 +235,8 @@ if (all(is.na(splice_dat_filt$deltapsi))){
     junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
     dup_num <-nrow(splice_dat_small)
     gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
+    junc_expr[junc_expr<0]<-NA
+    gene_expr_dup[gene_expr_dup<0]<-NA
     a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
   },numeric(length(samples)))))
   colnames(gene_metric_mean_tumor)<-samples
@@ -195,4 +244,24 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   saveRDS(gene_metric_mean_tumor,file=sprintf("%s_gene_metric_mean_len_norm_tumor.rds",out))
   write.table(gene_metric_mean_tumor,
               file=sprintf("%s_gene_metric_mean_len_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+
+  gene_metric_mean_tumor_no_gene_norm <- as.data.frame(t(vapply(genes_tumor,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt_tumor %>% dplyr::filter(gene==gene_tar)
+    splice_dat_small$junc_kmers <- vapply(splice_dat_small$peptide,calc_kmers,numeric(1))
+    splice_dat_small$gene_kmers <- calc_kmers(splice_dat_small$peptide)
+    kmer_counts_small <- kmer_counts_filt[vapply(splice_dat_small$rows,function(val){which(kmer_counts_filt$rows == val)},numeric(1)),]
+    kmer_counts <- kmer_counts_small[,samples,drop=F]/splice_dat_small$junc_kmers
+    gene_split <- strsplit(gene_tar,"-")[[1]]
+    gene_expr <- calc_gene_expression(gene_split,gene_expression_filt)
+    junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
+    dup_num <-nrow(splice_dat_small)
+    junc_expr[junc_expr<0]<-NA
+    a<-as.numeric(apply((kmer_counts*junc_expr),2,mean))
+  },numeric(length(samples)))))
+  colnames(gene_metric_mean_tumor_no_gene_norm)<-samples
+
+  saveRDS(gene_metric_mean_tumor_no_gene_norm,file=sprintf("%s_gene_metric_mean_no_gene_norm_len_norm_tumor.rds",out))
+  write.table(gene_metric_mean_tumor_no_gene_norm,
+              file=sprintf("%s_gene_metric_mean_no_gene_norm_len_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
 }
