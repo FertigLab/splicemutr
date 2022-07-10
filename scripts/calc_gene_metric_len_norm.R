@@ -261,7 +261,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   },numeric(length(samples)))))
   colnames(gene_metric_mean_tumor_no_gene_norm)<-samples
 
-  saveRDS(gene_metric_mean_tumor_no_gene_norm,file=sprintf("%s_gene_metric_mean_no_gene_norm_len_norm_tumor.rds",out))
+  saveRDS(gene_metric_mean_tumor_no_gene_norm,file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_tumor.rds",out))
   write.table(gene_metric_mean_tumor_no_gene_norm,
-              file=sprintf("%s_gene_metric_mean_no_gene_norm_len_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+              file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
 }
