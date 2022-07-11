@@ -71,10 +71,10 @@ format_juncs <- function(juncs){
 #------------------------------------------------------------------------------#
 # local play
 
-# gene_expression_file <- "F:/Valsamo/featurecounts_all.rds"
-# splice_dat_file <- "F:/Valsamo/analysis/JHPCE/create_comparisons_out/splice_dat_NIV1_IPI3_PD_PR_PD_POST.rds"
-# kmer_counts_file <- "F:/Valsamo/analysis/JHPCE/create_comparisons_out/kmers_specific_NIV1_IPI3_PD_PR_PD_POST.rds"
-# junc_expr_file <- "F:/Valsamo/analysis/JHPCE/create_junc_expression_out/junc_expr_combined.rds"
+gene_expression_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/calc_gene_expression/featurecounts_all_vst.rds"
+splice_dat_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_comparisons_out/gaykalova_splice_dat_all.rds"
+kmer_counts_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_comparisons_out/gaykalova_kmers.rds"
+junc_expr_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_junc_expression/junc_expr_combined_vst.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
@@ -194,7 +194,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
       gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
       junc_expr[junc_expr<0]<-NA
       gene_expr_dup[gene_expr_dup<0]<-NA
-      a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
+      a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean,na.rm=T))
   },numeric(length(samples)))))
   colnames(gene_metric_mean_normal)<-samples
 
@@ -215,7 +215,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
     junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
     dup_num <-nrow(splice_dat_small)
     junc_expr[junc_expr<0]<-NA
-    a<-as.numeric(apply((kmer_counts*junc_expr),2,mean))
+    a<-as.numeric(apply((kmer_counts*junc_expr),2,mean,na.rm=T))
   },numeric(length(samples)))))
   colnames(gene_metric_mean_normal_no_gene_norm)<-samples
 
@@ -238,7 +238,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
     gene_expr_dup <- as.data.frame(matrix(rep(as.numeric(gene_expr),dup_num),byrow=T,nrow=dup_num))
     junc_expr[junc_expr<0]<-NA
     gene_expr_dup[gene_expr_dup<0]<-NA
-    a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean))
+    a<-as.numeric(apply((kmer_counts*junc_expr)/gene_expr_dup,2,mean,na.rm=T))
   },numeric(length(samples)))))
   colnames(gene_metric_mean_tumor)<-samples
 
@@ -258,7 +258,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
     junc_expr <- junc_expr_comb_filt[splice_dat_small$juncs,]
     dup_num <-nrow(splice_dat_small)
     junc_expr[junc_expr<0]<-NA
-    a<-as.numeric(apply((kmer_counts*junc_expr),2,mean))
+    a<-as.numeric(apply((kmer_counts*junc_expr),2,mean,na.rm=T))
   },numeric(length(samples)))))
   colnames(gene_metric_mean_tumor_no_gene_norm)<-samples
 
