@@ -168,11 +168,12 @@ if (all(is.na(splice_dat_filt$deltapsi))){
     gene_expr_dup[gene_expr_dup<0]<-NA
     a<-as.numeric(apply((kmer_counts*junc_expr),2,mean,na.rm=T))
   },numeric(length(samples)))))
-  colnames(gene_metric_mean)<-samples
+  colnames(gene_metric_mean_no_gene_norm)<-samples
 
   saveRDS(gene_metric_mean_no_gene_norm,file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm.rds",out))
   write.table(gene_metric_mean_no_gene_norm,
               file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
+
 } else {
   splice_dat_filt_normal <- splice_dat_filt[as.numeric(splice_dat_filt$deltapsi)<0,]
   splice_dat_filt_tumor <- splice_dat_filt[as.numeric(splice_dat_filt$deltapsi)>0,]
