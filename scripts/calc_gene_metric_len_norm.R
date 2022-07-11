@@ -71,10 +71,10 @@ format_juncs <- function(juncs){
 #------------------------------------------------------------------------------#
 # local play
 
-gene_expression_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/calc_gene_expression/featurecounts_all_vst.rds"
-splice_dat_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_comparisons_out/gaykalova_splice_dat_all.rds"
-kmer_counts_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_comparisons_out/gaykalova_kmers.rds"
-junc_expr_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_junc_expression/junc_expr_combined_vst.rds"
+# gene_expression_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/calc_gene_expression/featurecounts_all_vst.rds"
+# splice_dat_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_comparisons_out/gaykalova_splice_dat_all.rds"
+# kmer_counts_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_comparisons_out/gaykalova_kmers.rds"
+# junc_expr_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_junc_expression/junc_expr_combined_vst.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
