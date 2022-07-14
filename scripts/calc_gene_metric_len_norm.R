@@ -175,6 +175,17 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   write.table(gene_metric_mean_no_gene_norm,
               file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
 
+  coding_potential_LGC <- as.data.frame(vapply(genes,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
+    return(mean(splice_dat_small$coding_potential_LGC,na.rm=T))
+  },numeric(1)))
+  colnames(coding_potential_LGC)<-"coding_potential"
+
+  saveRDS(coding_potential_LGC,file=sprintf("%s_coding_potential_LGC.rds",out))
+  write.table(coding_potential,
+              file=sprintf("%s_coding_potential_LGC.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
+
 } else {
   splice_dat_filt_normal <- splice_dat_filt[as.numeric(splice_dat_filt$deltapsi)<0,]
   splice_dat_filt_tumor <- splice_dat_filt[as.numeric(splice_dat_filt$deltapsi)>0,]
@@ -225,6 +236,28 @@ if (all(is.na(splice_dat_filt$deltapsi))){
               file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_normal.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
   rm(gene_metric_mean_normal_no_gene_norm)
 
+  coding_potential_LGC_normal <- as.data.frame(vapply(genes,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
+    return(mean(splice_dat_small$coding_potential_LGC,na.rm=T))
+  },numeric(1)))
+  colnames(coding_potential_LGC_normal)<-"coding_potential_LGC"
+
+  saveRDS(coding_potential_LGC_normal,file=sprintf("%s_coding_potential_LGC_normal.rds",out))
+  write.table(coding_potential_LGC_normal,
+              file=sprintf("%s_coding_potential_LGC_normal.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
+
+  coding_potential_normal <- as.data.frame(vapply(genes,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
+    return(mean(splice_dat_small$coding_potential,na.rm=T))
+  },numeric(1)))
+  colnames(coding_potential_normal)<-"coding_potential"
+
+  saveRDS(coding_potential_normal,file=sprintf("%s_coding_potential_normal.rds",out))
+  write.table(coding_potential_normal,
+              file=sprintf("%s_coding_potential_normal.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
+
   gene_metric_mean_tumor <- as.data.frame(t(vapply(genes_tumor,function(gene_tar){
     g<<-gene_tar
     splice_dat_small <- splice_dat_filt_tumor %>% dplyr::filter(gene==gene_tar)
@@ -266,4 +299,26 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   saveRDS(gene_metric_mean_tumor_no_gene_norm,file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_tumor.rds",out))
   write.table(gene_metric_mean_tumor_no_gene_norm,
               file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
-}
+
+  coding_potential_LGC_tumor <- as.data.frame(vapply(genes,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt_tumor %>% dplyr::filter(gene==gene_tar)
+    return(mean(splice_dat_small$coding_potential_LGC,na.rm=T))
+  },numeric(1)))
+  colnames(coding_potential_LGC_tumor)<-"coding_potential_LGC"
+
+  saveRDS(coding_potential_LGC_tumor,file=sprintf("%s_coding_potential_LGC_tumor.rds",out))
+  write.table(coding_potential_LGC_tumor,
+              file=sprintf("%s_coding_potential_LGC_tumor.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
+
+  coding_potential_tumor <- as.data.frame(vapply(genes,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
+    return(mean(splice_dat_small$coding_potential,na.rm=T))
+  },numeric(1)))
+  colnames(coding_potential_tumor)<-"coding_potential"
+
+  saveRDS(coding_potential_tumor,file=sprintf("%s_coding_potential_tumor.rds",out))
+  write.table(coding_potential_tumor,
+              file=sprintf("%s_coding_potential_tumor.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
+  }
