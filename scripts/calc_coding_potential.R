@@ -57,8 +57,8 @@ coding_potential <- vapply(seq(nrow(splicemutr_data)),function(row_val){
 splicemutr_data$coding_potential <- coding_potential
 splicemutr_data$coding_potential_LGC <- coding_potential_LGC
 
-out_txt<-sprintf("%s/%s_%s%s",out_dir,str_remove(basename(splicemutr_data_file),".rds"),"_cp_corrected",".txt")
-out_rds <- sprintf("%s/%s_%s%s",out_dir,str_remove(basename(splicemutr_data_file),".rds"),"_cp_corrected",".rds")
+out_txt<-sprintf("%s/%s_%s%s",out_dir,str_remove(basename(splicemutr_data_file),".rds"),"cp_corrected",".txt")
+out_rds <- sprintf("%s/%s_%s%s",out_dir,str_remove(basename(splicemutr_data_file),".rds"),"cp_corrected",".rds")
 saveRDS(splicemutr_data,file=out_rds)
 write.table(splicemutr_data,file=out_txt,col.names=T,row.names=F,quote=F,sep="\t")
 
