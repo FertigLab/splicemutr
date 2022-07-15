@@ -183,8 +183,20 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   colnames(coding_potential_LGC)<-"coding_potential"
 
   saveRDS(coding_potential_LGC,file=sprintf("%s_coding_potential_LGC.rds",out))
-  write.table(coding_potential,
+  write.table(coding_potential_LGC,
               file=sprintf("%s_coding_potential_LGC.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
+
+  coding_potential <- as.data.frame(vapply(genes_normal,function(gene_tar){
+    g<<-gene_tar
+    splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
+    return(mean(splice_dat_small$coding_potential,na.rm=T))
+  },numeric(1)))
+  colnames(coding_potential)<-"coding_potential"
+
+  saveRDS(coding_potential,file=sprintf("%s_coding_potential.rds",out))
+  write.table(coding_potential,
+              file=sprintf("%s_coding_potential.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
+
 
 } else {
   splice_dat_filt_normal <- splice_dat_filt[as.numeric(splice_dat_filt$deltapsi)<0,]
