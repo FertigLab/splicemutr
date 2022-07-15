@@ -236,7 +236,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
               file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_normal.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
   rm(gene_metric_mean_normal_no_gene_norm)
 
-  coding_potential_LGC_normal <- as.data.frame(vapply(genes,function(gene_tar){
+  coding_potential_LGC_normal <- as.data.frame(vapply(genes_normal,function(gene_tar){
     g<<-gene_tar
     splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
     return(mean(splice_dat_small$coding_potential_LGC,na.rm=T))
@@ -247,7 +247,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   write.table(coding_potential_LGC_normal,
               file=sprintf("%s_coding_potential_LGC_normal.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
 
-  coding_potential_normal <- as.data.frame(vapply(genes,function(gene_tar){
+  coding_potential_normal <- as.data.frame(vapply(genes_normal,function(gene_tar){
     g<<-gene_tar
     splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
     return(mean(splice_dat_small$coding_potential,na.rm=T))
@@ -300,7 +300,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   write.table(gene_metric_mean_tumor_no_gene_norm,
               file=sprintf("%s_gene_metric_mean_len_norm_no_gene_norm_tumor.txt",out),quote=F, col.names = T, row.names = T, sep = "\t")
 
-  coding_potential_LGC_tumor <- as.data.frame(vapply(genes,function(gene_tar){
+  coding_potential_LGC_tumor <- as.data.frame(vapply(genes_tumor,function(gene_tar){
     g<<-gene_tar
     splice_dat_small <- splice_dat_filt_tumor %>% dplyr::filter(gene==gene_tar)
     return(mean(splice_dat_small$coding_potential_LGC,na.rm=T))
@@ -311,7 +311,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   write.table(coding_potential_LGC_tumor,
               file=sprintf("%s_coding_potential_LGC_tumor.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
 
-  coding_potential_tumor <- as.data.frame(vapply(genes,function(gene_tar){
+  coding_potential_tumor <- as.data.frame(vapply(genes_tumor,function(gene_tar){
     g<<-gene_tar
     splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
     return(mean(splice_dat_small$coding_potential,na.rm=T))
