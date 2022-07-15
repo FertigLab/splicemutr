@@ -188,7 +188,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
 
   coding_potential <- as.data.frame(vapply(genes,function(gene_tar){
     g<<-gene_tar
-    splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
+    splice_dat_small <- splice_dat_filt %>% dplyr::filter(gene==gene_tar)
     return(mean(splice_dat_small$coding_potential,na.rm=T))
   },numeric(1)))
   colnames(coding_potential)<-"coding_potential"
