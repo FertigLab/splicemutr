@@ -186,7 +186,7 @@ if (all(is.na(splice_dat_filt$deltapsi))){
   write.table(coding_potential_LGC,
               file=sprintf("%s_coding_potential_LGC.txt",out),quote=F,col.names=T,row.names=T,sep="\t")
 
-  coding_potential <- as.data.frame(vapply(genes_normal,function(gene_tar){
+  coding_potential <- as.data.frame(vapply(genes,function(gene_tar){
     g<<-gene_tar
     splice_dat_small <- splice_dat_filt_normal %>% dplyr::filter(gene==gene_tar)
     return(mean(splice_dat_small$coding_potential,na.rm=T))
