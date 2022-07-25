@@ -1,0 +1,1379 @@
+---
+title: "Valsamo_analysis"
+author: "Theron Palmer"
+date: "8/26/2021"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+
+# Load in the necessary libraries
+
+```{r}
+
+library(readxl)
+library(ggplot2)
+library(DT)
+library(dplyr)
+library(stringr)
+library(rjson)
+library(ComplexHeatmap)
+library(GO.db)
+library(KEGGREST)
+# library(KEGG.db)
+library(fgsea)
+library(org.Hs.eg.db)
+library(ggpubr)
+library(DESeq2)
+
+```
+
+# Exploring the sample metadata via the study manifest
+
+## finding samples that did not get aligned on JHPCE for some reason
+
+```{r}
+
+manifest <- read_excel("/media/theron/My_Passport/Valsamo/manifest.xlsx")
+files_to_remove <- c("hg19MTERCC-ensembl75-genes-Q21777-Plate-1-E06_L65",
+"hg19MTERCC-ensembl75-genes-Q21777-Plate-1-F12_L1.D707_508",
+"hg19MTERCC-ensembl75-genes-Q23152+B4+H2+AG710464_L1.D705")
+manifest <- manifest %>% dplyr::filter(!(Sample %in% files_to_remove))
+manifest$Sample <- str_replace_all(manifest$Sample,"hg19MTERCC-ensembl75-genes-","")
+fastq_files <- read.table("/media/theron/My_Passport/Valsamo/fastq_files.txt")
+SJ_files <- read.table("/media/theron/My_Passport/Valsamo/SJ_files.txt")
+SJ_files$sample_name <- vapply(SJ_files$V1,function(file){
+  str_remove(file,"SJ.out.tab")
+},character(1))
+fastq_files$sample_name <- vapply(fastq_files$V1,function(file){
+  str_remove(file,"_1.clipped.fastq.gz")
+},character(1))
+
+```
+
+
+```{r,eval=F}
+
+missing_files <- data.frame(sprintf("/dcs04/fertig/data/theron/share/%s",fastq_files[which(!(fastq_files$sample_name %in% SJ_files$sample_name)),"V1"]))
+write.table(missing_files,file="/media/theron/My_Passport/Valsamo/missing_fasta.txt",
+            quote=F, col.names = F, row.names = F, sep = "\t")
+
+```
+
+## Looking at response rates across treatment group
+
+RESIST 1.1 Progression Terms form: https://project.eortc.org/recist/wp-content/uploads/sites/4/2015/03/RECISTGuidelines.pdf
+
+CR = Complete Response  
+PD = Progressive Disease  
+PR = Partial Response  
+SD = Stable Disease  
+NE = ?  
+
+```{r}
+
+ggplot(manifest,aes(x=TRTGRP,y=log2(PFS),fill=TRTGRP))+geom_violin()+geom_point(position = position_jitter(seed = 1, width = 0.2))
+ggplot(manifest,aes(x=TRTGRP,y=log2(OS),fill=TRTGRP))+geom_violin()+geom_point(position = position_jitter(seed = 1, width = 0.2))
+ggplot(manifest,aes(x=TRTGRP,fill=AX_BOR))+geom_bar(position='dodge')
+ggplot(manifest,aes(x=TRTGRP,fill=AX_BOR3))+geom_bar(position='dodge')
+
+ggplot(manifest,aes(x=TRTGRP,y=log2(PFS),fill=AX_TIMETEMP))+geom_violin()+geom_point(position = position_jitter(seed = 1, width = 0.2))
+ggplot(manifest,aes(x=TRTGRP,y=log2(OS),fill=AX_TIMETEMP))+geom_violin()+geom_point(position = position_jitter(seed = 1, width = 0.2))
+
+ggplot(manifest,aes(x=AX_BOR,fill=AX_TIMETEMP))+geom_bar(position='dodge')
+ggplot(manifest,aes(x=TRTGRP,fill=AX_TIMETEMP))+geom_bar(position='dodge')
+
+datatable(data.frame(table(manifest$AX_TIMETEMP)))
+
+```
+
+## Leafcutter Analysis Preparation before treatment
+
+Comparisons:
+a) NIV3.NAIVE(PR) vs PD
+b) NIV3.NAIVE(CR) vs PD
+c) NIV3.NAIVE(SD) vs PD
+d) NIV3.NAIVE(NE) vs PD
+d) NIV3.PROG(PR) vs PD 
+e) NIV3.PROG(CR) vs PD 
+f) NIV3.PROG(SD) vs PD
+g) NIV3.PROG(SD) vs PD 
+h) NIV1.IPI3(PR) vs PD  
+i) NIV1.IPI3(SD) vs PD  
+j) NIV1.IPI3(NE) vs PD
+k) PD vs RESP
+
+# Forming groups_file.txt and junc_file.txt for each comparison before treatment
+
+```{r,eval=F}
+
+NIV3_NAIVE <- manifest[which(manifest$TRTGRP == "NIV3-NAIVE" & manifest$AX_TIMETEMP=="PRE"),]
+NIV3_PROG <- manifest[which(manifest$TRTGRP == "NIV3-PROG" & manifest$AX_TIMETEMP=="PRE"),]
+NIV1_IPI3 <- manifest[which(manifest$TRTGRP %in% c("NIV1+IPI3 P2","NIV1+IPI3 P3") & manifest$AX_TIMETEMP=="PRE"),]
+PD <- c(NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR=="PD"],NIV3_PROG$Sample[NIV3_PROG$AX_BOR=="PD"],NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR=="PD"])
+RESP <- c(NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR!="PD" & NIV3_NAIVE$AX_BOR!="NE"],
+          NIV3_PROG$Sample[NIV3_PROG$AX_BOR!="PD" & NIV3_PROG$AX_BOR!="NE"],
+          NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR!="PD" & NIV1_IPI3$AX_BOR!="NE"])
+groups_and_junc_dir <- "/media/theron/My_Passport/Valsamo/leafcutter_prep/run_12072021"
+JHPCE_dir <- "/dcs04/fertig/data/theron/share/juncs"
+comparisons <- list()
+state <- "PRE"
+
+```
+
+
+## NIV3.NAIVE(PR) vs PD 
+
+```{r,eval=F}
+
+tar<-"PR"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.NAIVE(CR) vs PD
+
+```{r,eval=F}
+
+tar<-"CR"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.NAIVE(SD) vs PD
+
+```{r,eval=F}
+
+tar<-"SD"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.NAIVE(NE) vs PD 
+
+```{r,eval=F}
+
+tar<-"NE"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+
+```
+
+
+## NIV3.PROG(PR) vs PD
+
+```{r,eval=F}
+
+tar<-"PR"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.PROG(CR) vs PD 
+
+```{r,eval=F}
+
+tar<-"CR"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.PROG(SD) vs PD
+
+```{r,eval=F}
+
+tar<-"SD"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.PROG(NE) vs PD
+
+```{r,eval=F}
+
+tar<-"NE"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV1.IPI3(PR) vs PD
+
+```{r,eval=F}
+
+tar<-"PR"
+comp<-"PD"
+tar_samp <- "NIV1_IPI3"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV1.IPI3(SD) vs PD
+
+```{r,eval=F}
+
+tar<-"SD"
+comp<-"PD"
+tar_samp <- "NIV1_IPI3"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV1.IPI3(NE) vs PD
+
+```{r,eval=F}
+
+tar<-"NE"
+comp<-"PD"
+tar_samp <- "NIV1_IPI3"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## PD vs RESP
+
+```{r,eval=F}
+
+tar<-"PD"
+comp<-"RESP"
+tar_samp <- "PD"
+comp_samp<-"RESP"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-PD
+comparators<-RESP
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## Leafcutter Analysis Preparation after treatment
+
+Comparisons:
+a) NIV3.NAIVE(PR) vs PD
+b) NIV3.NAIVE(CR) vs PD
+c) NIV3.NAIVE(SD) vs PD
+d) NIV3.NAIVE(NE) vs PD
+d) NIV3.PROG(PR) vs PD 
+e) NIV3.PROG(CR) vs PD 
+f) NIV3.PROG(SD) vs PD
+g) NIV3.PROG(SD) vs PD 
+h) NIV1.IPI3(PR) vs PD  
+i) NIV1.IPI3(SD) vs PD  
+j) NIV1.IPI3(NE) vs PD
+k) PD vs RESP
+
+# Forming groups_file.txt and junc_file.txt for each comparison after treatment
+
+```{r,eval=F}
+
+NIV3_NAIVE <- manifest[which(manifest$TRTGRP == "NIV3-NAIVE" & manifest$AX_TIMETEMP=="POST"),]
+NIV3_PROG <- manifest[which(manifest$TRTGRP == "NIV3-PROG" & manifest$AX_TIMETEMP=="POST"),]
+NIV1_IPI3 <- manifest[which(manifest$TRTGRP %in% c("NIV1+IPI3 P2","NIV1+IPI3 P3") & manifest$AX_TIMETEMP=="POST"),]
+PD <- c(NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR=="PD"],NIV3_PROG$Sample[NIV3_PROG$AX_BOR=="PD"],NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR=="PD"])
+RESP <- c(NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR!="PD" & NIV3_NAIVE$AX_BOR!="NE"],
+          NIV3_PROG$Sample[NIV3_PROG$AX_BOR!="PD" & NIV3_PROG$AX_BOR!="NE"],
+          NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR!="PD" & NIV1_IPI3$AX_BOR!="NE"])
+groups_and_junc_dir <- "/media/theron/My_Passport/Valsamo/leafcutter_prep/run_12072021"
+JHPCE_dir <- "/dcs04/fertig/data/theron/share/juncs"
+state <- "POST"
+
+```
+
+
+## NIV3.NAIVE(PR) vs PD 
+
+```{r,eval=F}
+
+tar<-"PR"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+
+```
+
+## NIV3.NAIVE(CR) vs PD
+
+```{r,eval=F}
+
+tar<-"CR"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.NAIVE(SD) vs PD
+
+```{r,eval=F}
+
+tar<-"SD"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.NAIVE(NE) vs PD 
+
+```{r,eval=F}
+
+tar<-"NE"
+comp<-"PD"
+tar_samp<-"NIV3_NAIVE"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_NAIVE$Sample[NIV3_NAIVE$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+
+## NIV3.PROG(PR) vs PD
+
+```{r,eval=F}
+
+tar<-"PR"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.PROG(CR) vs PD 
+
+```{r,eval=F}
+
+tar<-"CR"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.PROG(SD) vs PD
+
+```{r,eval=F}
+
+tar<-"SD"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV3.PROG(NE) vs PD
+
+```{r,eval=F}
+
+tar<-"NE"
+comp<-"PD"
+tar_samp <- "NIV3_PROG"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV3_PROG$Sample[NIV3_PROG$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV1.IPI3(PR) vs PD
+
+```{r,eval=F}
+
+tar<-"PR"
+comp<-"PD"
+tar_samp <- "NIV1_IPI3"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV1.IPI3(SD) vs PD
+
+```{r,eval=F}
+
+tar<-"SD"
+comp<-"PD"
+tar_samp <- "NIV1_IPI3"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## NIV1.IPI3(NE) vs PD
+
+```{r,eval=F}
+
+tar<-"NE"
+comp<-"PD"
+tar_samp <- "NIV1_IPI3"
+comp_samp<-"PD"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-NIV1_IPI3$Sample[NIV1_IPI3$AX_BOR == tar]
+comparators<-PD
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+```
+
+## PD vs RESP
+
+```{r,eval=F}
+
+tar<-"PD"
+comp<-"RESP"
+tar_samp <- "PD"
+comp_samp<-"RESP"
+comparison <- sprintf("%s_%s_%s_%s",tar_samp,comp_samp,tar,comp)
+targets<-PD
+comparators<-RESP
+a<-list()
+a[["targets"]] <- targets
+a[["comparators"]] <- comparators
+
+for (target in targets){
+  target_junc_file <- sprintf("%s/%s_juncs_%s_%s.txt",groups_and_junc_dir,target,comparison,state)
+  file_contents <- sprintf("%s.filt.junc",c(target,comparators))
+  file_contents <- data.frame(file_contents)
+  write.table(file_contents,target_junc_file,
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+}
+comparisons[[sprintf("%s_%s",comparison,state)]] <- a
+
+saveRDS(comparisons,file="/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/comparisons.rds")
+comp_frame <- data.frame(names(comparisons))
+write.table(comp_frame,
+            file="/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/comparisons.txt",
+            quote=F,
+            sep="\t",
+            col.names=F,
+            row.names=F)
+
+```
+
+# Processing comparison juncs
+```{r,eval=F}
+
+comparison_junctions <- list()
+leafcutter_files <- read.table("/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/filenames.txt")
+for (i in seq(nrow(leafcutter_files))){
+  print(i)
+  outlier_file <- leafcutter_files[i,]
+  outlier_juncs <- read.table(outlier_file)
+  outlier_junc_cols <- str_replace_all(colnames(outlier_juncs),".filt","")
+  colnames(outlier_juncs) <- str_replace_all(outlier_junc_cols,"[-_+.]","_")
+  file_split <- strsplit(outlier_file,"_juncs_")[[1]]
+  sample <- basename(file_split[1])
+  sample <- substr(sample,1,nchar(sample))
+  sample<-str_replace_all(sample,"[-_+.]","_")
+  arm_info <- strsplit(file_split[2],"_")[[1]]
+  tar_samp <- sprintf("%s_%s",arm_info[1],arm_info[2])
+  comp_samp <- arm_info[3]
+  if (length(arm_info) == 6){
+    tar_samp <- arm_info[1]
+    comp_samp <- arm_info[2]
+    tar<-arm_info[3]
+    comp<-arm_info[4]
+    time<-arm_info[5]
+  } else {
+    tar_samp <- sprintf("%s_%s",arm_info[1],arm_info[2])
+    comp_samp <- arm_info[3]
+    tar <- arm_info[4]
+    comp <- arm_info[5]
+    time <- arm_info[6]
+  }
+  comparison <- sprintf("%s_%s_%s_%s_%s",tar_samp,comp_samp,tar,comp,time)
+  sig_juncs <- rownames(outlier_juncs)[as.numeric(outlier_juncs[,sample]) <=0.05]
+  comparison_junctions[[comparison]] <- unique(c(comparison_junctions[[comparison]],sig_juncs))
+}
+
+```
+
+
+```{r,eval=F}
+
+comparison_juncs_linear <- data.frame(t(vapply(unname(unlist(comparison_junctions)),function(junc){
+  junc_vals<-strsplit(junc,":")[[1]]
+  strand<-strsplit(junc_vals[4],"_")[[1]][3]
+  c(junc_vals[1],junc_vals[2],junc_vals[3],strand)
+},character(4))))
+rownames(comparison_juncs_linear)<-seq(nrow(comparison_juncs_linear))
+colnames(comparison_juncs_linear)<-c("chr","start","end","strand")
+comparison_juncs_linear<-unique(comparison_juncs_linear)
+
+
+iter<-1
+total_juncs <- nrow(comparison_juncs_linear)
+for (i in seq(1,total_juncs,5000)){
+  if (i+4999 >= total_juncs){
+    end = total_juncs
+  } else {
+    end = i+4999
+  }
+  comparison_juncs_small <- comparison_juncs_linear[seq(i,end),]
+  saveRDS(comparison_juncs_small,
+          sprintf("/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/comparison_juncs_linear_%d.rds",iter))
+  iter<-iter+1
+}
+
+
+saveRDS(comparison_juncs_linear,file="/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/comparison_juncs_linear.rds")
+saveRDS(comparison_junctions,file="/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/comparison_juncs.rds")
+
+```
+
+# Processing the gene metric data
+## Mean processing
+
+```{r,eval=T}
+
+comparisons_file <- "/media/theron/My_Passport/Valsamo/analysis/leafcutterMD/run_12072021/comparisons.rds"
+comparison_dat <- readRDS(comparisons_file)
+
+gene_metric_files <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_12072021/gene_metric_files_mean.txt"
+gene_metric_comp<-read.table(gene_metric_files,header=F)
+total_genes<-c()
+all_comps <- list()
+samples <- c()
+comparisons <- c()
+comp_genes <- list()
+for (comp in gene_metric_comp$V1){
+  comp_vals <- readRDS(comp)
+  comp <- str_replace(basename(comp),"_gene_metric_mean.rds","")
+  comp_split <- strsplit(comp,"_")[[1]]
+  targets <- comparison_dat[[comp]]$targets
+  targets <- targets[which(targets %in% colnames(comp_vals))]
+  comp_vals <- comp_vals[,targets,drop=F]
+  targets <-   sprintf("%s_%s",targets,comp_split[length(comp_split)])
+  # print(comp)
+  # print(targets)
+  genes <- rownames(comp_vals)
+  comp_genes[[comp]] <- unique(genes)
+  total_genes<-unique(c(total_genes,genes))
+  all_comps[[comp]] <- comp_vals
+  samples <- c(samples,targets)
+  comparisons <- c(comparisons,rep(comp,ncol(comp_vals)))
+}
+
+```
+
+## Mean comparisons all processing
+
+```{r,eval=T}
+comp_vals_all <- data.frame(total_genes)
+rownames(comp_vals_all)<-total_genes
+for (comp in names(all_comps)){
+  comp_vals <- all_comps[[comp]]
+  comp_split <- strsplit(comp,"_")[[1]]
+  comp_vals_all[rownames(comp_vals),sprintf("%s_%s",colnames(comp_vals),comp_split[length(comp_split)])]<-comp_vals
+}
+comp_vals_all <- comp_vals_all[,seq(2,ncol(comp_vals_all))]
+
+col_data <- data.frame(samples,comparisons)
+col_data$time <- vapply(col_data$comparisons,function(comp){
+  a<-strsplit(comp,"_")[[1]]
+  return(a[length(a)])
+},character(1))
+col_data$comp <- vapply(col_data$comparisons,function(comp_val){
+  a<-str_split(comp_val,"_")[[1]]
+  return(paste(a[seq(length(a)-1)],collapse="_"))
+},character(1))
+col_data$sample <- vapply(col_data$samples,function(samp){
+  a<-str_split(samp,"_")[[1]]
+  return(paste(a[seq(length(a)-1)],collapse="_"))
+},character(1))
+col_data$subj_id <- vapply(col_data$sample,function(samp){
+  s<<-samp
+  manifest$AX_USUBJID[manifest$Sample == samp]
+},character(1))
+col_data$response <- vapply(col_data$comp,function(comp){
+  a<-str_split(comp,"_")[[1]]
+  b<-a[length(a)-1]
+  if (b %in% c("CR","PR")){
+    b <- "CR_PR"
+  }
+  return(b)
+},character(1))
+col_data$response <- vapply(col_data$comp,function(comp){
+  a<-str_split(comp,"_")[[1]]
+  b<-a[length(a)-1]
+  if (b %in% c("CR","PR")){
+    b <- "CR_PR"
+  }
+  return(b)
+},character(1))
+col_data$PFS <- vapply(col_data$subj_id,function(subject){
+  return(manifest$PFS[manifest$AX_USUBJID == subject][1])
+},numeric(1))
+col_data$OS <- vapply(col_data$subj_id,function(subject){
+  return(manifest$OS[manifest$AX_USUBJID == subject][1])
+},numeric(1))
+col_data$treatment <- vapply(col_data$subj_id,function(subject){
+  return(str_split(manifest$TRTGRP[manifest$AX_USUBJID == subject][1]," ")[[1]][1])
+},character(1))
+col_data <- col_data %>% dplyr::filter(col_data$samples %in% colnames(comp_vals_all))
+
+comp_vals_all[is.na(comp_vals_all)]<-0
+comp_vals_all <- comp_vals_all[apply(comp_vals_all,1,sd)!=0,]
+
+col_data <- col_data[order(col_data$comparisons),]
+comp_vals_all <- comp_vals_all[,order(col_data$comparisons)]
+comp_vals_all <- comp_vals_all[apply(comp_vals_all,1,sd)!=0,]
+
+PRE_cols <- which(str_detect(colnames(comp_vals_all),"PRE"))
+POST_cols <- which(str_detect(colnames(comp_vals_all),"POST"))
+
+comp_vals_PRE <- comp_vals_all[,PRE_cols]
+col_data_PRE <- col_data[PRE_cols,]
+PRE_cols <- which(col_data_PRE$response != "NE")
+comp_vals_PRE <- comp_vals_PRE[,PRE_cols]
+col_data_PRE <- col_data_PRE[PRE_cols,]
+
+comp_vals_POST <- comp_vals_all[,POST_cols]
+col_data_POST <- col_data[POST_cols,]
+POST_cols <- which(col_data_POST$response != "NE")
+comp_vals_POST <- comp_vals_POST[,POST_cols]
+col_data_POST <- col_data_POST[POST_cols,]
+
+color_vals <- c("red","green","blue","red","green","blue")
+names(color_vals)<-c("CR_PR","SD","PD","NIV1+IPI3","NIV3-NAIVE","NIV3-PROG")
+
+```
+
+### PRE Heatmap
+
+```{r,eval=T}
+Heatmap(t(apply(as.matrix(comp_vals_PRE),1,scale)),
+    top_annotation = HeatmapAnnotation(PFS=anno_barplot(col_data_PRE$PFS),
+                                       response=col_data_PRE$response,
+                                       treatment=col_data_PRE$treatment,
+                                       col=list(response=c("CR_PR"="red","SD"="green","PD"="blue"),
+                                                treatment=c("NIV1+IPI3"="red","NIV3-NAIVE"="green","NIV3-PROG"="blue"))),
+    bottom_annotation = HeatmapAnnotation(OS=anno_barplot(col_data_PRE$OS)),
+    show_row_names=F,
+    show_column_names = F,
+    cluster_rows=F,
+    cluster_columns=F)
+
+```
+
+### POST Heatmap
+
+```{r,eval=T}
+
+Heatmap(t(apply(as.matrix(comp_vals_POST),1,scale)),
+    top_annotation = HeatmapAnnotation(PFS=anno_barplot(col_data_POST$PFS),
+                                       response=col_data_POST$response,
+                                       treatment=col_data_POST$treatment,
+                                       col=list(response=c("CR_PR"="red","SD"="green","PD"="blue"),
+                                                treatment=c("NIV1+IPI3"="red","NIV3-NAIVE"="green","NIV3-PROG"="blue"))),
+    bottom_annotation = HeatmapAnnotation(OS=anno_barplot(col_data_POST$OS)),
+    show_row_names=F,
+    show_column_names = F,
+    cluster_rows=F,
+    cluster_columns=F)
+
+```
+
+
+```{r,eval=F,echo=F}
+
+comp_vals_summ <- as.data.frame(vapply(seq(ncol(comp_vals_all)),function(col_val){
+  comparisons <- col_data$comparisons[col_data$samples==colnames(comp_vals_all)[[col_val]]]
+  genes_small <- unique(unlist(lapply(comparisons,function(comp){comp_genes[[comp]]})))
+  genes_small <- genes_small[genes_small %in% rownames(comp_vals_all)]
+  mean(comp_vals_all[genes_small,col_val],na.rm=T)
+},numeric(1)))
+
+comp_vals_summ <- as.data.frame(apply(comp_vals_all,2,mean))
+comp_vals_summ$OS <- col_data$OS
+comp_vals_summ$PFS <- col_data$PFS
+comp_vals_summ$time <- col_data$time
+comp_vals_summ$treatment <- col_data$treatment
+# colnames(comp_vals_summ) <- c("gene_metric","OS","PFS","time","treatment")
+# ggplot(comp_vals_summ[comp_vals_summ$time=="PRE",],aes(x=gene_metric,y=OS))+
+#   geom_point(aes(color=treatment))+stat_cor(method = "pearson")+
+#     geom_smooth(method="lm")+labs(title="PRE")
+# ggplot(comp_vals_summ[comp_vals_summ$time=="POST",],aes(x=gene_metric,y=OS))+
+#   geom_point(aes(color=treatment))+stat_cor(method = "pearson")+
+#     geom_smooth(method="lm")+labs(title="POST")
+# ggplot(comp_vals_summ[comp_vals_summ$time=="PRE",],aes(x=gene_metric,y=PFS))+
+#   geom_point(aes(color=treatment))+stat_cor(method = "pearson")+
+#     geom_smooth(method="lm")+labs(title="PRE")
+# ggplot(comp_vals_summ[comp_vals_summ$time=="POST",],aes(x=gene_metric,y=PFS))+
+#   geom_point(aes(color=treatment))+stat_cor(method = "pearson")+
+#     geom_smooth(method="lm")+labs(title="POST")
+
+```
+### Pre boxplots per treatment
+
+```{r,eval=T}
+
+responses<-c("CR_PR","SD","PD")
+col_data_PRE <- col_data %>% dplyr::filter(time == "PRE" & response != "NE")
+
+response_summ_PRE_list <- list()
+for (treat in unique(col_data_PRE$treatment)){
+  response_summ_PRE <- data.frame(rownames(comp_vals_all))
+  colnames(response_summ_PRE) <- "genes"
+  rownames(response_summ_PRE) <- response_summ_PRE$genes
+  col_data_PRE_small <- col_data_PRE %>% dplyr::filter(treatment == treat)
+  for (resp in responses){
+    samps <- col_data_PRE_small$samples[col_data_PRE_small$response==resp]
+    if (length(samps)==0){
+      response_summ_PRE[,resp] <- NA
+    } else {
+      comparisons <- col_data_PRE_small$comparisons[col_data_PRE_small$response==resp]
+      genes_small <- unique(unlist(lapply(comparisons,function(comp){comp_genes[[comp]]})))
+      response_summ_PRE[,resp] <- NA
+      response_summ_PRE[genes_small,resp] <-apply(comp_vals_all[genes_small,samps],1,mean,na.rm=T)
+    }
+  }
+  response_summ_PRE<-response_summ_PRE[,seq(2,ncol(response_summ_PRE))]
+  resp_summ_nrow <- nrow(response_summ_PRE)
+  response_summ_PRE_linear <- data.frame(c(response_summ_PRE$SD,response_summ_PRE$CR_PR,response_summ_PRE$PD),
+                                     c(rep("SD",resp_summ_nrow),
+                                       rep("CR_PR",resp_summ_nrow),
+                                       rep("PD",resp_summ_nrow)))
+  colnames(response_summ_PRE_linear) <- c("gene_metric","response")
+  response_summ_PRE_linear <- response_summ_PRE_linear[complete.cases(response_summ_PRE_linear),]
+  
+  if (treat == "NIV1+IPI3"){
+    my_comparisons <- list(c("CR_PR","SD"))
+    print(ggplot(response_summ_PRE_linear,aes(y=log10(gene_metric+1),x=response,fill=response))+
+      geom_boxplot()+
+      labs(title=sprintf("%s: %s",treat,"PRE"))+
+      stat_compare_means(comparisons = my_comparisons,method = "wilcox.test"))
+  } else {
+    my_comparisons <- list(c("CR_PR","PD"),
+                          c("CR_PR","SD"),
+                          c("PD","SD"))
+    print(ggplot(response_summ_PRE_linear,aes(y=log10(gene_metric+1),x=response,fill=response))+
+      geom_boxplot()+
+      labs(title=sprintf("%s: %s",treat,"PRE"))+
+      stat_compare_means(comparisons = my_comparisons,method = "wilcox.test"))
+  }
+  # print(ggplot(response_summ_PRE_linear,aes(y=log10(gene_metric+1),x=response,fill=response))+
+  #   geom_violin()+
+  #   labs(title="PRE")+
+  #   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test"))
+  # 
+  # print(ggplot(response_summ_PRE_linear,aes(x=log10(gene_metric+1),fill=response))+
+  #   geom_density(alpha=0.4)+
+  #   labs(title="PRE"))
+}
+
+```
+### Post boxplots per treatment
+
+
+```{r,eval=T}
+
+responses<-c("CR_PR","SD","PD")
+col_data_POST <- col_data %>% dplyr::filter(time == "POST" & response != "NE")
+
+response_summ_POST_list <- list()
+for (treat in unique(col_data_PRE$treatment)){
+  response_summ_POST <- data.frame(rownames(comp_vals_all))
+  colnames(response_summ_POST) <- "genes"
+  rownames(response_summ_POST) <- response_summ_POST$genes
+  col_data_POST_small <- col_data_POST %>% dplyr::filter(treatment == treat)
+  for (resp in responses){
+    samps <- col_data_POST$samples[col_data_POST$response==resp]
+    if (length(samps)==0){
+      response_summ_POST[,resp] <- NA
+    } else {
+      comparisons <- col_data_POST$comparisons[col_data_POST$response==resp]
+      genes_small <- unique(unlist(lapply(comparisons,function(comp){comp_genes[[comp]]})))
+      response_summ_POST[,resp] <- NA
+      response_summ_POST[genes_small,resp] <- apply(comp_vals_all[genes_small,samps],1,mean,na.rm=T)
+    }
+  }
+  response_summ_POST<-response_summ_POST[,seq(2,ncol(response_summ_POST))]
+  resp_summ_nrow <- nrow(response_summ_POST)
+  response_summ_POST_linear <- data.frame(c(response_summ_POST$SD,response_summ_POST$CR_PR,response_summ_POST$PD),
+                                     c(rep("SD",resp_summ_nrow),
+                                       rep("CR_PR",resp_summ_nrow),
+                                       rep("PD",resp_summ_nrow)))
+  colnames(response_summ_POST_linear) <- c("gene_metric","response")
+  response_summ_POST_linear <- response_summ_POST_linear[complete.cases(response_summ_POST_linear),]
+  
+  my_comparisons <- list(c("CR_PR","PD"),
+                        c("CR_PR","SD"),
+                        c("PD","SD"))
+  print(ggplot(response_summ_POST_linear,aes(y=log10(gene_metric+1),x=response,fill=response))+
+    geom_boxplot()+
+    labs(title=sprintf("%s: %s",treat,"POST"))+
+    stat_compare_means(comparisons = my_comparisons,method = "wilcox.test"))
+
+  # ggplot(response_summ_POST_linear,aes(y=log10(gene_metric+1),x=response,fill=response))+
+  #   geom_violin()+
+  #   labs(title="POST")+
+  #   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test")
+  # 
+  # ggplot(response_summ_POST_linear,aes(x=log10(gene_metric+1),fill=response))+
+  #   geom_density(alpha=0.4)+
+  #   labs(title="POST")
+}
+
+```
+
+## Looking at Pre and Post Data Per Comparison
+
+```{r,eval=F,echo=T}
+
+comps <- unique(col_data$comp)
+subject <- unique(col_data$subj_id)
+get_order <- function(vals){
+  if (vals[1]>vals[2]){
+    return("PRE>POST")
+  } else if (vals[1]<vals[2]){
+    return("POST>PRE")
+  } else {
+    return("EQUAL")
+  }
+}
+
+count_orders <- function(vals){
+  if (all(vals == "-1")){
+    return(c(NA,NA,NA))
+  }
+  return(c(length(which(vals == "PRE>POST")),length(which(vals=="POST>PRE")),length(which(vals=="EQUAL"))))
+}
+
+per_samp_metric_order<-as.data.frame(vapply(subject,function(subj){
+  subj_data <- col_data %>% dplyr::filter(subj_id == subj)
+  if (nrow(subj_data) == 1){
+    return(rep("-1",nrow(comp_vals_all)))
+  } else {
+    subj_data <- subj_data[order(subj_data$time,decreasing=T),]
+    target_comp_vals <- comp_vals_all[,subj_data$samples]
+    return(apply(target_comp_vals,1,get_order))
+  }
+},character(nrow(comp_vals_all))))
+rownames(per_samp_metric_order) <- rownames(comp_vals_all)
+
+per_samp_metric_summary <- as.data.frame(matrix(unlist(lapply(seq(ncol(per_samp_metric_order)),function(col_val){
+  subject <- colnames(per_samp_metric_order)[col_val]
+  s<<-subject
+  comparisons <- col_data$comparisons[col_data$subj_id==subject]
+  genes_small <- unique(unlist(lapply(comparisons,function(comp){comp_genes[[comp]]})))
+  vals <- per_samp_metric_order[genes_small,subject]
+  return(count_orders(vals[!is.na(vals)]))
+})),byrow=T,nrow=ncol(per_samp_metric_order)))
+colnames(per_samp_metric_summary)<-c("PRE>POST","POST>PRE","EQUAL")
+rownames(per_samp_metric_summary)<-colnames(per_samp_metric_order)
+  
+per_samp_metric_summary$comp <- vapply(rownames(per_samp_metric_summary),function(subject){
+  unique(col_data$comp[col_data$subj_id == subject])
+},character(1))
+
+per_samp_metric_summary <- per_samp_metric_summary[complete.cases(per_samp_metric_summary),]
+summ_len <- nrow(per_samp_metric_summary)
+per_samp_metric_linear <- data.frame(c(per_samp_metric_summary$`PRE>POST`,per_samp_metric_summary$`POST>PRE`,per_samp_metric_summary$EQUAL),
+                                     c(rep("PRE>POST",summ_len),rep("POST>PRE",summ_len),rep("EQUAL",summ_len)),
+                                     rep(per_samp_metric_summary$comp,3),
+                                     rep(rownames(per_samp_metric_summary),3))
+colnames(per_samp_metric_linear) <- c("counts","metric_order","comparison","sample")
+
+for (comp in unique(per_samp_metric_linear$comparison)){
+  per_samp_metric_linear_small <- per_samp_metric_linear %>% dplyr::filter(comparison == comp)
+  print(ggplot(per_samp_metric_linear_small,aes(y=counts,x=sample,fill=metric_order))+
+          geom_bar(stat="identity",position="dodge")+
+          theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+          labs(title=comp))#+scale_y_log10()+ylab("log10(counts)"))
+}
+
+```
+
+## Looking at Pre and Post Data Per Comparison
+
+```{r,eval=T}
+
+comps <- unique(col_data$comp)
+subject <- unique(col_data$subj_id)
+
+per_samp_summary<-as.data.frame(t(vapply(subject,function(subj){
+  subj_data <- col_data %>% dplyr::filter(subj_id == subj)
+  if (nrow(subj_data) == 1){
+    return(rep("-1",4))
+  } else {
+    subj_data <- subj_data[order(subj_data$time,decreasing=T),]
+    target_comp_vals <- comp_vals_all[,subj_data$samples]
+    samp_pre <- colnames(target_comp_vals)[which(str_detect(colnames(target_comp_vals),"PRE"))]
+    samp_post <- colnames(target_comp_vals)[which(str_detect(colnames(target_comp_vals),"POST"))]
+    comparisons <- col_data$comparisons[col_data$subj_id==subj]
+    pre_comp <- comparisons[which(str_detect(comparisons,"PRE"))]
+    post_comp <- comparisons[which(str_detect(comparisons,"POST"))]
+    genes_small_pre <- comp_genes[[pre_comp]]
+    genes_small_post <- comp_genes[[post_comp]]
+    treatment <- col_data$treatment[col_data$subj_id==subj][1]
+    response <- col_data$response[col_data$subj_id==subj][1]
+    return(c(as.character(mean(target_comp_vals[genes_small_pre,samp_pre],na.rm=T)),
+             as.character(mean(target_comp_vals[genes_small_post,samp_post],na.rm=T)),
+             treatment,response))
+  }
+},character(4))))
+colnames(per_samp_summary)<-c("PRE","POST","treatment","response")
+per_samp_summary$PRE <- as.numeric(per_samp_summary$PRE)
+per_samp_summary$POST <- as.numeric(per_samp_summary$POST)
+per_samp_summary <- per_samp_summary %>% dplyr::filter(PRE != -1)
+per_samp_summary_linear <- data.frame(rep(rownames(per_samp_summary),2),
+                                      c(per_samp_summary$PRE,per_samp_summary$POST),
+                                      c(rep("PRE",nrow(per_samp_summary)),rep("POST",nrow(per_samp_summary))),
+                                      rep(per_samp_summary$treatment,2),
+                                      rep(per_samp_summary$response,2))
+colnames(per_samp_summary_linear) <- c("sample","splicing_antigenicity","time","treatment","response")
+per_samp_summary_linear <- per_samp_summary_linear %>% dplyr::filter(response != "NE")
+
+per_samp_summary_linear_NIV1_IPI3<-per_samp_summary_linear %>% dplyr::filter(treatment=="NIV1+IPI3")
+my_comparisons <- list(c("POST", "PRE"))
+ggplot(per_samp_summary_linear_NIV1_IPI3,aes(x=time,y=splicing_antigenicity,color=response))+
+  geom_point()+
+  geom_line(aes(group=sample))+
+  geom_boxplot(aes(x=time,y=splicing_antigenicity),fill="black",color="black",alpha=0.2)+
+  stat_compare_means(method = "t.test",comparisons = my_comparisons,paired = T)+
+  labs(title="NIV1+IPI3")
+
+per_samp_summary_linear_NIV3_NAIVE<-per_samp_summary_linear %>% dplyr::filter(treatment=="NIV3-NAIVE")
+my_comparisons <- list(c("POST", "PRE"))
+ggplot(per_samp_summary_linear_NIV3_NAIVE,aes(x=time,y=splicing_antigenicity,color=response))+
+  geom_point()+
+  geom_line(aes(group=sample))+
+  geom_boxplot(aes(x=time,y=splicing_antigenicity),fill="black",color="black",alpha=0.2)+
+  stat_compare_means(method = "t.test",comparisons = my_comparisons,paired = T)+
+  labs(title="NIV3-NAIVE")
+
+per_samp_summary_linear_NIV3_PROG<-per_samp_summary_linear %>% dplyr::filter(treatment=="NIV3-PROG")
+my_comparisons <- list(c("POST", "PRE"))
+ggplot(per_samp_summary_linear_NIV3_PROG,aes(x=time,y=splicing_antigenicity,color=response))+
+  geom_point()+
+  geom_line(aes(group=sample))+
+  geom_boxplot(aes(x=time,y=splicing_antigenicity),fill="black",color="black",alpha=0.2)+
+  stat_compare_means(method = "t.test",comparisons = my_comparisons,paired = T)+
+  labs(title="NIV3-PROG")
+
+
+
+
+```
+
+

@@ -1,0 +1,2361 @@
+---
+title: "analysis_Theron"
+author: "Theron Palmer"
+date: "8/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+# Libraries used in the analysis
+
+```{r}
+
+library(ggplot2)
+library(knitr)
+library(dplyr)
+library(org.Mm.eg.db)
+library(DT)
+library(GeneOverlap)
+library(GO.db)
+library(KEGGREST)
+library(KEGG.db)
+library(fgsea)
+library(maftools)
+library(pheatmap)
+library(ensembldb)
+library(stringr)
+library(ensembldb)
+library(BSgenome.Mmusculus.GENCODE.GRCm38.102)
+library(biomaRt)
+library(ggpubr)
+
+```
+
+# Loading in the necessary data
+
+```{r}
+
+base_dir <- "/media/theron/My_Passport/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes"
+PD1_vs_combo <- read.table(sprintf("%s/%s",base_dir,"PD1_vs_Combo_genes_DESeq2.txt"),header=T)
+untreated_vs_combo <- read.table(sprintf("%s/%s",base_dir,"Untreated_vs_Combo_genes_DESeq2.txt"),header=T)
+untreated_vs_PD1 <- read.table(sprintf("%s/%s",base_dir,"Untreated_vs_PD1_genes_DESeq2.txt"),header=T)
+
+```
+
+# PD1 vs Combo (PD1/Combo)
+
+## Differential Expression Data
+
+```{r}
+
+which_sig <- vapply(as.numeric(PD1_vs_combo$PD1_vs_Combo_pvalue),function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+PD1_vs_combo$significance_pval <- which_sig
+
+which_sig <- vapply(PD1_vs_combo$PD1_vs_Combo_padj,function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+PD1_vs_combo$significance_padj <- which_sig
+
+datatable(PD1_vs_combo)
+
+```
+
+
+## Volcano Plots
+
+```{r}
+
+ggplot(PD1_vs_combo,aes(x=PD1_vs_Combo_log2FoldChange, y=-log10(PD1_vs_Combo_pvalue), color = significance_pval))+
+  geom_text(label=PD1_vs_combo$gene_symbol)
+ggplot(PD1_vs_combo,aes(x=PD1_vs_Combo_log2FoldChange, y=-log10(PD1_vs_Combo_padj), color = significance_padj))+
+  geom_text(label=PD1_vs_combo$gene_symbol)
+
+```
+## gsea results on GO and KEGG terms
+
+```{r}
+
+symbol_to_entrez <- as.list(org.Mm.egALIAS2EG)
+PD1_vs_combo$entrez <- symbol_to_entrez[PD1_vs_combo$gene_symbol]
+
+SYMBOLToGO <- mapIds(org.Mm.eg.db,keys=PD1_vs_combo$gene_symbol,column='GO',keytype = 'SYMBOL',multiVals = list)
+GOToSYMBOL <- sapply(reverseSplit(SYMBOLToGO),unique)
+GOToSYMBOL <- GOToSYMBOL[sapply(GOToSYMBOL,length)>5]
+
+SYMBOLToKEGG <- mapIds(org.Mm.eg.db,keys=PD1_vs_combo$gene_symbol,column='PATH',keytype = 'SYMBOL',multiVals = list)
+KEGGToSYMBOL <- sapply(reverseSplit(SYMBOLToKEGG),unique)
+KEGGToSYMBOL <- KEGGToSYMBOL[sapply(KEGGToSYMBOL,length)>5]
+
+diff_dat_filt <- PD1_vs_combo %>% dplyr::filter(!is.na(PD1_vs_Combo_log2FoldChange) & !is.na(PD1_vs_Combo_pvalue))
+ranks <- diff_dat_filt$PD1_vs_Combo_log2FoldChange*-log10(diff_dat_filt$PD1_vs_Combo_pvalue)
+names(ranks)<-diff_dat_filt$gene_symbol
+ranks<-ranks[unname(!is.na(ranks))]
+# ranks<-rank(ranks,ties.method = "random")
+fgseaRes_GO <- fgsea(GOToSYMBOL, ranks, eps=0,scoreType="pos")
+fgseaRes_GO<-cbind(sapply(c('ONTOLOGY','TERM','DEFINITION'),
+                        function(x){mapIds(GO.db,keys=fgseaRes_GO$pathway,keytype='GOID',column=x)}),fgseaRes_GO)
+fgseaRes_KEGG <- fgsea(KEGGToSYMBOL, ranks, eps=0,scoreType="pos")
+fgseaRes_KEGG <- cbind(KEGG.Name=unlist(as.list(KEGGPATHID2NAME)[fgseaRes_KEGG$pathway]),
+                   fgseaRes_KEGG)
+
+pathways<- readRDS("/media/theron/My_Passport/LM_LMT_LUCIANE_cellranger/references/gene_sets/mouse_hallmark.rds")
+pathways_list <- lapply(unique(pathways$gs_name),function(pathway){
+  pathway_small <- pathways %>% dplyr::filter(gs_name == pathway)
+  return(pathway_small$gene_symbol)
+})
+names(pathways_list)<-unique(pathways$gs_name)
+
+fgseaRes_HALLMARK <- fgsea(pathways_list, ranks, eps=0)
+fgseaRes_HALLMARK <- fgseaRes_HALLMARK %>% dplyr::filter(padj <= 0.05)
+
+```
+
+### GO GSEA
+```{r}
+
+GO_table <- fgseaRes_GO %>% dplyr::filter(padj <= 0.05)
+GO_table<-GO_table[,c("TERM","DEFINITION","padj","NES","size")]
+datatable(GO_table)
+
+```
+
+### KEGG GSEA
+```{r}
+
+KEGG_table <- fgseaRes_KEGG %>% dplyr::filter(padj <= 0.05)
+KEGG_table<-KEGG_table[,c("KEGG.Name","padj","NES","size")]
+datatable(KEGG_table)
+
+```
+
+### HALLMARK GSEA
+```{r}
+
+datatable(fgseaRes_HALLMARK[,c(1,3,6,7)])
+
+```
+
+
+# Untreated vs Combo (Untreated/Combo) 
+
+## Differential Expression Data
+
+```{r}
+
+which_sig <- vapply(as.numeric(untreated_vs_combo$Untreated_vs_Combo_pvalue),function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_combo$significance_pval <- which_sig
+
+which_sig <- vapply(untreated_vs_combo$Untreated_vs_Combo_padj,function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_combo$significance_padj <- which_sig
+
+datatable(untreated_vs_combo)
+
+```
+
+## Volcano Plots
+
+```{r}
+
+ggplot(untreated_vs_combo,aes(x=Untreated_vs_Combo_log2FoldChange, y=-log10(Untreated_vs_Combo_pvalue), color = significance_pval))+
+  geom_text(label=untreated_vs_combo$gene_symbol)
+ggplot(untreated_vs_combo,aes(x=Untreated_vs_Combo_log2FoldChange, y=-log10(Untreated_vs_Combo_padj), color = significance_padj))+
+  geom_text(label=untreated_vs_combo$gene_symbol)
+
+```
+
+## gsea results on GO and KEGG terms
+
+```{r}
+
+symbol_to_entrez <- as.list(org.Mm.egALIAS2EG)
+untreated_vs_combo$entrez <- symbol_to_entrez[untreated_vs_combo$gene_symbol]
+
+SYMBOLToGO <- mapIds(org.Mm.eg.db,keys=untreated_vs_combo$gene_symbol,column='GO',keytype = 'SYMBOL',multiVals = list)
+GOToSYMBOL <- sapply(reverseSplit(SYMBOLToGO),unique)
+GOToSYMBOL <- GOToSYMBOL[sapply(GOToSYMBOL,length)>5]
+
+SYMBOLToKEGG <- mapIds(org.Mm.eg.db,keys=untreated_vs_combo$gene_symbol,column='PATH',keytype = 'SYMBOL',multiVals = list)
+KEGGToSYMBOL <- sapply(reverseSplit(SYMBOLToKEGG),unique)
+KEGGToSYMBOL <- KEGGToSYMBOL[sapply(KEGGToSYMBOL,length)>5]
+
+diff_dat_filt <- untreated_vs_combo %>% dplyr::filter(!is.na(Untreated_vs_Combo_log2FoldChange) & !is.na(Untreated_vs_Combo_pvalue))
+ranks <- diff_dat_filt$Untreated_vs_Combo_log2FoldChange*-log10(diff_dat_filt$Untreated_vs_Combo_pvalue)
+names(ranks)<-diff_dat_filt$gene_symbol
+ranks<-ranks[unname(!is.na(ranks))]
+# ranks<-rank(ranks,ties.method = "random")
+fgseaRes_GO <- fgsea(GOToSYMBOL, ranks, eps=0,scoreType="pos")
+fgseaRes_GO<-cbind(sapply(c('ONTOLOGY','TERM','DEFINITION'),
+                        function(x){mapIds(GO.db,keys=fgseaRes_GO$pathway,keytype='GOID',column=x)}),fgseaRes_GO)
+fgseaRes_KEGG <- fgsea(KEGGToSYMBOL, ranks, eps=0,scoreType="pos")
+fgseaRes_KEGG <- cbind(KEGG.Name=unlist(as.list(KEGGPATHID2NAME)[fgseaRes_KEGG$pathway]),
+                   fgseaRes_KEGG)
+
+pathways_list <- readRDS("/media/theron/My_Passport/LM_LMT_LUCIANE_cellranger/references/gene_sets/pathways_list_ensembl.rds")
+fgseaRes_HALLMARK <- fgsea(pathways_list, ranks, eps=0)
+fgseaRes_HALLMARK <- fgseaRes_HALLMARK %>% dplyr::filter(padj <= 0.05)
+
+```
+
+### GO GSEA
+```{r}
+
+GO_table <- fgseaRes_GO %>% dplyr::filter(padj <= 0.05)
+GO_table<-GO_table[,c("TERM","DEFINITION","padj","NES","size")]
+datatable(GO_table)
+
+```
+
+### KEGG GSEA
+```{r}
+
+KEGG_table <- fgseaRes_KEGG %>% dplyr::filter(padj <= 0.05)
+KEGG_table<-KEGG_table[,c("KEGG.Name","padj","NES","size")]
+datatable(KEGG_table)
+
+```
+
+### HALLMARK Pathway GSEA
+```{r}
+
+datatable(fgseaRes_HALLMARK[,c(1,3,6,7)])
+
+```
+
+# Untreated vs PD1 (Untreated/PD1) 
+
+## Differential Expression Data
+
+```{r}
+
+which_sig <- vapply(as.numeric(untreated_vs_PD1$Untreated_vs_PD1_pvalue),function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_PD1$significance_pval <- which_sig
+
+which_sig <- vapply(untreated_vs_PD1$Untreated_vs_PD1_padj,function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_PD1$significance_padj <- which_sig
+datatable(untreated_vs_PD1)
+
+```
+
+
+## Volcano Plots
+
+```{r}
+
+ggplot(untreated_vs_PD1,aes(x=Untreated_vs_PD1_log2FoldChange, y=-log10(Untreated_vs_PD1_pvalue), color = significance_pval))+
+  geom_text(label=untreated_vs_PD1$gene_symbol)
+ggplot(untreated_vs_PD1,aes(x=Untreated_vs_PD1_log2FoldChange, y=-log10(Untreated_vs_PD1_padj), color = significance_padj))+
+  geom_text(label=untreated_vs_PD1$gene_symbol)
+
+```
+
+
+## gsea results on GO,KEGG, and Hallmark Pathway terms
+
+```{r}
+
+symbol_to_entrez <- as.list(org.Mm.egALIAS2EG)
+untreated_vs_PD1$entrez <- symbol_to_entrez[untreated_vs_PD1$gene_symbol]
+
+SYMBOLToGO <- mapIds(org.Mm.eg.db,keys=untreated_vs_PD1$gene_symbol,column='GO',keytype = 'SYMBOL',multiVals = list)
+GOToSYMBOL <- sapply(reverseSplit(SYMBOLToGO),unique)
+GOToSYMBOL <- GOToSYMBOL[sapply(GOToSYMBOL,length)>5]
+
+SYMBOLToKEGG <- mapIds(org.Mm.eg.db,keys=untreated_vs_PD1$gene_symbol,column='PATH',keytype = 'SYMBOL',multiVals = list)
+KEGGToSYMBOL <- sapply(reverseSplit(SYMBOLToKEGG),unique)
+KEGGToSYMBOL <- KEGGToSYMBOL[sapply(KEGGToSYMBOL,length)>5]
+
+diff_dat_filt <- untreated_vs_PD1 %>% dplyr::filter(!is.na(Untreated_vs_PD1_log2FoldChange) & !is.na(Untreated_vs_PD1_pvalue))
+ranks <- diff_dat_filt$Untreated_vs_PD1_log2FoldChange*-log10(diff_dat_filt$Untreated_vs_PD1_pvalue)
+names(ranks)<-diff_dat_filt$gene_symbol
+ranks<-ranks[unname(!is.na(ranks))]
+# ranks<-rank(ranks,ties.method = "random")
+fgseaRes_GO <- fgsea(GOToSYMBOL, ranks, eps=0,scoreType="pos")
+fgseaRes_GO<-cbind(sapply(c('ONTOLOGY','TERM','DEFINITION'),
+                        function(x){mapIds(GO.db,keys=fgseaRes_GO$pathway,keytype='GOID',column=x)}),fgseaRes_GO)
+fgseaRes_KEGG <- fgsea(KEGGToSYMBOL, ranks, eps=0,scoreType="pos")
+fgseaRes_KEGG <- cbind(KEGG.Name=unlist(as.list(KEGGPATHID2NAME)[fgseaRes_KEGG$pathway]),
+                   fgseaRes_KEGG)
+
+pathways_list <- readRDS("/media/theron/My_Passport/LM_LMT_LUCIANE_cellranger/references/gene_sets/pathways_list_ensembl.rds")
+fgseaRes_HALLMARK <- fgsea(pathways_list, ranks, eps=0)
+fgseaRes_HALLMARK <- fgseaRes_HALLMARK %>% dplyr::filter(padj <= 0.05)
+
+```
+
+### GO GSEA
+```{r}
+
+GO_table <- fgseaRes_GO %>% dplyr::filter(padj <= 0.05)
+GO_table<-GO_table[,c("TERM","DEFINITION","padj","NES","size")]
+datatable(GO_table)
+
+```
+
+### KEGG GSEA
+```{r}
+
+KEGG_table <- fgseaRes_KEGG %>% dplyr::filter(padj <= 0.05)
+KEGG_table<-KEGG_table[,c("KEGG.Name","padj","NES","size")]
+datatable(KEGG_table)
+
+```
+
+### HALLMARK Pathway GSEA
+```{r}
+
+datatable(fgseaRes_HALLMARK[,c(1,3,6,7)])
+
+```
+
+# Exploring Whole Exome mutation data- maf format
+
+## Those mutations with differential expression per comparison
+
+```{r}
+
+maf_file <- "/media/theron/My_Passport/Ali_data/WES Data for 4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/DNA_4TIMSI_haplotypecaller.maf"
+ali_maf = read.maf(maf_file)
+ali_gene_summ = getGeneSummary(ali_maf)
+rownames(ali_gene_summ) <- ali_gene_summ$Hugo_Symbol
+
+rownames(PD1_vs_combo) <- PD1_vs_combo$gene_symbol
+rownames(untreated_vs_combo) <- untreated_vs_combo$gene_symbol
+rownames(untreated_vs_PD1) <- untreated_vs_PD1$gene_symbol
+
+ali_gene_summ <- cbind(ali_gene_summ,PD1_vs_combo[ali_gene_summ$Hugo_Symbol,c("PD1_vs_Combo_log2FoldChange","significance_pval","significance_padj")])
+ali_gene_summ <- cbind(ali_gene_summ,untreated_vs_combo[ali_gene_summ$Hugo_Symbol,c("Untreated_vs_Combo_log2FoldChange","significance_pval","significance_padj")])
+ali_gene_summ <- cbind(ali_gene_summ,untreated_vs_PD1[ali_gene_summ$Hugo_Symbol,c("Untreated_vs_PD1_log2FoldChange","significance_pval","significance_padj")])
+
+cols <- colnames(ali_gene_summ)
+cols[seq(15,22)]<-c("pc_significance_pval","pc_significance_padj",
+                    "Untreated_vs_Combo_log2FoldChange","uc_significance_pval","uc_significance_padj",
+                    "Untreated_vs_PD1_log2FoldChange","up_significance_pval","up_significance_padj")
+colnames(ali_gene_summ) <- cols
+datatable(ali_gene_summ)
+
+```
+
+## PD1 vs Combo 
+```{r}
+
+ali_gene_summ_PD1 <- ali_gene_summ %>% dplyr::filter(pc_significance_pval=="Sig")
+ggplot(ali_gene_summ_PD1,aes(y=log2(Missense_Mutation),x=PD1_vs_Combo_log2FoldChange))+
+  geom_text(label=ali_gene_summ_PD1$Hugo_Symbol)+labs(title="pval Significant Genes")
+datatable(ali_gene_summ_PD1)
+
+ali_gene_summ_PD1 <- ali_gene_summ %>% dplyr::filter(pc_significance_padj=="Sig")
+ggplot(ali_gene_summ_PD1,aes(y=log2(Missense_Mutation),x=PD1_vs_Combo_log2FoldChange))+
+  geom_text(label=ali_gene_summ_PD1$Hugo_Symbol)+labs(title="padj Significant Genes")
+datatable(ali_gene_summ_PD1)
+
+```
+
+## Untreated vs Combo
+
+```{r}
+
+ali_gene_summ_uc <- ali_gene_summ %>% dplyr::filter(uc_significance_pval=="Sig")
+ggplot(ali_gene_summ_uc,aes(y=log2(Missense_Mutation),x=Untreated_vs_Combo_log2FoldChange))+
+  geom_text(label=ali_gene_summ_uc$Hugo_Symbol)+labs(title="pval Significant Genes")
+datatable(ali_gene_summ_uc)
+
+ali_gene_summ_uc <- ali_gene_summ %>% dplyr::filter(uc_significance_padj=="Sig")
+ggplot(ali_gene_summ_uc,aes(y=log2(Missense_Mutation),x=Untreated_vs_Combo_log2FoldChange))+
+  geom_text(label=ali_gene_summ_uc$Hugo_Symbol)+labs(title="padj Significant Genes")
+datatable(ali_gene_summ_uc)
+
+```
+
+## Untreated vs PD1
+```{r}
+
+ali_gene_summ_up <- ali_gene_summ %>% dplyr::filter(up_significance_pval=="Sig")
+ggplot(ali_gene_summ_up,aes(y=log2(Missense_Mutation),x=Untreated_vs_PD1_log2FoldChange))+
+  geom_text(label=ali_gene_summ_up$Hugo_Symbol)+labs(title="pval Significant Genes")
+datatable(ali_gene_summ_up)
+
+ali_gene_summ_up <- ali_gene_summ %>% dplyr::filter(up_significance_padj=="Sig")
+ggplot(ali_gene_summ_up,aes(y=log2(Missense_Mutation),x=Untreated_vs_PD1_log2FoldChange))+
+  geom_text(label=ali_gene_summ_up$Hugo_Symbol)+labs(title="padj Significant Genes")
+datatable(ali_gene_summ_up)
+
+```
+
+## Gene expression of Mutated Genes Per Sample
+
+```{r}
+
+tpm_gene_expression_file <- "/media/theron/My_Passport/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/tables/genes/genes_tpm_all_samples_norm.txt"
+tpm_gene_expression <- read.table(tpm_gene_expression_file,header=T,sep="\t")
+
+maf_file <- "/media/theron/My_Passport/Ali_data/WES Data for 4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/DNA_4TIMSI_haplotypecaller.maf"
+ali_maf = read.maf(maf_file)
+ali_gene_summ = as.data.frame(getGeneSummary(ali_maf))
+rownames(ali_gene_summ) <- ali_gene_summ$Hugo_Symbol
+missense_dat <- ali_gene_summ[tpm_gene_expression$gene_id,]
+missense_dat <- missense_dat[complete.cases(missense_dat),]
+
+rownames(tpm_gene_expression) <- tpm_gene_expression$gene_id
+Missense_Mutation<-missense_dat$Missense_Mutation
+tpm_gene_expression_complete <- cbind(tpm_gene_expression[rownames(missense_dat),seq(2,ncol(tpm_gene_expression))],Missense_Mutation)
+tpm_gene_expression_complete <- tpm_gene_expression_complete[complete.cases(tpm_gene_expression_complete),]
+
+combo<-apply(tpm_gene_expression_complete[,seq(6)],1,mean)
+pd1<-apply(tpm_gene_expression_complete[,seq(7,12)],1,mean)
+untreated<-apply(tpm_gene_expression_complete[,seq(12,ncol(tpm_gene_expression_complete))],1,mean)
+
+Missense_Mutation<-tpm_gene_expression_complete$Missense_Mutation
+average_expression<-data.frame(rownames(tpm_gene_expression_complete),
+                               combo,pd1,untreated,
+                               Missense_Mutation)
+colnames(average_expression) <- c("gene","C_TPM_AV","P_TPM_AV","U_TPM_AV","Missense_Mutation")
+average_expression_linear<-data.frame(rep(rownames(tpm_gene_expression_complete),3),c(combo,pd1,untreated),
+                               rep(Missense_Mutation,3),
+                               c(rep("combo",length(combo)),
+                               rep("pd1",length(pd1)),
+                               rep("untreated",length(untreated))))
+colnames(average_expression_linear)<-c("gene","TPM_expression","Missense_Mutation","type")
+
+average_expression$expression_order <- vapply(seq(nrow(average_expression)),function(row_val){
+  vals<-average_expression[row_val, c("C_TPM_AV","P_TPM_AV","U_TPM_AV")]
+  if (vals$C_TPM_AV < vals$P_TPM_AV & vals$P_TPM_AV < vals$U_TPM_AV){
+    return(c("combo<pd1<untreated"))
+  } else if (vals$C_TPM_AV < vals$U_TPM_AV & vals$U_TPM_AV < vals$P_TPM_AV) {
+    return("combo<untreated<pd1")
+  } else if (vals$P_TPM_AV < vals$C_TPM_AV & vals$C_TPM_AV < vals$U_TPM_AV){
+    return("pd1<combo<untreated")
+  } else if (vals$P_TPM_AV < vals$U_TPM_AV & vals$U_TPM_AV < vals$C_TPM_AV){
+    return("pd1<untreated<combo")
+  } else if (vals$U_TPM_AV < vals$P_TPM_AV & vals$P_TPM_AV < vals$C_TPM_AV) {
+    return("untreated<pd1<combo")
+  } else if (vals$U_TPM_AV < vals$C_TPM_AV & vals$C_TPM_AV < vals$P_TPM_AV) {
+    return("untreated<combo<pd1")
+  } else {
+    return("something's equal")
+  }
+},character(1))
+
+ggplot(average_expression,aes(x=expression_order,fill=expression_order))+
+  geom_bar(aes(y=(..count..)/sum(..count..)))+
+  theme(axis.text.x=element_blank())
+
+ggplot(average_expression_linear,aes(x=log2(Missense_Mutation+1),y=log2(TPM_expression+1),color=type))+geom_point(shape=1)
+
+# combo<-apply(tpm_gene_expression[,seq(2,6)],1,mean)
+# combo<-scale(combo)
+# pd1<-apply(tpm_gene_expression[,seq(7,12)],1,mean)
+# pd1<-scale(pd1)
+# untreated<-apply(tpm_gene_expression[,seq(12,ncol(tpm_gene_expression))],1,mean)
+# untreated<-scale(untreated)
+# 
+# average_expression_all <-data.frame(rownames(tpm_gene_expression),
+#                                combo,pd1,untreated)
+# colnames(average_expression_all) <- c("gene","C_TPM_AV","P_TPM_AV","U_TPM_AV")
+# 
+# average_expression_all$expression_order <- vapply(seq(nrow(average_expression_all)),function(row_val){
+#   vals<-average_expression_all[row_val, c("C_TPM_AV","P_TPM_AV","U_TPM_AV")]
+#   if (vals$C_TPM_AV < vals$P_TPM_AV & vals$P_TPM_AV < vals$U_TPM_AV){
+#     return(c("combo<pd1<untreated"))
+#   } else if (vals$C_TPM_AV < vals$U_TPM_AV & vals$U_TPM_AV < vals$P_TPM_AV) {
+#     return("combo<untreated<pd1")
+#   } else if (vals$P_TPM_AV < vals$C_TPM_AV & vals$C_TPM_AV < vals$U_TPM_AV){
+#     return("pd1<combo<untreated")
+#   } else if (vals$P_TPM_AV < vals$U_TPM_AV & vals$U_TPM_AV < vals$C_TPM_AV){
+#     return("pd1<untreated<combo")
+#   } else if (vals$U_TPM_AV < vals$P_TPM_AV & vals$P_TPM_AV < vals$C_TPM_AV) {
+#     return("untreated<pd1<combo")
+#   } else if (vals$U_TPM_AV < vals$C_TPM_AV & vals$C_TPM_AV < vals$P_TPM_AV) {
+#     return("untreated<combo<pd1")
+#   } else {
+#     return("something's equal")
+#   }
+# },character(1))
+# 
+# ggplot(average_expression_all,aes(x=expression_order,fill=expression_order))+
+#   geom_bar(aes(y=(..count..)/sum(..count..)))+
+#   theme(axis.text.x=element_blank())
+
+```
+
+# Exploring outlier splice junctions Combo and PD1 vs Outlier
+
+## Filtering for significant junctions per sample
+
+```{r}
+
+C1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C1_pVals.txt"
+C1_clusters <- read.table(C1_clusters_file,header=T)
+C1_clusters$juncs <- vapply(rownames(C1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C1_clusters_sig <- C1_clusters %>% dplyr::filter(C1 <= 0.05)
+
+
+C2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C2_pVals.txt"
+C2_clusters <- read.table(C2_clusters_file,header=T)
+C2_clusters$juncs <- vapply(rownames(C2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C2_clusters_sig <- C2_clusters %>% dplyr::filter(C2 <= 0.05)
+
+C3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C3_pVals.txt"
+C3_clusters <- read.table(C3_clusters_file,header=T)
+C3_clusters$juncs <- vapply(rownames(C3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C3_clusters_sig <- C3_clusters %>% dplyr::filter(C3 <= 0.05)
+
+C5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C5_pVals.txt"
+C5_clusters <- read.table(C5_clusters_file,header=T)
+C5_clusters$juncs <- vapply(rownames(C5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C5_clusters_sig <- C5_clusters %>% dplyr::filter(C5 <= 0.05)
+
+C6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C6_pVals.txt"
+C6_clusters <- read.table(C6_clusters_file,header=T)
+C6_clusters$juncs <- vapply(rownames(C6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C6_clusters_sig <- C6_clusters %>% dplyr::filter(C6 <= 0.05)
+
+C7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C7_pVals.txt"
+C7_clusters <- read.table(C7_clusters_file,header=T)
+C7_clusters_sig <- C7_clusters %>% dplyr::filter(C7 <= 0.05)
+C7_clusters_sig$juncs <- vapply(rownames(C7_clusters_sig),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+
+P1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P1_pVals.txt"
+P1_clusters <- read.table(P1_clusters_file,header=T)
+P1_clusters$juncs <- vapply(rownames(P1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+P1_clusters_sig <- P1_clusters %>% dplyr::filter(P1 <= 0.05)
+
+P2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P2_pVals.txt"
+P2_clusters <- read.table(P2_clusters_file,header=T)
+P2_clusters$juncs <- vapply(rownames(P2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+P2_clusters_sig <- P2_clusters %>% dplyr::filter(P2 <= 0.05)
+
+P3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P3_pVals.txt"
+P3_clusters <- read.table(P3_clusters_file,header=T)
+P3_clusters$juncs <- vapply(rownames(P3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+P3_clusters_sig <- P3_clusters %>% dplyr::filter(P3 <= 0.05)
+
+P5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P5_pVals.txt"
+P5_clusters <- read.table(P5_clusters_file,header=T)
+P5_clusters$juncs <- vapply(rownames(P5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P5_clusters_sig <- P5_clusters %>% dplyr::filter(P5 <= 0.05)
+
+P6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P6_pVals.txt"
+P6_clusters <- read.table(P6_clusters_file,header=T)
+P6_clusters$juncs <- vapply(rownames(P6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P6_clusters_sig <- P6_clusters %>% dplyr::filter(P6 <= 0.05)
+
+P7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P7_pVals.txt"
+P7_clusters <- read.table(P7_clusters_file,header=T)
+P7_clusters$juncs <- vapply(rownames(P7_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P7_clusters_sig <- P7_clusters %>% dplyr::filter(P7 <= 0.05)
+
+juncs_sig <- unique(c(C1_clusters_sig$juncs,C2_clusters_sig$juncs,
+           C3_clusters_sig$juncs,C5_clusters_sig$juncs,
+           C6_clusters_sig$juncs,C7_clusters_sig$juncs,
+           P1_clusters_sig$juncs,P2_clusters_sig$juncs,
+           P3_clusters_sig$juncs,P5_clusters_sig$juncs,
+           P6_clusters_sig$juncs,P7_clusters_sig$juncs))
+juncs_all <- unique(c(C1_clusters$juncs,C2_clusters$juncs,
+           C3_clusters$juncs,C5_clusters$juncs,
+           C6_clusters$juncs,C7_clusters$juncs,
+           P1_clusters$juncs,P2_clusters$juncs,
+           P3_clusters$juncs,P5_clusters$juncs,
+           P6_clusters$juncs,P7_clusters$juncs))
+
+```
+
+## Combining the outlier splicing junctions for each type together
+
+```{r}
+
+all_sample_pvals <- data.frame(juncs_all)
+rownames(all_sample_pvals) <- juncs_all
+all_sample_pvals$C1 <- NA
+all_sample_pvals[C1_clusters$juncs,"C1"]<-C1_clusters$C1
+all_sample_pvals$C2 <- NA
+all_sample_pvals[C2_clusters$juncs,"C2"]<-C2_clusters$C2
+all_sample_pvals$C3 <- NA
+all_sample_pvals[C3_clusters$juncs,"C3"]<-C3_clusters$C3
+all_sample_pvals$C5 <- NA
+all_sample_pvals[C5_clusters$juncs,"C5"]<-C5_clusters$C5
+all_sample_pvals$C6 <- NA
+all_sample_pvals[C6_clusters$juncs,"C6"]<-C6_clusters$C6
+all_sample_pvals$C7 <- NA
+all_sample_pvals[C7_clusters$juncs,"C7"]<-C7_clusters$C7
+all_sample_pvals$P1 <- NA
+all_sample_pvals[P1_clusters$juncs,"P1"]<-P1_clusters$P1
+all_sample_pvals$P2 <- NA
+all_sample_pvals[P2_clusters$juncs,"P2"]<-P2_clusters$P2
+all_sample_pvals$P3 <- NA
+all_sample_pvals[P3_clusters$juncs,"P3"]<-P3_clusters$P3
+all_sample_pvals$P5 <- NA
+all_sample_pvals[P5_clusters$juncs,"P5"]<-P5_clusters$P5
+all_sample_pvals$P6 <- NA
+all_sample_pvals[P6_clusters$juncs,"P6"]<-P6_clusters$P6
+all_sample_pvals$P7 <- NA
+all_sample_pvals[P7_clusters$juncs,"P7"]<-P7_clusters$P7
+all_sample_pvals<-all_sample_pvals[juncs_sig,seq(2,ncol(all_sample_pvals))]
+
+```
+
+## Using all significant junctions, extracting psi per leafcutter cluster
+
+```{r}
+
+C1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C1_perind.counts.gz"
+C1_clusters <- read.table(C1_clusters_file,header=T)
+rownames(C1_clusters) <- C1_clusters$chrom
+C1_clusters$juncs <- vapply(rownames(C1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C1_clusters_psi <- C1_clusters[rownames(C1_clusters_sig),]
+
+C2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C2_perind.counts.gz"
+C2_clusters <- read.table(C2_clusters_file,header=T)
+rownames(C2_clusters) <- C2_clusters$chrom
+C2_clusters$juncs <- vapply(rownames(C2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C2_clusters_psi <- C2_clusters[rownames(C2_clusters_sig),]
+
+C3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C3_perind.counts.gz"
+C3_clusters <- read.table(C3_clusters_file,header=T)
+rownames(C3_clusters) <- C3_clusters$chrom
+C3_clusters$juncs <- vapply(rownames(C3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C3_clusters_psi <- C3_clusters[rownames(C3_clusters_sig),]
+
+C5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C5_perind.counts.gz"
+C5_clusters <- read.table(C5_clusters_file,header=T)
+rownames(C5_clusters) <- C5_clusters$chrom
+C5_clusters$juncs <- vapply(rownames(C5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C5_clusters_psi <- C5_clusters[rownames(C5_clusters_sig),]
+
+C6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C6_perind.counts.gz"
+C6_clusters <- read.table(C6_clusters_file,header=T)
+rownames(C6_clusters) <- C6_clusters$chrom
+C6_clusters$juncs <- vapply(rownames(C6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C6_clusters_psi <- C6_clusters[rownames(C6_clusters_sig),]
+
+C7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C7_perind.counts.gz"
+C7_clusters <- read.table(C7_clusters_file,header=T)
+rownames(C7_clusters) <- C7_clusters$chrom
+C7_clusters$juncs <- vapply(rownames(C7_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C7_clusters_psi <- C7_clusters[rownames(C7_clusters_sig),]
+
+P1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P1_perind.counts.gz"
+P1_clusters <- read.table(P1_clusters_file,header=T)
+rownames(P1_clusters) <- P1_clusters$chrom
+P1_clusters$juncs <- vapply(rownames(P1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P1_clusters_psi <- P1_clusters[rownames(P1_clusters_sig),]
+
+P2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P2_perind.counts.gz"
+P2_clusters <- read.table(P2_clusters_file,header=T)
+rownames(P2_clusters) <- P2_clusters$chrom
+P2_clusters$juncs <- vapply(rownames(P2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P2_clusters_psi <- P2_clusters[rownames(P2_clusters_sig),]
+
+P3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P3_perind.counts.gz"
+P3_clusters <- read.table(P3_clusters_file,header=T)
+rownames(P3_clusters) <- P3_clusters$chrom
+P3_clusters$juncs <- vapply(rownames(P3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P3_clusters_psi <- P3_clusters[rownames(P3_clusters_sig),]
+
+P5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P5_perind.counts.gz"
+P5_clusters <- read.table(P5_clusters_file,header=T)
+rownames(P5_clusters) <- P5_clusters$chrom
+P5_clusters$juncs <- vapply(rownames(P5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P5_clusters_psi <- P5_clusters[rownames(P5_clusters_sig),]
+
+P6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P6_perind.counts.gz"
+P6_clusters <- read.table(P6_clusters_file,header=T)
+rownames(P6_clusters) <- P6_clusters$chrom
+P6_clusters$juncs <- vapply(rownames(P6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P6_clusters_psi <- P6_clusters[rownames(P6_clusters_sig),]
+
+P7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P7_perind.counts.gz"
+P7_clusters <- read.table(P7_clusters_file,header=T)
+rownames(P7_clusters) <- P7_clusters$chrom
+P7_clusters$juncs <- vapply(rownames(P7_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P7_clusters_psi <- P7_clusters[rownames(P7_clusters_sig),]
+
+juncs_all <- unique(c(C1_clusters$juncs,C2_clusters$juncs,
+           C3_clusters$juncs,C5_clusters$juncs,
+           C6_clusters$juncs,C7_clusters$juncs,
+           P1_clusters$juncs,P2_clusters$juncs,
+           P3_clusters$juncs,P5_clusters$juncs,
+           P6_clusters$juncs,P7_clusters$juncs))
+
+```
+
+```{r}
+
+all_sample_psi <- data.frame(juncs_all)
+rownames(all_sample_psi) <- juncs_all
+all_sample_psi$C1 <- NA
+all_sample_psi[C1_clusters$juncs,"C1"]<-C1_clusters$C1
+all_sample_psi[C1_clusters$juncs,"U1"]<-C1_clusters$U1
+all_sample_psi[C1_clusters$juncs,"U2"]<-C1_clusters$U2
+all_sample_psi[C1_clusters$juncs,"U3"]<-C1_clusters$U3
+all_sample_psi$C2 <- NA
+all_sample_psi[C2_clusters$juncs,"C2"]<-C2_clusters$C2
+all_sample_psi[C2_clusters$juncs,"U1"]<-C2_clusters$U1
+all_sample_psi[C2_clusters$juncs,"U2"]<-C2_clusters$U2
+all_sample_psi[C2_clusters$juncs,"U3"]<-C2_clusters$U3
+all_sample_psi$C3 <- NA
+all_sample_psi[C3_clusters$juncs,"C3"]<-C3_clusters$C3
+all_sample_psi[C3_clusters$juncs,"U1"]<-C3_clusters$U1
+all_sample_psi[C3_clusters$juncs,"U2"]<-C3_clusters$U2
+all_sample_psi[C3_clusters$juncs,"U3"]<-C3_clusters$U3
+all_sample_psi$C5 <- NA
+all_sample_psi[C5_clusters$juncs,"C5"]<-C5_clusters$C5
+all_sample_psi[C5_clusters$juncs,"U1"]<-C5_clusters$U1
+all_sample_psi[C5_clusters$juncs,"U2"]<-C5_clusters$U2
+all_sample_psi[C5_clusters$juncs,"U3"]<-C5_clusters$U3
+all_sample_psi$C6 <- NA
+all_sample_psi[C6_clusters$juncs,"C6"]<-C6_clusters$C6
+all_sample_psi[C6_clusters$juncs,"U1"]<-C6_clusters$U1
+all_sample_psi[C6_clusters$juncs,"U2"]<-C6_clusters$U2
+all_sample_psi[C6_clusters$juncs,"U3"]<-C6_clusters$U3
+all_sample_psi$C7 <- NA
+all_sample_psi[C7_clusters$juncs,"C7"]<-C7_clusters$C7
+all_sample_psi[C7_clusters$juncs,"U1"]<-C7_clusters$U1
+all_sample_psi[C7_clusters$juncs,"U2"]<-C7_clusters$U2
+all_sample_psi[C7_clusters$juncs,"U3"]<-C7_clusters$U3
+all_sample_psi$P1 <- NA
+all_sample_psi[P1_clusters$juncs,"P1"]<-P1_clusters$P1
+all_sample_psi[P1_clusters$juncs,"U1"]<-P1_clusters$U1
+all_sample_psi[P1_clusters$juncs,"U2"]<-P1_clusters$U2
+all_sample_psi[P1_clusters$juncs,"U3"]<-P1_clusters$U3
+all_sample_psi$P2 <- NA
+all_sample_psi[P2_clusters$juncs,"P2"]<-P2_clusters$P2
+all_sample_psi[P2_clusters$juncs,"U1"]<-P2_clusters$U1
+all_sample_psi[P2_clusters$juncs,"U2"]<-P2_clusters$U2
+all_sample_psi[P2_clusters$juncs,"U3"]<-P2_clusters$U3
+all_sample_psi$P3 <- NA
+all_sample_psi[P3_clusters$juncs,"P3"]<-P3_clusters$P3
+all_sample_psi[P3_clusters$juncs,"U1"]<-P3_clusters$U1
+all_sample_psi[P3_clusters$juncs,"U2"]<-P3_clusters$U2
+all_sample_psi[P3_clusters$juncs,"U3"]<-P3_clusters$U3
+all_sample_psi$P5 <- NA
+all_sample_psi[P5_clusters$juncs,"P5"]<-P5_clusters$P5
+all_sample_psi[P5_clusters$juncs,"U1"]<-P5_clusters$U1
+all_sample_psi[P5_clusters$juncs,"U2"]<-P5_clusters$U2
+all_sample_psi[P5_clusters$juncs,"U3"]<-P5_clusters$U3
+all_sample_psi$P6 <- NA
+all_sample_psi[P6_clusters$juncs,"P6"]<-P6_clusters$P6
+all_sample_psi[P6_clusters$juncs,"U1"]<-P6_clusters$U1
+all_sample_psi[P6_clusters$juncs,"U2"]<-P6_clusters$U2
+all_sample_psi[P6_clusters$juncs,"U3"]<-P6_clusters$U3
+all_sample_psi$P7 <- NA
+all_sample_psi[P7_clusters$juncs,"P7"]<-P7_clusters$P7
+all_sample_psi[P7_clusters$juncs,"U1"]<-P7_clusters$U1
+all_sample_psi[P7_clusters$juncs,"U2"]<-P7_clusters$U2
+all_sample_psi[P7_clusters$juncs,"U3"]<-P7_clusters$U3
+all_sample_psi<-all_sample_psi[juncs_sig,seq(2,ncol(all_sample_psi))]
+
+```
+
+Configuring psi matrix to be numeric
+
+```{r}
+
+cols <- colnames(all_sample_psi)
+for (col in cols){
+  all_sample_psi[,col]<-vapply(all_sample_psi[,col],function(val){
+    if (is.na(val)){
+      return(NA)
+    }
+    frac<-strsplit(val,"/")[[1]]
+    frac<-as.numeric(frac)
+    if (frac[1]==0){
+      return(0)
+    }
+    frac <- frac[1]/frac[2]
+  },numeric(1))
+}
+
+```
+
+Saving psi and pval matrices
+
+```{r}
+
+write.table(all_sample_psi,
+            file="/media/theron/My_Passport/Ali_data/analysis/all_sample_psi.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+write.table(all_sample_pvals,
+            file="/media/theron/My_Passport/Ali_data/analysis/all_sample_pval.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+juncs_sig_df <- data.frame(matrix(unlist(strsplit(juncs_sig,":")),nrow=length(juncs_sig),ncol=4,byrow=T))
+colnames(juncs_sig_df)<-c("chrom","start","end","strand")
+
+write.table(juncs_sig_df,
+            file="/media/theron/My_Passport/Ali_data/analysis/juncs_sig.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+saveRDS(juncs_sig_df,
+        file="/media/theron/My_Passport/Ali_data/analysis/juncs_sig.rds")
+
+juncs_all_df <- data.frame(matrix(unlist(strsplit(juncs_all,":")),nrow=length(juncs_all),ncol=4,byrow=T))
+colnames(juncs_all_df)<-c("chrom","start","end","strand")
+
+write.table(juncs_all_df,
+            file="/media/theron/My_Passport/Ali_data/analysis/juncs_all.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+# Exploring outlier splice junctions Combo vs PD1 and PD1 vs Combo
+
+## Filtering for significant junctions per sample
+
+```{r}
+
+C1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C1P_pVals.txt"
+C1_clusters <- read.table(C1_clusters_file,header=T)
+C1_clusters$juncs <- vapply(rownames(C1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C1_clusters_sig <- C1_clusters %>% dplyr::filter(C1 <= 0.05)
+
+
+C2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C2P_pVals.txt"
+C2_clusters <- read.table(C2_clusters_file,header=T)
+C2_clusters$juncs <- vapply(rownames(C2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C2_clusters_sig <- C2_clusters %>% dplyr::filter(C2 <= 0.05)
+
+C3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C3P_pVals.txt"
+C3_clusters <- read.table(C3_clusters_file,header=T)
+C3_clusters$juncs <- vapply(rownames(C3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C3_clusters_sig <- C3_clusters %>% dplyr::filter(C3 <= 0.05)
+
+C5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C5P_pVals.txt"
+C5_clusters <- read.table(C5_clusters_file,header=T)
+C5_clusters$juncs <- vapply(rownames(C5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C5_clusters_sig <- C5_clusters %>% dplyr::filter(C5 <= 0.05)
+
+C6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C6P_pVals.txt"
+C6_clusters <- read.table(C6_clusters_file,header=T)
+C6_clusters$juncs <- vapply(rownames(C6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+C6_clusters_sig <- C6_clusters %>% dplyr::filter(C6 <= 0.05)
+
+C7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C7P_pVals.txt"
+C7_clusters <- read.table(C7_clusters_file,header=T)
+C7_clusters_sig <- C7_clusters %>% dplyr::filter(C7 <= 0.05)
+C7_clusters_sig$juncs <- vapply(rownames(C7_clusters_sig),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+
+P1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P1C_pVals.txt"
+P1_clusters <- read.table(P1_clusters_file,header=T)
+P1_clusters$juncs <- vapply(rownames(P1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+P1_clusters_sig <- P1_clusters %>% dplyr::filter(P1 <= 0.05)
+
+P2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P2C_pVals.txt"
+P2_clusters <- read.table(P2_clusters_file,header=T)
+P2_clusters$juncs <- vapply(rownames(P2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+P2_clusters_sig <- P2_clusters %>% dplyr::filter(P2 <= 0.05)
+
+P3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P3C_pVals.txt"
+P3_clusters <- read.table(P3_clusters_file,header=T)
+P3_clusters$juncs <- vapply(rownames(P3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+  },character(1))
+P3_clusters_sig <- P3_clusters %>% dplyr::filter(P3 <= 0.05)
+
+P5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P5C_pVals.txt"
+P5_clusters <- read.table(P5_clusters_file,header=T)
+P5_clusters$juncs <- vapply(rownames(P5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P5_clusters_sig <- P5_clusters %>% dplyr::filter(P5 <= 0.05)
+
+P6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P6C_pVals.txt"
+P6_clusters <- read.table(P6_clusters_file,header=T)
+P6_clusters$juncs <- vapply(rownames(P6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P6_clusters_sig <- P6_clusters %>% dplyr::filter(P6 <= 0.05)
+
+P7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P7C_pVals.txt"
+P7_clusters <- read.table(P7_clusters_file,header=T)
+P7_clusters$juncs <- vapply(rownames(P7_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P7_clusters_sig <- P7_clusters %>% dplyr::filter(P7 <= 0.05)
+
+juncs_sig <- unique(c(C1_clusters_sig$juncs,C2_clusters_sig$juncs,
+           C3_clusters_sig$juncs,C5_clusters_sig$juncs,
+           C6_clusters_sig$juncs,C7_clusters_sig$juncs,
+           P1_clusters_sig$juncs,P2_clusters_sig$juncs,
+           P3_clusters_sig$juncs,P5_clusters_sig$juncs,
+           P6_clusters_sig$juncs,P7_clusters_sig$juncs))
+juncs_all <- unique(c(C1_clusters$juncs,C2_clusters$juncs,
+           C3_clusters$juncs,C5_clusters$juncs,
+           C6_clusters$juncs,C7_clusters$juncs,
+           P1_clusters$juncs,P2_clusters$juncs,
+           P3_clusters$juncs,P5_clusters$juncs,
+           P6_clusters$juncs,P7_clusters$juncs))
+
+```
+
+## Combining the outlier splicing junctions for each type together
+
+```{r}
+
+all_sample_pvals <- data.frame(juncs_all)
+rownames(all_sample_pvals) <- juncs_all
+all_sample_pvals$C1 <- NA
+all_sample_pvals[C1_clusters$juncs,"C1"]<-C1_clusters$C1
+all_sample_pvals$C2 <- NA
+all_sample_pvals[C2_clusters$juncs,"C2"]<-C2_clusters$C2
+all_sample_pvals$C3 <- NA
+all_sample_pvals[C3_clusters$juncs,"C3"]<-C3_clusters$C3
+all_sample_pvals$C5 <- NA
+all_sample_pvals[C5_clusters$juncs,"C5"]<-C5_clusters$C5
+all_sample_pvals$C6 <- NA
+all_sample_pvals[C6_clusters$juncs,"C6"]<-C6_clusters$C6
+all_sample_pvals$C7 <- NA
+all_sample_pvals[C7_clusters$juncs,"C7"]<-C7_clusters$C7
+all_sample_pvals$P1 <- NA
+all_sample_pvals[P1_clusters$juncs,"P1"]<-P1_clusters$P1
+all_sample_pvals$P2 <- NA
+all_sample_pvals[P2_clusters$juncs,"P2"]<-P2_clusters$P2
+all_sample_pvals$P3 <- NA
+all_sample_pvals[P3_clusters$juncs,"P3"]<-P3_clusters$P3
+all_sample_pvals$P5 <- NA
+all_sample_pvals[P5_clusters$juncs,"P5"]<-P5_clusters$P5
+all_sample_pvals$P6 <- NA
+all_sample_pvals[P6_clusters$juncs,"P6"]<-P6_clusters$P6
+all_sample_pvals$P7 <- NA
+all_sample_pvals[P7_clusters$juncs,"P7"]<-P7_clusters$P7
+all_sample_pvals<-all_sample_pvals[juncs_sig,seq(2,ncol(all_sample_pvals))]
+
+```
+
+## Using all significant junctions, extracting psi per leafcutter cluster
+
+```{r}
+
+C1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C1P_perind.counts.gz"
+C1_clusters <- read.table(C1_clusters_file,header=T)
+rownames(C1_clusters) <- C1_clusters$chrom
+C1_clusters$juncs <- vapply(rownames(C1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C1_clusters_psi <- C1_clusters[rownames(C1_clusters_sig),]
+
+C2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C2P_perind.counts.gz"
+C2_clusters <- read.table(C2_clusters_file,header=T)
+rownames(C2_clusters) <- C2_clusters$chrom
+C2_clusters$juncs <- vapply(rownames(C2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C2_clusters_psi <- C2_clusters[rownames(C2_clusters_sig),]
+
+C3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C3P_perind.counts.gz"
+C3_clusters <- read.table(C3_clusters_file,header=T)
+rownames(C3_clusters) <- C3_clusters$chrom
+C3_clusters$juncs <- vapply(rownames(C3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C3_clusters_psi <- C3_clusters[rownames(C3_clusters_sig),]
+
+C5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C5P_perind.counts.gz"
+C5_clusters <- read.table(C5_clusters_file,header=T)
+rownames(C5_clusters) <- C5_clusters$chrom
+C5_clusters$juncs <- vapply(rownames(C5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C5_clusters_psi <- C5_clusters[rownames(C5_clusters_sig),]
+
+C6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C6P_perind.counts.gz"
+C6_clusters <- read.table(C6_clusters_file,header=T)
+rownames(C6_clusters) <- C6_clusters$chrom
+C6_clusters$juncs <- vapply(rownames(C6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C6_clusters_psi <- C6_clusters[rownames(C6_clusters_sig),]
+
+C7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/C7P_perind.counts.gz"
+C7_clusters <- read.table(C7_clusters_file,header=T)
+rownames(C7_clusters) <- C7_clusters$chrom
+C7_clusters$juncs <- vapply(rownames(C7_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+C7_clusters_psi <- C7_clusters[rownames(C7_clusters_sig),]
+
+P1_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P1C_perind.counts.gz"
+P1_clusters <- read.table(P1_clusters_file,header=T)
+rownames(P1_clusters) <- P1_clusters$chrom
+P1_clusters$juncs <- vapply(rownames(P1_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P1_clusters_psi <- P1_clusters[rownames(P1_clusters_sig),]
+
+P2_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P2C_perind.counts.gz"
+P2_clusters <- read.table(P2_clusters_file,header=T)
+rownames(P2_clusters) <- P2_clusters$chrom
+P2_clusters$juncs <- vapply(rownames(P2_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P2_clusters_psi <- P2_clusters[rownames(P2_clusters_sig),]
+
+P3_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P3C_perind.counts.gz"
+P3_clusters <- read.table(P3_clusters_file,header=T)
+rownames(P3_clusters) <- P3_clusters$chrom
+P3_clusters$juncs <- vapply(rownames(P3_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P3_clusters_psi <- P3_clusters[rownames(P3_clusters_sig),]
+
+P5_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P5C_perind.counts.gz"
+P5_clusters <- read.table(P5_clusters_file,header=T)
+rownames(P5_clusters) <- P5_clusters$chrom
+P5_clusters$juncs <- vapply(rownames(P5_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P5_clusters_psi <- P5_clusters[rownames(P5_clusters_sig),]
+
+P6_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P6C_perind.counts.gz"
+P6_clusters <- read.table(P6_clusters_file,header=T)
+rownames(P6_clusters) <- P6_clusters$chrom
+P6_clusters$juncs <- vapply(rownames(P6_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P6_clusters_psi <- P6_clusters[rownames(P6_clusters_sig),]
+
+P7_clusters_file <- "/media/theron/My_Passport/Ali_data/analysis/P7C_perind.counts.gz"
+P7_clusters <- read.table(P7_clusters_file,header=T)
+rownames(P7_clusters) <- P7_clusters$chrom
+P7_clusters$juncs <- vapply(rownames(P7_clusters),function(val){
+  all_info <- strsplit(val,":")[[1]]
+  strand <- strsplit(all_info[4],"_")[[1]][3]
+  paste(c(all_info[seq(3)],strand),collapse=":")
+},character(1))
+P7_clusters_psi <- P7_clusters[rownames(P7_clusters_sig),]
+
+juncs_all <- unique(c(C1_clusters$juncs,C2_clusters$juncs,
+           C3_clusters$juncs,C5_clusters$juncs,
+           C6_clusters$juncs,C7_clusters$juncs,
+           P1_clusters$juncs,P2_clusters$juncs,
+           P3_clusters$juncs,P5_clusters$juncs,
+           P6_clusters$juncs,P7_clusters$juncs))
+
+```
+
+```{r}
+
+all_sample_psi <- data.frame(juncs_all)
+rownames(all_sample_psi) <- juncs_all
+all_sample_psi$C1 <- NA
+all_sample_psi[C1_clusters$juncs,"C1"]<-C1_clusters$C1
+
+all_sample_psi$C2 <- NA
+all_sample_psi[C2_clusters$juncs,"C2"]<-C2_clusters$C2
+
+all_sample_psi$C3 <- NA
+all_sample_psi[C3_clusters$juncs,"C3"]<-C3_clusters$C3
+
+all_sample_psi$C5 <- NA
+all_sample_psi[C5_clusters$juncs,"C5"]<-C5_clusters$C5
+
+all_sample_psi$C6 <- NA
+all_sample_psi[C6_clusters$juncs,"C6"]<-C6_clusters$C6
+
+all_sample_psi$C7 <- NA
+all_sample_psi[C7_clusters$juncs,"C7"]<-C7_clusters$C7
+
+all_sample_psi$P1 <- NA
+all_sample_psi[P1_clusters$juncs,"P1"]<-P1_clusters$P1
+
+all_sample_psi$P2 <- NA
+all_sample_psi[P2_clusters$juncs,"P2"]<-P2_clusters$P2
+
+all_sample_psi$P3 <- NA
+all_sample_psi[P3_clusters$juncs,"P3"]<-P3_clusters$P3
+
+all_sample_psi$P5 <- NA
+all_sample_psi[P5_clusters$juncs,"P5"]<-P5_clusters$P5
+
+all_sample_psi$P6 <- NA
+all_sample_psi[P6_clusters$juncs,"P6"]<-P6_clusters$P6
+
+all_sample_psi$P7 <- NA
+all_sample_psi[P7_clusters$juncs,"P7"]<-P7_clusters$P7
+all_sample_psi<-all_sample_psi[juncs_sig,seq(2,ncol(all_sample_psi))]
+
+```
+
+Normalizing and conglomerating the junction counts per outlier junction
+
+```{r}
+
+C1_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/C1.junc",sep="\t")
+C1_juncs$juncs<-sprintf("%s:%s:%s:%s",C1_juncs$V1,C1_juncs$V2,C1_juncs$V3,C1_juncs$V6)
+C1_juncs$norm <- (C1_juncs$V5/sum(C1_juncs$V5))*10000
+C1_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(C1_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(C1_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(C1_juncs)<-juncs_sig
+C1_juncs<-data.frame(C1_juncs)
+C1_juncs$juncs<-rownames(C1_juncs)
+C1_juncs <- C1_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+C2_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/C2.junc",sep="\t")
+C2_juncs$juncs<-sprintf("%s:%s:%s:%s",C2_juncs$V1,C2_juncs$V2,C2_juncs$V3,C2_juncs$V6)
+C2_juncs$norm <- (C2_juncs$V5/sum(C2_juncs$V5))*10000
+C2_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(C2_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(C2_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(C2_juncs)<-juncs_sig
+C2_juncs<-data.frame(C2_juncs)
+C2_juncs$juncs<-rownames(C2_juncs)
+C2_juncs <- C2_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+C3_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/C3.junc",sep="\t")
+C3_juncs$juncs<-sprintf("%s:%s:%s:%s",C3_juncs$V1,C3_juncs$V2,C3_juncs$V3,C3_juncs$V6)
+C3_juncs$norm <- (C3_juncs$V5/sum(C3_juncs$V5))*10000
+C3_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(C3_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(C3_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(C3_juncs)<-juncs_sig
+C3_juncs<-data.frame(C3_juncs)
+C3_juncs$juncs<-rownames(C3_juncs)
+C3_juncs <- C3_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+C5_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/C5.junc",sep="\t")
+C5_juncs$juncs<-sprintf("%s:%s:%s:%s",C5_juncs$V1,C5_juncs$V2,C5_juncs$V3,C5_juncs$V6)
+C5_juncs$norm <- (C5_juncs$V5/sum(C5_juncs$V5))*10000
+C5_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(C5_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(C5_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(C5_juncs)<-juncs_sig
+C5_juncs<-data.frame(C5_juncs)
+C5_juncs$juncs<-rownames(C5_juncs)
+C5_juncs <- C5_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+C6_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/C6.junc",sep="\t")
+C6_juncs$juncs<-sprintf("%s:%s:%s:%s",C6_juncs$V1,C6_juncs$V2,C6_juncs$V3,C6_juncs$V6)
+C6_juncs$norm <- (C6_juncs$V5/sum(C6_juncs$V5))*10000
+C6_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(C6_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(C6_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(C6_juncs)<-juncs_sig
+C6_juncs<-data.frame(C6_juncs)
+C6_juncs$juncs<-rownames(C6_juncs)
+C6_juncs <- C6_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+C7_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/C7.junc",sep="\t")
+C7_juncs$juncs<-sprintf("%s:%s:%s:%s",C7_juncs$V1,C7_juncs$V2,C7_juncs$V3,C7_juncs$V6)
+C7_juncs$norm <- (C7_juncs$V5/sum(C7_juncs$V5))*10000
+C7_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(C7_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(C7_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(C7_juncs)<-juncs_sig
+C7_juncs<-data.frame(C7_juncs)
+C7_juncs$juncs<-rownames(C7_juncs)
+C7_juncs <- C7_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+P1_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/P1.junc",sep="\t")
+P1_juncs$juncs<-sprintf("%s:%s:%s:%s",P1_juncs$V1,P1_juncs$V2,P1_juncs$V3,P1_juncs$V6)
+P1_juncs$norm <- (P1_juncs$V5/sum(P1_juncs$V5))*10000
+P1_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(P1_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(P1_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(P1_juncs)<-juncs_sig
+P1_juncs<-data.frame(P1_juncs)
+P1_juncs$juncs<-rownames(P1_juncs)
+P1_juncs <- P1_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+P2_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/P2.junc",sep="\t")
+P2_juncs$juncs<-sprintf("%s:%s:%s:%s",P2_juncs$V1,P2_juncs$V2,P2_juncs$V3,P2_juncs$V6)
+P2_juncs$norm <- (P2_juncs$V5/sum(P2_juncs$V5))*10000
+P2_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(P2_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(P2_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(P2_juncs)<-juncs_sig
+P2_juncs<-data.frame(P2_juncs)
+P2_juncs$juncs<-rownames(P2_juncs)
+P2_juncs <- P2_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+P3_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/P3.junc",sep="\t")
+P3_juncs$juncs<-sprintf("%s:%s:%s:%s",P3_juncs$V1,P3_juncs$V2,P3_juncs$V3,P3_juncs$V6)
+P3_juncs$norm <- (P3_juncs$V5/sum(P3_juncs$V5))*10000
+P3_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(P3_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(P3_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(P3_juncs)<-juncs_sig
+P3_juncs<-data.frame(P3_juncs)
+P3_juncs$juncs<-rownames(P3_juncs)
+P3_juncs <- P3_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+P5_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/P5.junc",sep="\t")
+P5_juncs$juncs<-sprintf("%s:%s:%s:%s",P5_juncs$V1,P5_juncs$V2,P5_juncs$V3,P5_juncs$V6)
+P5_juncs$norm <- (P5_juncs$V5/sum(P5_juncs$V5))*10000
+P5_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(P5_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(P5_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(P5_juncs)<-juncs_sig
+P5_juncs<-data.frame(P5_juncs)
+P5_juncs$juncs<-rownames(P5_juncs)
+P5_juncs <- P5_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+P6_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/P6.junc",sep="\t")
+P6_juncs$juncs<-sprintf("%s:%s:%s:%s",P6_juncs$V1,P6_juncs$V2,P6_juncs$V3,P6_juncs$V6)
+P6_juncs$norm <- (P6_juncs$V5/sum(P6_juncs$V5))*10000
+P6_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(P6_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(P6_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(P6_juncs)<-juncs_sig
+P6_juncs<-data.frame(P6_juncs)
+P6_juncs$juncs<-rownames(P6_juncs)
+P6_juncs <- P6_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+P7_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/P7.junc",sep="\t")
+P7_juncs$juncs<-sprintf("%s:%s:%s:%s",P7_juncs$V1,P7_juncs$V2,P7_juncs$V3,P7_juncs$V6)
+P7_juncs$norm <- (P7_juncs$V5/sum(P7_juncs$V5))*10000
+P7_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(P7_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(P7_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(P7_juncs)<-juncs_sig
+P7_juncs<-data.frame(P7_juncs)
+P7_juncs$juncs<-rownames(P7_juncs)
+P7_juncs <- P7_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+U1_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/U1.junc",sep="\t")
+U1_juncs$juncs<-sprintf("%s:%s:%s:%s",U1_juncs$V1,U1_juncs$V2,U1_juncs$V3,U1_juncs$V6)
+U1_juncs$norm <- (U1_juncs$V5/sum(U1_juncs$V5))*10000
+U1_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(U1_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(U1_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(U1_juncs)<-juncs_sig
+U1_juncs<-data.frame(U1_juncs)
+U1_juncs$juncs<-rownames(U1_juncs)
+U1_juncs <- U1_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+U2_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/U2.junc",sep="\t")
+U2_juncs$juncs<-sprintf("%s:%s:%s:%s",U2_juncs$V1,U2_juncs$V2,U2_juncs$V3,U2_juncs$V6)
+U2_juncs$norm <- (U2_juncs$V5/sum(U2_juncs$V5))*10000
+U2_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(U2_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(U2_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(U2_juncs)<-juncs_sig
+U2_juncs<-data.frame(U2_juncs)
+U2_juncs$juncs<-rownames(U2_juncs)
+U2_juncs <- U2_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+U3_juncs <- read.table("/media/theron/My_Passport/Ali_data/analysis/U3.junc",sep="\t")
+U3_juncs$juncs<-sprintf("%s:%s:%s:%s",U3_juncs$V1,U3_juncs$V2,U3_juncs$V3,U3_juncs$V6)
+U3_juncs$norm <- (U3_juncs$V5/sum(U3_juncs$V5))*10000
+U3_juncs<-vapply(juncs_sig,function(junc){
+  a<-which(U3_juncs$juncs==junc)
+  if(length(a)==0){
+    return(0)
+  } else {
+    return(as.numeric(U3_juncs[a,"norm"]))
+  }
+},numeric(1))
+names(U3_juncs)<-juncs_sig
+U3_juncs<-data.frame(U3_juncs)
+U3_juncs$juncs<-rownames(U3_juncs)
+U3_juncs <- U3_juncs %>% dplyr::filter(juncs %in% juncs_sig)
+
+all_sample_counts_norm <- cbind(C1_juncs$C1_juncs,
+                                C2_juncs$C2_juncs,
+                                C3_juncs$C3_juncs,
+                                C5_juncs$C5_juncs,
+                                C6_juncs$C6_juncs,
+                                C7_juncs$C7_juncs,
+                                P1_juncs$P1_juncs,
+                                P2_juncs$P2_juncs,
+                                P3_juncs$P3_juncs,
+                                P5_juncs$P5_juncs,
+                                P6_juncs$P6_juncs,
+                                P7_juncs$P7_juncs,
+                                U1_juncs$U1_juncs,
+                                U2_juncs$U2_juncs,
+                                U3_juncs$U3_juncs,
+                                data.frame(juncs_sig))
+colnames(all_sample_counts_norm)<-c("C1_norm","C2_norm","C3_norm","C5_norm","C6_norm","C7_norm",
+                                "P1_norm","P2_norm","P3_norm","P5_norm","P6_norm","P7_norm",
+                                "U1_norm","U2_norm","U3_norm","juncs")
+
+```
+
+
+Configuring psi matrix to be numeric
+
+```{r}
+
+cols <- colnames(all_sample_psi)
+for (col in cols){
+  all_sample_psi[,col]<-vapply(all_sample_psi[,col],function(val){
+    if (is.na(val)){
+      return(NA)
+    }
+    frac<-strsplit(val,"/")[[1]]
+    frac<-as.numeric(frac)
+    if (frac[1]==0){
+      return(0)
+    }
+    frac <- frac[1]/frac[2]
+  },numeric(1))
+}
+
+```
+
+
+
+Saving psi and pval matrices
+
+```{r}
+
+write.table(all_sample_psi,
+            file="/media/theron/My_Passport/Ali_data/analysis/all_sample_psi_CP_PC.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+write.table(all_sample_pvals,
+            file="/media/theron/My_Passport/Ali_data/analysis/all_sample_pval_CP_PC.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+write.table(all_sample_counts_norm,
+            file="/media/theron/My_Passport/Ali_data/analysis/all_sample_counts_norm_CP_PC.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+juncs_sig_df <- data.frame(matrix(unlist(strsplit(juncs_sig,":")),nrow=length(juncs_sig),ncol=4,byrow=T))
+colnames(juncs_sig_df)<-c("chrom","start","end","strand")
+
+write.table(juncs_sig_df,
+            file="/media/theron/My_Passport/Ali_data/analysis/juncs_sig_CP_PC.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+saveRDS(juncs_sig_df,
+        file="/media/theron/My_Passport/Ali_data/analysis/juncs_sig_CP_PC.rds")
+
+juncs_all_df <- data.frame(matrix(unlist(strsplit(juncs_all,":")),nrow=length(juncs_all),ncol=4,byrow=T))
+colnames(juncs_all_df)<-c("chrom","start","end","strand")
+
+write.table(juncs_all_df,
+            file="/media/theron/My_Passport/Ali_data/analysis/juncs_all_CP_PC.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+# splicemutr junction annotations run on juncs_sig_df
+
+```{r}
+
+txdb_file<-"/media/theron/My_Passport/reference_genomes/GTF_GFF/ENSEMBL/Mus_musculus.GRCm38.102.chr.sqlite"
+txdb<-loadDb(txdb_file) # making the txdb from gtf
+
+introns_by_tx<-data.frame(unlist(intronsByTranscript(txdb,use.names=T)))
+juncs_test<-sprintf("%s:%s:%s:%s",introns_by_tx$seqnames,introns_by_tx$start-1,introns_by_tx$end+1,introns_by_tx$strand)
+introns_by_tx$juncs <- juncs_test
+C1_SJ<-read.table("/media/theron/My_Passport/Ali_data/analysis/C1SJ.out.tab")
+C1_SJ_strand <- vapply(C1_SJ$V4,function(val){
+  if (val == 0){
+    return("*")
+  } else if (val == 1){
+    return("+")
+  } else if (val == 2){
+    return("-")
+  }
+},character(1))
+juncs<-sprintf("%s:%s:%s:%s",C1_SJ$V1,C1_SJ$V2,C1_SJ$V3,C1_SJ_strand)
+
+annotated_outlier_junctions<-juncs_all %in% introns_by_tx$juncs
+table(annotated_outlier_junctions)
+
+```
+
+# immunogenicity 
+
+## missense mutation immunogenicity
+
+```{r}
+
+maf_file <- "/media/theron/My_Passport/Ali_data/WES Data for 4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/DNA_4TIMSI_haplotypecaller.maf"
+ali_maf = read.maf(maf_file)
+ali_maf_df <- data.frame(ali_maf@data)
+ali_maf_df_miss <- ali_maf_df %>% dplyr::filter(Variant_Type=="SNP" & Variant_Classification=="Missense_Mutation")
+
+```
+
+## extracting transcript information 
+
+```{r}
+
+transcripts <- lapply(ali_maf_df_miss$all_effects,function(val){
+  val_split <- strsplit(val,",")[[1]]
+  val_split[str_detect(val_split,"ENSMUST")]
+})
+refseq_transcripts <- lapply(ali_maf_df_miss$all_effects,function(val){
+  val_split <- strsplit(val,",")[[1]]
+  loc <- which(str_detect(val_split,"ENSMUST"))
+  unlist(lapply(strsplit(val_split[loc+1],";"),function(val){return(val[1])}))
+})
+
+ens_refseq<-data.frame(unlist(transcripts),unlist(refseq_transcripts))
+colnames(ens_refseq)<-c("ensembl","refseq")
+ens_refseq<-unique(ens_refseq)
+
+```
+
+```{r,eval=FALSE}
+
+source("/media/theron/My_Passport/splicemute/R/functions.R")
+locate_mutation_in_cds <- function(cds_tx_sort,mutation_chr,
+                                   mutation_start,mutation_end){
+  width <- running_sum(cds_tx_sort$width)
+  for (i in seq(nrow(cds_tx_sort))){
+    if(mutation_end <= cds_tx_sort[i,"end"] & mutation_end >= cds_tx_sort[i,"start"]){
+      return(width[i] - (cds_tx_sort[i,"end"]-mutation_end))
+    }
+  }
+  return(-1)
+}
+
+extract_portion <- function(trans_str,mut_loc_prot){
+  trans_str_split <- strsplit(trans_str,"")[[1]]
+  trans_str_split[mut_loc_prot] <- tolower(trans_str_split[mut_loc_prot])
+  start <- mut_loc_prot - 8
+  if (start < 1){
+    start<-1
+  }
+  end <- mut_loc_prot + 8
+  if (end > nchar(trans_str)){
+    end <- nchar(trans_str)
+  }
+  return(paste(trans_str_split[seq(start,end)],collapse=""))
+}
+
+conjugate <- function(nuc){
+  if (nuc == "A"){
+    return("T")
+  } else if (nuc == "T"){
+    return("A")
+  } else if (nuc == "G"){
+    return("C")
+  } else if (nuc == "C"){
+    return("G")
+  }
+}
+
+BSgenome <- BSgenome.Mmusculus.GENCODE.GRCm38.102
+txdb<-loadDb("/media/theron/My_Passport/reference_genomes/GTF_GFF/ENSEMBL/Mus_musculus.GRCm38.102.chr.sqlite")
+cds_by_tx<-cdsBy(txdb,by="tx",use.names=T)
+protein_coding_txs <- names(cds_by_tx)
+tots<-nrow(ali_maf_df_miss)
+ali_maf_dat_muts <- as.data.frame(t(vapply(seq(tots),function(i){
+  if (i %% 100 == 0){print(sprintf("%d out of%d",i,tots))}
+  txs <- transcripts[[i]]
+  tx_record <- c()
+  mut_loc <- vapply(txs,function(val){
+    tx_record <<-c(tx_record,val)
+    if (val %in% protein_coding_txs){
+      cds_tx <- cds_by_tx[[val]]
+      cds_tx_sort <- as.data.frame(sort(cds_tx))
+      mutation_chr <- ali_maf_df_miss$Chromosome[i]
+      mutation_start <- ali_maf_df_miss$Start_Position[i]
+      mutation_end <- ali_maf_df_miss$End_Position[i]
+      mutation_strand <- ali_maf_df_miss$Strand[i]
+      mutation_allele <- ali_maf_df_miss$Allele[i]
+      mutation_allele_norm <- ali_maf_df_miss$Reference_Allele[i]
+      mut_loc<-locate_mutation_in_cds(cds_tx_sort,mutation_chr,
+                                   mutation_start,mutation_end)
+      sequence<-getSeq(BSgenome,sort(cds_tx))
+      sequ<-paste(as.character(sequence[1:length(sequence)]), collapse="")
+      if(!check_tx(sequ)){return("untrans")}
+      if (mut_loc == -1){
+        return("outside_cds")
+      }
+      sequ_split<-strsplit(sequ,"")[[1]]
+      if (mutation_strand != cds_tx_sort$strand[1]){
+        sequ_split[mut_loc]<-conjugate(mutation_allele)
+        sequ_mut <- paste(sequ_split,collapse="")
+      } else if (mutation_strand == cds_tx_sort$strand[1]){
+        sequ_split[mut_loc]<-mutation_allele
+        sequ_mut <- paste(sequ_split,collapse="")
+      }
+      trans<-translate(DNAStringSet(sequ_mut),no.init.codon = F)
+      mut_loc_prot <- floor(mut_loc/3)
+      trans_str <- as.character(trans)
+      portion <- extract_portion(trans_str,mut_loc_prot)
+      return(portion)
+    } else {
+      return("outside_cds")
+    }
+  },character(1))
+  mut_loc_names <- paste(names(mut_loc),collapse=":")
+  mut_loc_vals <- paste(unname(mut_loc),collapse=":")
+  return(c(mut_loc_names,mut_loc_vals))
+},character(2))))
+
+write.table(ali_maf_dat_muts,
+            file="/media/theron/My_Passport/Ali_data/analysis/ali_maf_muts.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+saveRDS(ali_maf_dat_muts,file="/media/theron/My_Passport/Ali_data/analysis/ali_maf_muts.rds")
+
+```
+
+# creating fasta file
+
+```{r,eval=F}
+
+ali_maf_dat_muts <- read.table("/media/theron/My_Passport/Ali_data/analysis/ali_maf_muts.txt",header = T)
+sequences<-lapply(seq(nrow(ali_maf_dat_muts)),function(row_val){
+  transcripts<-strsplit(ali_maf_dat_muts$V1[row_val],":")[[1]]
+  sequences<-strsplit(ali_maf_dat_muts$V2[row_val],":")[[1]]
+  keep<-!(sequences %in% c("outside_cds","untrans"))
+  if (!any(keep)){return(NA)}
+  tx<-transcripts[keep]
+  seq<-sequences[keep]
+  names(seq)<-sprintf("%s_%d",tx,rep(row_val,length(which(keep))))
+  return(seq)
+})
+sequences<-unlist(sequences)
+sequences<-sequences[!is.na(sequences)]
+tx_name <- names(sequences)
+sequences <- vapply(sequences,function(seq){
+  seq<-toupper(seq)
+  seq<-str_replace_all(seq,"[*]","")
+},character(1))
+names(sequences)<-seq(length(tx_name))
+sequences<-AAStringSet(sequences)
+out_fasta<-"/media/theron/My_Passport/Ali_data/analysis/ali_maf_muts.fa"
+writeXStringSet(sequences,out_fasta)
+saveRDS(tx_name,file="/media/theron/My_Passport/Ali_data/analysis/tx_names.rds")
+
+```
+
+```{r,eval=F}
+
+breaks<-seq(1,length(sequences),5000)
+
+for (i in seq(length(breaks))){
+  if (i == length(breaks)){
+    sequences_small<-AAStringSet(sequences[seq(breaks[i],length(sequences))])
+    out_fasta<-sprintf("/media/theron/My_Passport/Ali_data/analysis/ali_maf_muts_%d.fa",i)
+    writeXStringSet(sequences_small,out_fasta,append=FALSE)
+  } else {
+    sequences_small<-AAStringSet(sequences[seq(breaks[i],breaks[i+1]-1)])
+    out_fasta<-sprintf("/media/theron/My_Passport/Ali_data/analysis/ali_maf_muts_%d.fa",i)
+    writeXStringSet(sequences_small,out_fasta,append=FALSE)
+  }
+}
+
+```
+
+## combining netmhc output for mutations
+
+```{r}
+
+mut1<-read.table("/media/theron/My_Passport/Ali_data/analysis/immunogenicity/mut1_NetMHC.txt",header=T)
+mut2<-read.table("/media/theron/My_Passport/Ali_data/analysis/immunogenicity/mut2_NetMHC.txt",header=T)
+mut3<-read.table("/media/theron/My_Passport/Ali_data/analysis/immunogenicity/mut3_NetMHC.txt",header=T)
+mut4<-read.table("/media/theron/My_Passport/Ali_data/analysis/immunogenicity/mut4_NetMHC.txt",header=T)
+mut_imm <- rbind(mut1,mut2,mut3,mut4)
+mut_imm_binding <- mut_imm %>% dplyr::filter(N_binders>0)
+tx_names<-readRDS("/media/theron/My_Passport/Ali_data/analysis/tx_names.rds")
+tx_names<-data.frame(t(vapply(tx_names,function(tx){str_split(tx,"_")[[1]]},character(2))))
+mut_imm_binding$tx<-NA
+mut_imm_binding$row_val<-NA
+mut_imm_binding[,c("tx","row_val")]<-tx_names[mut_imm_binding$ID,c("X1","X2")]
+
+```
+
+## Creating fold change log per transcript and arm
+
+```{r}
+
+isoform_diff_expr <- "/media/theron/My_Passport/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/isoforms"
+pd1_vs_combo <- read.table(sprintf("%s/PD1_vs_Combo_isoforms_DESeq2.txt",isoform_diff_expr),header=T)
+pd1_vs_combo <- pd1_vs_combo %>% dplyr::filter(PD1_vs_Combo_pvalue <= 0.05)
+untreated_vs_combo <- read.table(sprintf("%s/Untreated_vs_Combo_isoforms_DESeq2.txt",isoform_diff_expr),header=T)
+untreated_vs_combo <- untreated_vs_combo %>% dplyr::filter(Untreated_vs_Combo_pvalue <= 0.05)
+untreated_vs_pd1 <- read.table(sprintf("%s/Untreated_vs_PD1_isoforms_DESeq2.txt",isoform_diff_expr),header=T)
+untreated_vs_pd1 <- untreated_vs_pd1 %>% dplyr::filter(Untreated_vs_PD1_pvalue <= 0.05)
+diff_data <- data.frame(c(pd1_vs_combo$transcript_id,untreated_vs_combo$transcript_id,untreated_vs_pd1$transcript_id),
+                               c(pd1_vs_combo$gene_id,untreated_vs_combo$gene_id,untreated_vs_pd1$gene_id))
+colnames(diff_data)<-c("transcript","gene")
+diff_dat <- unique(diff_data)
+
+```
+
+## Looking at mutation expression
+
+
+## Looking at mutation expression per sample
+
+```{r}
+
+RSEM_transcripts <- read.table("/media/theron/My_Passport/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/tables/isoforms/isoforms_tpm_all_samples_norm.txt",header=T)
+rownames(RSEM_transcripts) <- RSEM_transcripts$transcript_id
+RSEM_transcripts<-RSEM_transcripts %>% dplyr::filter(transcript_id %in% diff_dat$transcript)
+
+refseq_val <- vapply(mut_imm_binding$tx,function(ID){
+  a <- which(ens_refseq$ensembl==ID)
+  if (length(a) == 0){
+    return("-1")
+  } else {
+    refseq_val<-ens_refseq$refseq[a[1]]
+    return(substr(refseq_val,1,nchar(refseq_val)-2))
+  }
+  
+},character(1))
+N_binders<-mut_imm_binding$N_binders
+row_val<-mut_imm_binding$row_val
+
+RSEM_refseq<-cbind(RSEM_transcripts[unname(refseq_val),],N_binders,row_val)
+
+RSEM_refseq_complete <- RSEM_refseq[!is.na(RSEM_refseq$transcript_id),]
+C_mut_av <- RSEM_refseq_complete[,seq(3,8)]
+C_mut_vals<-vapply(seq(nrow(C_mut_av)),function(row_val){
+  mean(as.numeric(C_mut_av[row_val,]),na.rm = T)
+},numeric(1))
+C_mut_vals_med<-vapply(seq(nrow(C_mut_av)),function(row_val){
+  median(as.numeric(C_mut_av[row_val,]),na.rm = T)
+},numeric(1))
+P_mut_av <- RSEM_refseq_complete[,seq(9,14)]
+P_mut_vals<-vapply(seq(nrow(P_mut_av)),function(row_val){
+  mean(as.numeric(P_mut_av[row_val,]),na.rm = T)
+},numeric(1))
+P_mut_vals_med<-vapply(seq(nrow(P_mut_av)),function(row_val){
+  median(as.numeric(P_mut_av[row_val,]),na.rm = T)
+},numeric(1))
+U_mut_av <- RSEM_refseq_complete[,seq(15,17)]
+U_mut_vals<-vapply(seq(nrow(U_mut_av)),function(row_val){
+  mean(as.numeric(U_mut_av[row_val,]),na.rm = T)
+},numeric(1))
+U_mut_vals_med<-vapply(seq(nrow(U_mut_av)),function(row_val){
+  median(as.numeric(U_mut_av[row_val,]),na.rm = T)
+},numeric(1))
+RSEM_refseq_average <- data.frame(C_mut_vals,C_mut_vals_med,
+                                  P_mut_vals,P_mut_vals_med,
+                                  U_mut_vals,U_mut_vals_med,
+                                  RSEM_refseq_complete$N_binders,
+                                  RSEM_refseq_complete$transcript_id,
+                                  RSEM_refseq_complete$gene_id,
+                                  RSEM_refseq_complete$row_val)
+colnames(RSEM_refseq_average)<-c("C_TPM_AV","C_TPM_MED",
+                                 "P_TPM_AV","P_TPM_MED",
+                                 "U_TPM_AV","U_TPM_MED",
+                                 "N_binders","transcript_id","gene_id",
+                                 "row_val")
+RSEM_refseq_average_linear <- data.frame(c(RSEM_refseq_average$C_TPM_AV,RSEM_refseq_average$P_TPM_AV,RSEM_refseq_average$U_TPM_AV),
+                                         c(RSEM_refseq_average$C_TPM_MED,RSEM_refseq_average$P_TPM_MED,RSEM_refseq_average$U_TPM_MED),
+                                         c(rep("combo",nrow(RSEM_refseq_average)),rep("pd1",nrow(RSEM_refseq_average)),rep("untreated",nrow(RSEM_refseq_average))),
+                                         rep(RSEM_refseq_average$transcript_id,3),rep(RSEM_refseq_average$gene_id,3),
+                                         rep(RSEM_refseq_average$row_val,3),rep(RSEM_refseq_average$N_binders,3))
+colnames(RSEM_refseq_average_linear)<-c("TPM_AV","TPM_MED","arm","transcript_id","gene_id","row_val","N_binders")
+RSEM_refseq_average_linear$unique_id<-sprintf("%s_%s",RSEM_refseq_average_linear$transcript_id,RSEM_refseq_average_linear$row_val)
+
+my_comparisons <- list( c("combo", "pd1"), c("combo", "untreated"), c("pd1", "untreated") )
+ggplot(RSEM_refseq_average_linear,aes(x=arm,y=log10(TPM_AV)))+geom_violin(aes(fill=arm))+
+  stat_compare_means(comparisons = my_comparisons)
+ggplot(RSEM_refseq_average_linear,aes(x=arm,y=log10(TPM_MED)))+geom_violin(aes(fill=arm))+
+  stat_compare_means(comparisons = my_comparisons)
+
+ggplot(RSEM_refseq_average_linear,aes(x=arm,y=log10(TPM_AV),group=unique_id,color=unique_id))+
+  geom_point(size=0.5)+geom_line(size=0.1)+
+  theme(legend.position = "none")
+ggplot(RSEM_refseq_average_linear,aes(x=arm,y=log10(TPM_MED),group=unique_id,color=unique_id))+
+  geom_point(size=0.5)+geom_line(size=0.1)+
+  theme(legend.position = "none")
+
+ggplot(RSEM_refseq_average_linear,aes(x=unique_id,y=log10(TPM_AV),group=arm,color=arm))+
+  geom_point(shape=1)+geom_line()+
+  theme(legend.position = "none",
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+ggplot(RSEM_refseq_average_linear,aes(x=unique_id,y=log10(TPM_MED),group=arm,color=arm))+
+  geom_point(shape=1)+geom_line()+
+  theme(legend.position = "none",
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+RSEM_refseq_average$unique_id<-sprintf("%s_%s",RSEM_refseq_average$transcript_id,RSEM_refseq_average$row_val)
+RSEM_refseq_average$expression_order <- vapply(seq(nrow(RSEM_refseq_average)),function(row_val){
+  vals<-RSEM_refseq_average[row_val, c("C_TPM_AV","P_TPM_AV","U_TPM_AV")]
+  if (vals$C_TPM_AV < vals$P_TPM_AV & vals$P_TPM_AV < vals$U_TPM_AV){
+    return("combo<pd1<untreated")
+  } else if (vals$C_TPM_AV < vals$U_TPM_AV & vals$U_TPM_AV < vals$P_TPM_AV) {
+    return("combo<untreated<pd1")
+  } else if (vals$P_TPM_AV < vals$C_TPM_AV & vals$C_TPM_AV < vals$U_TPM_AV){
+    return("pd1<combo<untreated")
+  } else if (vals$P_TPM_AV < vals$U_TPM_AV & vals$U_TPM_AV < vals$C_TPM_AV){
+    return("pd1<untreated<combo")
+  } else if (vals$U_TPM_AV < vals$P_TPM_AV & vals$P_TPM_AV < vals$C_TPM_AV) {
+    return("untreated<pd1<combo")
+  } else if (vals$U_TPM_AV < vals$C_TPM_AV & vals$C_TPM_AV < vals$P_TPM_AV) {
+    return("untreated<combo<pd1")
+  } else {
+    return("something's equal")
+  }
+},character(1))
+RSEM_refseq_average$expression_order_med <- vapply(seq(nrow(RSEM_refseq_average)),function(row_val){
+  vals<-RSEM_refseq_average[row_val, c("C_TPM_MED","P_TPM_MED","U_TPM_MED")]
+  if (vals$C_TPM_MED < vals$P_TPM_MED & vals$P_TPM_MED < vals$U_TPM_MED){
+    return("combo<pd1<untreated")
+  } else if (vals$C_TPM_MED < vals$U_TPM_MED & vals$U_TPM_MED < vals$P_TPM_MED) {
+    return("combo<untreated<pd1")
+  } else if (vals$P_TPM_MED < vals$C_TPM_MED & vals$C_TPM_MED < vals$U_TPM_MED){
+    return("pd1<combo<untreated")
+  } else if (vals$P_TPM_MED < vals$U_TPM_MED & vals$U_TPM_MED < vals$C_TPM_MED){
+    return("pd1<untreated<combo")
+  } else if (vals$U_TPM_MED < vals$P_TPM_MED & vals$P_TPM_MED < vals$C_TPM_MED) {
+    return("untreated<pd1<combo")
+  } else if (vals$U_TPM_MED < vals$C_TPM_MED & vals$C_TPM_MED < vals$P_TPM_MED) {
+    return("untreated<combo<pd1")
+  } else {
+    return("something's equal")
+  }
+},character(1))
+
+
+ggplot(RSEM_refseq_average,aes(x=expression_order,fill=expression_order))+
+  geom_bar(aes(y=(..count..)/sum(..count..)))+
+  theme(axis.text.x=element_blank())
+
+RSEM_refseq_average_combo_low <- RSEM_refseq_average %>% dplyr::filter(expression_order == "combo<pd1<untreated")
+RSEM_refseq_average_combo_high <- RSEM_refseq_average %>% dplyr::filter(expression_order == "untreated<pd1<combo")
+
+ggplot(RSEM_refseq_average_combo_low,aes(x=log2(C_TPM_AV/P_TPM_AV)))+
+  geom_histogram()
+
+ggplot(RSEM_refseq_average_combo_high,aes(x=log2(C_TPM_AV/P_TPM_AV)))+
+  geom_histogram()
+
+ggplot(RSEM_refseq_average,aes(x=expression_order_med,fill=expression_order_med))+
+  geom_bar(aes(y=(..count..)/sum(..count..)))+
+  theme(axis.text.x=element_blank())
+
+RSEM_refseq_average_combo_low <- RSEM_refseq_average %>% dplyr::filter(expression_order_med == "combo<pd1<untreated")
+RSEM_refseq_average_combo_high <- RSEM_refseq_average %>% dplyr::filter(expression_order_med == "untreated<pd1<combo")
+
+ggplot(RSEM_refseq_average_combo_low,aes(x=log2(C_TPM_MED/P_TPM_MED)))+
+  geom_histogram()
+
+ggplot(RSEM_refseq_average_combo_high,aes(x=log2(C_TPM_MED/P_TPM_MED)))+
+  geom_histogram()
+
+
+```
+
+## outlier splicing immunogenicity Combo vs Untreated and PD1 vs Untreated
+
+```{r}
+
+out_splice<-read.table("/media/theron/My_Passport/Ali_data/analysis/immunogenicity/outlier_splicing_NetMHC_results.txt",header=T)
+out_splice <- out_splice %>% dplyr::filter(N_binders>0)
+splicemutr_dat <- read.table("/media/theron/My_Passport/Ali_data/analysis/formed_transcripts/data_splicemutr.txt",header=T)
+juncs <- sprintf("%s:%s:%s:%s",splicemutr_dat$chr,splicemutr_dat$start,splicemutr_dat$end,splicemutr_dat$cluster)
+splicemutr_dat$juncs <- juncs
+
+txdb_file<-"/media/theron/My_Passport/reference_genomes/GTF_GFF/ENSEMBL/Mus_musculus.GRCm38.102.chr.sqlite"
+txdb<-loadDb(txdb_file) # making the txdb from gtf
+introns_by_tx<-data.frame(unlist(intronsByTranscript(txdb,use.names=T)))
+juncs_test<-sprintf("%s:%s:%s:%s",introns_by_tx$seqnames,introns_by_tx$start-1,introns_by_tx$end+1,introns_by_tx$strand)
+introns_by_tx$juncs <- juncs_test
+splicemutr_dat$juncs
+
+annotated_outlier_junctions<-splicemutr_dat$juncs %in% introns_by_tx$juncs
+splicemutr_dat$verdict<-"non_ann"
+splicemutr_dat$verdict[annotated_outlier_junctions]<-"ann"
+table(splicemutr_dat$verdict)
+
+splicemutr_dat_filt <- splicemutr_dat %>% dplyr::filter(!(verdict == "ann" & modified == "changed"))
+
+all_sample_psi<-read.table("/media/theron/My_Passport/Ali_data/analysis/all_sample_psi.txt",header=T)
+all_sample_pvals <- read.table("/media/theron/My_Passport/Ali_data/analysis/all_sample_pval.txt",header=T)
+juncs_sig <- read.table("/media/theron/My_Passport/Ali_data/analysis/juncs_sig.txt",header=T)
+juncs_sig<-sprintf("%s:%s:%s:%s",juncs_sig$chrom,juncs_sig$start,juncs_sig$end,juncs_sig$strand)
+rownames(all_sample_psi)<-juncs_sig
+  
+proteins<-unique(out_splice$ID)
+protein_imm_dat<-vapply(proteins,function(prot){
+  out_splice_small <- out_splice %>% dplyr::filter(ID==prot)
+  sum(out_splice_small$N_binders)
+},numeric(1))
+prot_imm_dat<-data.frame(proteins,protein_imm_dat)
+juncs<-splicemutr_dat$juncs[as.numeric(str_replace_all(proteins,"protein",""))]
+prot_imm_dat$juncs<-juncs
+
+C_psi <- all_sample_psi[prot_imm_dat$juncs,c(1,5,6,7,8,9)]
+prot_imm_dat$C_psi_av<-vapply(seq(nrow(C_psi)),function(row_val){
+  mean(as.numeric(C_psi[row_val,]),na.rm = T)
+},numeric(1))
+P_psi <- all_sample_psi[prot_imm_dat$juncs,c(10,11,12,13,14,15)]
+prot_imm_dat$P_psi_av<-vapply(seq(nrow(P_psi)),function(row_val){
+  mean(as.numeric(P_psi[row_val,]),na.rm = T)
+},numeric(1))
+U_psi <- all_sample_psi[prot_imm_dat$juncs,c(2,3,4)]
+prot_imm_dat$U_psi_av<-vapply(seq(nrow(U_psi)),function(row_val){
+  mean(as.numeric(U_psi[row_val,]),na.rm = T)
+},numeric(1))
+prot_imm_dat$P_psi_av[is.nan(prot_imm_dat$P_psi_av)]<-0
+prot_imm_dat$C_psi_av[is.nan(prot_imm_dat$C_psi_av)]<-0
+prot_imm_dat$U_psi_av[is.nan(prot_imm_dat$U_psi_av)]<-0
+
+prot_imm_dat$psi_order <- vapply(seq(nrow(prot_imm_dat)),function(row_val){
+  vals<-prot_imm_dat[row_val,c("P_psi_av","C_psi_av","U_psi_av")]
+  if (vals$C_psi_av < vals$P_psi_av & vals$P_psi_av < vals$U_psi_av){
+    return("combo<pd1<untreated")
+  } else if (vals$C_psi_av < vals$U_psi_av & vals$U_psi_av < vals$P_psi_av){
+    return("combo<untreated<pd1")
+  } else if (vals$P_psi_av < vals$C_psi_av & vals$C_psi_av < vals$P_psi_av){
+    return("pd1<combo<untreated")
+  } else if (vals$P_psi_av < vals$U_psi_av & vals$U_psi_av < vals$C_psi_av){
+    return("pd1<untreated<combo")
+  } else if (vals$U_psi_av < vals$C_psi_av & vals$C_psi_av < vals$P_psi_av){
+    return("untreated<combo<pd1")
+  } else if (vals$U_psi_av < vals$P_psi_av & vals$P_psi_av < vals$C_psi_av){
+    return("untreated<pd1<combo")
+  } else {
+    return("something's equal")
+  }
+},character(1))
+
+prot_imm_dat_linear <- data.frame(rep(prot_imm_dat$proteins,3),rep(prot_imm_dat$protein_imm_dat,3),
+                                  c(prot_imm_dat$C_psi_av,prot_imm_dat$P_psi_av,prot_imm_dat$U_psi_av),
+                                  c(rep("C_psi_av",nrow(prot_imm_dat)),rep("P_psi_av",nrow(prot_imm_dat)),rep("U_psi_av",nrow(prot_imm_dat))))
+colnames(prot_imm_dat_linear)<- c("protein","Imm_count","Mean_psi","Treatment")
+
+ggplot(prot_imm_dat_linear,aes(y=Mean_psi,x=protein))+geom_point(aes(color=Treatment))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+my_comparisons <- list( c("C_psi_av", "P_psi_av"), c("C_psi_av", "U_psi_av"), c("P_psi_av", "U_psi_av") )
+ggplot(prot_imm_dat_linear,aes(y=Mean_psi,x=Treatment))+geom_violin(aes(fill=Treatment))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  stat_compare_means(comparisons = my_comparisons)
+
+ggplot(prot_imm_dat_linear,aes(y=Mean_psi,x=Treatment,group=protein,color=protein))+
+  geom_point()+geom_line()+theme(legend.position = "none")
+
+ggplot(prot_imm_dat_linear,aes(y=Mean_psi,x=log2(Imm_count+1)))+geom_point(aes(color=Treatment))+
+  geom_smooth(method = "lm")+
+  stat_cor(method = "spearman")
+
+ggplot(prot_imm_dat,aes(x=psi_order,fill=psi_order))+
+  geom_bar(aes(y=(..count..)/sum(..count..)))+
+  theme(axis.text.x=element_blank())
+
+ggplot(prot_imm_dat,aes(x=psi_order,fill=psi_order))+
+  geom_bar()+
+  theme(axis.text.x=element_blank())
+
+```
+
+## outlier splicing immunogenicity Combo vs PD1 and PD1 vs Combo
+
+```{r}
+
+out_splice<-read.table("/media/theron/My_Passport/Ali_data/analysis/immunogenicity/outlier_splicing_results_CP_PC_NetMHC.txt",header=T)
+out_splice <- out_splice %>% dplyr::filter(N_binders>0)
+splicemutr_dat <- read.table("/media/theron/My_Passport/Ali_data/analysis/formed_transcripts_CP_PC/data_splicemutr.txt",header=T)
+juncs <- sprintf("%s:%s:%s:%s",splicemutr_dat$chr,splicemutr_dat$start,splicemutr_dat$end,splicemutr_dat$cluster)
+splicemutr_dat$juncs <- juncs
+
+txdb_file<-"/media/theron/My_Passport/reference_genomes/GTF_GFF/ENSEMBL/Mus_musculus.GRCm38.102.chr.sqlite"
+txdb<-loadDb(txdb_file) # making the txdb from gtf
+introns_by_tx<-data.frame(unlist(intronsByTranscript(txdb,use.names=T)))
+juncs_test<-sprintf("%s:%s:%s:%s",introns_by_tx$seqnames,introns_by_tx$start-1,introns_by_tx$end+1,introns_by_tx$strand)
+introns_by_tx$juncs <- juncs_test
+splicemutr_dat$juncs
+
+annotated_outlier_junctions<-splicemutr_dat$juncs %in% introns_by_tx$juncs
+splicemutr_dat$verdict<-"non_ann"
+splicemutr_dat$verdict[annotated_outlier_junctions]<-"ann"
+table(splicemutr_dat$verdict)
+
+splicemutr_dat_filt <- splicemutr_dat %>% dplyr::filter(!(verdict == "ann" & modified == "changed"))
+
+all_sample_psi<-read.table("/media/theron/My_Passport/Ali_data/analysis/all_sample_psi_CP_PC.txt",header=T)
+all_sample_pvals <- read.table("/media/theron/My_Passport/Ali_data/analysis/all_sample_pval_CP_PC.txt",header=T)
+all_sample_counts_norm <- read.table("/media/theron/My_Passport/Ali_data/analysis/all_sample_counts_norm_CP_PC.txt",header=T)
+
+juncs_sig <- read.table("/media/theron/My_Passport/Ali_data/analysis/juncs_sig_CP_PC.txt",header=T)
+juncs_sig<-sprintf("%s:%s:%s:%s",juncs_sig$chrom,juncs_sig$start,juncs_sig$end,juncs_sig$strand)
+rownames(all_sample_psi)<-juncs_sig
+  
+proteins<-unique(out_splice$ID)
+protein_imm_dat<-vapply(proteins,function(prot){
+  out_splice_small <- out_splice %>% dplyr::filter(ID==prot)
+  sum(out_splice_small$N_binders)
+},numeric(1))
+prot_imm_dat<-data.frame(proteins,protein_imm_dat)
+juncs<-splicemutr_dat$juncs[as.numeric(str_replace_all(proteins,"protein",""))]
+prot_imm_dat$juncs<-juncs
+
+C_psi <- all_sample_psi[prot_imm_dat$juncs,c(1,2,3,4,5,6)]
+prot_imm_dat$C_psi_av<-vapply(seq(nrow(C_psi)),function(row_val){
+  mean(as.numeric(C_psi[row_val,]),na.rm = T)
+},numeric(1))
+prot_imm_dat$C_psi_med<-vapply(seq(nrow(C_psi)),function(row_val){
+  median(as.numeric(C_psi[row_val,]),na.rm = T)
+},numeric(1))
+P_psi <- all_sample_psi[prot_imm_dat$juncs,c(7,8,9,10,11,12)]
+prot_imm_dat$P_psi_av<-vapply(seq(nrow(P_psi)),function(row_val){
+  median(as.numeric(P_psi[row_val,]),na.rm = T)
+},numeric(1))
+prot_imm_dat$P_psi_med<-vapply(seq(nrow(P_psi)),function(row_val){
+  median(as.numeric(P_psi[row_val,]),na.rm = T)
+},numeric(1))
+
+prot_imm_dat$P_psi_av[is.nan(prot_imm_dat$P_psi_av)]<-0
+prot_imm_dat$C_psi_av[is.nan(prot_imm_dat$C_psi_av)]<-0
+prot_imm_dat$psi_order <- vapply(seq(nrow(prot_imm_dat)),function(row_val){
+  vals<-prot_imm_dat[row_val,c("P_psi_av","C_psi_av")]
+  if (vals$P_psi_av < vals$C_psi_av){
+    return("pd1<combo")
+  } else if (vals$P_psi_av > vals$C_psi_av){
+    return("combo<pd1")
+  } else {
+    return("something's equal")
+  }
+},character(1))
+
+rownames(all_sample_counts_norm)<-all_sample_counts_norm$juncs
+C_norm_counts <- all_sample_counts_norm[prot_imm_dat$juncs,c(1,2,3,4,5,6)]
+prot_imm_dat$C_norm_counts<-vapply(seq(nrow(C_norm_counts)),function(row_val){
+  mean(as.numeric(C_norm_counts[row_val,]),na.rm = T)
+},numeric(1))
+prot_imm_dat$C_norm_counts_med<-vapply(seq(nrow(C_norm_counts)),function(row_val){
+  median(as.numeric(C_norm_counts[row_val,]),na.rm = T)
+},numeric(1))
+P_norm_counts <- all_sample_counts_norm[prot_imm_dat$juncs,c(7,8,9,10,11,12)]
+prot_imm_dat$P_norm_counts<-vapply(seq(nrow(P_norm_counts)),function(row_val){
+  mean(as.numeric(P_norm_counts[row_val,]),na.rm = T)
+},numeric(1))
+prot_imm_dat$P_norm_counts_med<-vapply(seq(nrow(P_norm_counts)),function(row_val){
+  median(as.numeric(P_norm_counts[row_val,]),na.rm = T)
+},numeric(1))
+U_norm_counts <- all_sample_counts_norm[prot_imm_dat$juncs,c(13,14,15)]
+prot_imm_dat$U_norm_counts<-vapply(seq(nrow(U_norm_counts)),function(row_val){
+  mean(as.numeric(U_norm_counts[row_val,]),na.rm = T)
+},numeric(1))
+prot_imm_dat$U_norm_counts_med<-vapply(seq(nrow(U_norm_counts)),function(row_val){
+  median(as.numeric(U_norm_counts[row_val,]),na.rm = T)
+},numeric(1))
+
+prot_imm_dat$P_norm_counts[is.nan(prot_imm_dat$P_norm_counts)]<-0
+prot_imm_dat$P_norm_counts_med[is.nan(prot_imm_dat$P_norm_counts)]<-0
+prot_imm_dat$C_norm_counts[is.nan(prot_imm_dat$C_norm_counts)]<-0
+prot_imm_dat$C_norm_counts_med[is.nan(prot_imm_dat$C_norm_counts)]<-0
+prot_imm_dat$U_norm_counts[is.nan(prot_imm_dat$U_norm_counts)]<-0
+prot_imm_dat$U_norm_counts_med[is.nan(prot_imm_dat$U_norm_counts)]<-0
+
+prot_imm_dat$counts_order <- vapply(seq(nrow(prot_imm_dat)),function(row_val){
+  vals<-prot_imm_dat[row_val,c("P_norm_counts","C_norm_counts","U_norm_counts")]
+  if (vals$C_norm_counts < vals$P_norm_counts & vals$C_norm_counts < vals$U_norm_counts){
+    return("combo<pd1<untreated")
+  } else if (vals$C_norm_counts < vals$U_norm_counts & vals$U_norm_counts < vals$P_norm_counts){
+    return("combo<untreated<pd1")
+  } else if (vals$P_norm_counts < vals$C_norm_counts & vals$C_norm_counts < vals$P_norm_counts){
+    return("pd1<combo<untreated")
+  } else if (vals$P_norm_counts < vals$U_norm_counts & vals$U_norm_counts < vals$C_norm_counts){
+    return("pd1<untreated<combo")
+  } else if (vals$U_norm_counts < vals$C_norm_counts & vals$C_norm_counts < vals$P_norm_counts){
+    return("untreated<combo<pd1")
+  } else if (vals$U_norm_counts < vals$P_norm_counts & vals$P_norm_counts < vals$C_norm_counts){
+    return("untreated<pd1<combo")
+  } else {
+    return("something's equal")
+  }
+},character(1))
+
+prot_imm_dat$counts_order_med <- vapply(seq(nrow(prot_imm_dat)),function(row_val){
+  vals<-prot_imm_dat[row_val,c("P_norm_counts_med","C_norm_counts_med","U_norm_counts_med")]
+  if (vals$C_norm_counts_med < vals$P_norm_counts_med & vals$C_norm_counts_med < vals$U_norm_counts_med){
+    return("combo<pd1<untreated")
+  } else if (vals$C_norm_counts_med < vals$U_norm_counts_med & vals$U_norm_counts_med < vals$P_norm_counts_med){
+    return("combo<untreated<pd1")
+  } else if (vals$P_norm_counts_med < vals$C_norm_counts_med & vals$C_norm_counts_med < vals$P_norm_counts_med){
+    return("pd1<combo<untreated")
+  } else if (vals$P_norm_counts_med < vals$U_norm_counts_med & vals$U_norm_counts_med < vals$C_norm_counts_med){
+    return("pd1<untreated<combo")
+  } else if (vals$U_norm_counts_med < vals$C_norm_counts_med & vals$C_norm_counts_med < vals$P_norm_counts_med){
+    return("untreated<combo<pd1")
+  } else if (vals$U_norm_counts_med < vals$P_norm_counts_med & vals$P_norm_counts_med < vals$C_norm_counts_med){
+    return("untreated<pd1<combo")
+  } else {
+    return("something's equal")
+  }
+},character(1))
+
+prot_imm_dat <- unique(prot_imm_dat[,seq(3,ncol(prot_imm_dat))])
+
+prot_imm_dat_linear_psi <- data.frame(c(prot_imm_dat$C_psi_av,prot_imm_dat$P_psi_av),
+                                  c(rep("C_psi_av",nrow(prot_imm_dat)),rep("P_psi_av",nrow(prot_imm_dat))))
+colnames(prot_imm_dat_linear_psi)<- c("Mean_psi","Treatment")
+
+ggplot(prot_imm_dat_linear_psi,aes(y=Mean_psi,x=seq(nrow(prot_imm_dat_linear_psi))))+geom_point(aes(color=Treatment))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+my_comparisons <- list( c("C_psi_av", "P_psi_av"))
+ggplot(prot_imm_dat_linear_psi,aes(y=Mean_psi,x=Treatment))+geom_violin(aes(fill=Treatment))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  stat_compare_means(comparisons = my_comparisons)
+
+# ggplot(prot_imm_dat_linear_psi,aes(y=Mean_psi,x=Treatment,group=protein,color=protein))+
+#   geom_point()+geom_line()+theme(legend.position = "none")
+# 
+# ggplot(prot_imm_dat_linear_psi,aes(y=Mean_psi,x=log2(Imm_count+1)))+geom_point(aes(color=Treatment))+
+#   geom_smooth(method = "lm")+
+#   stat_cor(method = "spearman")
+
+prot_imm_dat_linear_counts <- data.frame(
+                                  c(prot_imm_dat$C_norm_counts,prot_imm_dat$P_norm_counts,prot_imm_dat$U_norm_counts),
+                                  c(prot_imm_dat$C_norm_counts_med,prot_imm_dat$P_norm_counts_med,prot_imm_dat$U_norm_counts_med),
+                                  c(rep("C_norm_counts",nrow(prot_imm_dat)),
+                                    rep("P_norm_counts",nrow(prot_imm_dat)),
+                                    rep("U_norm_counts",nrow(prot_imm_dat))))
+colnames(prot_imm_dat_linear_counts)<- c("Mean_counts","Median_counts","Treatment")
+
+# ggplot(prot_imm_dat_linear_counts,aes(y=Mean_counts,x=protein))+geom_point(aes(color=Treatment))+
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+my_comparisons <- list( c("C_norm_counts", "P_norm_counts"),c("P_norm_counts", "U_norm_counts"),c("C_norm_counts", "U_norm_counts"))
+ggplot(prot_imm_dat_linear_counts,aes(y=Mean_counts,x=Treatment))+geom_violin(aes(fill=Treatment))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  stat_compare_means(comparisons = my_comparisons)
+
+# ggplot(prot_imm_dat_linear_counts,aes(y=Mean_counts,x=Treatment,group=protein,color=protein))+
+#   geom_point()+geom_line()+theme(legend.position = "none")
+
+# ggplot(prot_imm_dat_linear_counts,aes(y=Mean_counts,x=log2(Imm_count+1)))+geom_point(aes(color=Treatment))+
+#   geom_smooth(method = "lm")+
+#   stat_cor(method = "spearman")
+
+ggplot(prot_imm_dat,aes(x=counts_order,fill=counts_order))+
+  geom_bar(aes(y=(..count..)/sum(..count..)))+
+  theme(axis.text.x=element_blank())
+
+ggplot(prot_imm_dat,aes(x=counts_order,fill=counts_order))+
+  geom_bar()+
+  theme(axis.text.x=element_blank())
+
+
+# ggplot(prot_imm_dat_linear_counts,aes(y=Median_counts,x=protein))+geom_point(aes(color=Treatment))+
+#   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+my_comparisons <- list( c("C_norm_counts", "P_norm_counts"),c("P_norm_counts", "U_norm_counts"),c("C_norm_counts", "U_norm_counts"))
+ggplot(prot_imm_dat_linear_counts,aes(y=Median_counts,x=Treatment))+geom_violin(aes(fill=Treatment))+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  stat_compare_means(comparisons = my_comparisons)
+
+# ggplot(prot_imm_dat_linear_counts,aes(y=Median_counts,x=Treatment,group=protein,color=protein))+
+#   geom_point()+geom_line()+theme(legend.position = "none")
+
+# ggplot(prot_imm_dat_linear_counts,aes(y=Median_counts,x=log2(Imm_count+1)))+geom_point(aes(color=Treatment))+
+#   geom_smooth(method = "lm")+
+#   stat_cor(method = "spearman")
+
+ggplot(prot_imm_dat,aes(x=counts_order_med,fill=counts_order_med))+
+  geom_bar(aes(y=(..count..)/sum(..count..)))+
+  theme(axis.text.x=element_blank())
+
+ggplot(prot_imm_dat,aes(x=counts_order_med,fill=counts_order_med))+
+  geom_bar()+
+  theme(axis.text.x=element_blank())
+
+```
+
+
+
+
+
+

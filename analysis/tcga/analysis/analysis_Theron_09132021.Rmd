@@ -1,0 +1,532 @@
+---
+title: "analysis_Theron_08262021"
+author: "Theron Palmer"
+date: "8/26/2021"
+output: html_document
+---
+
+
+# Loading in necessary libraries
+
+```{r,echo=FALSE}
+
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(TCGAutils)
+library(maftools)
+library(ggpubr)
+library(stringr)
+library(readxl)
+library(ComplexHeatmap)
+library(recount3)
+
+```
+
+# Matching TCGA and GTEX samples
+
+```{r}
+
+GTEX_file<-"/media/theron/My_Passport/TCGA_junctions/ext_dat/GTEx_recount3_selection_2021-09-14_17_25_41.csv"
+TCGA_file<-"/media/theron/My_Passport/TCGA_junctions/ext_dat/TCGA_recount3_selection_2021-09-14_17_27_07.csv"
+GTEX_samples <- read.table(GTEX_file,sep=",",header=T)
+TCGA_samples <- read.table(TCGA_file,sep=",",header=T)
+all_samples<-rbind(GTEX_samples,TCGA_samples)
+
+STUDY_ABREVIATION<-c("LAML","ACC","BLCA","LGG","BRCA","CESC","CHOL","LCML","COAD","CNTL","ESCA","FPPP","GBM","HNSC","KICH","KIRC","KIRP","LIHC","LUAD","LUSC","DLBC","MESO","MISC","OV","PAAD","PCPG","PRAD","READ","SARC","SKCM","STAD","TGCT","THYM","THCA","UCS","UCEC","UVM")
+STUDY_NAME<-c("Acute Myeloid Leukemia","Adrenocortical carcinoma","Bladder Urothelial Carcinoma","Brain Lower Grade Glioma","Breast invasive carcinoma","Cervical squamous cell carcinoma and endocervical adenocarcinoma","Cholangiocarcinoma","Chronic Myelogenous Leukemia","Colon adenocarcinoma","Controls","Esophageal carcinoma","FFPE Pilot Phase II","Glioblastoma multiforme","Head and Neck squamous cell carcinoma","Kidney Chromophobe","Kidney renal clear cell carcinoma","Kidney renal papillary cell carcinoma","Liver hepatocellular carcinoma","Lung adenocarcinoma","Lung squamous cell carcinoma","Lymphoid Neoplasm Diffuse Large B-cell Lymphoma","Mesothelioma","Miscellaneous","Ovarian serous cystadenocarcinoma","Pancreatic adenocarcinoma","Pheochromocytoma and Paraganglioma","Prostate adenocarcinoma","Rectum adenocarcinoma","Sarcoma","Skin Cutaneous Melanoma","Stomach adenocarcinoma","Testicular Germ Cell Tumors","Thymoma","Thyroid carcinoma","Uterine Carcinosarcoma","Uterine Corpus Endometrial Carcinoma","Uveal Melanoma")
+
+STUDY_ABREVIATION_NAMES=data.frame(STUDY_ABREVIATION,STUDY_NAME)
+colnames(STUDY_ABREVIATION_NAMES)<-c("ABREVIATION","NAME")
+
+all_samples$DESC <- unlist(lapply(all_samples$project,function(proj){
+  a<-which(STUDY_ABREVIATION_NAMES$ABREVIATION==proj)
+  if (length(a)==0){
+    return("")
+  } else {
+    return(STUDY_ABREVIATION_NAMES$NAME[a])
+  }
+}))
+
+write.table(data.frame(all_samples$project),
+            file="/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/projects.txt",
+            sep="\t",
+            quote=F,
+            col.names=F,
+            row.names=F)
+```
+
+# Building TCGA-GTEX map
+
+```{r}
+
+STUDY_ABREVIATION<-c("LAML","ACC","BLCA","LGG","BRCA","CESC","CHOL","LCML","COAD","ESCA","GBM","HNSC","KICH","KIRC","KIRP","LIHC","LUAD","LUSC","DLBC","MESO","OV","PAAD","PCPG","PRAD","READ","SARC","SKCM","STAD","TGCT","THYM","THCA","UCS","UCEC","UVM")
+GTEX_map<-c("BLOOD,BONE_MARROW","ADRENAL_GLAND","BLADDER","BRAIN","BREAST","CERVIX_UTERI","LIVER","BLOOD","COLON","ESOPHAGUS","BRAIN","ESOPHAGUS,SALIVARY_GLAND","KIDNEY","KIDNEY","KIDNEY","LIVER","LUNG","LUNG","BLOOD","LUNG","FALLOPIAN_TUBE","PANCREAS","ADRENAL_GLAND","PROSTATE","COLON","ADIPOSE_TISSUE","SKIN","STOMACH","TESTIS","?","THYROID","UTERUS","UTERUS","?")
+TCGA_GTEX_map<-data.frame(STUDY_ABREVIATION,GTEX_map)
+colnames(TCGA_GTEX_map)<-c("TCGA","GTEX")
+write.table(TCGA_GTEX_map,
+            file="/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/TCGA_GTEX_map.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+# Building the recount3 metadata file; TCGA
+
+```{r}
+STUDY_ABREVIATION<-c("LAML","ACC","BLCA","LGG","BRCA","CESC","CHOL","COAD","ESCA","GBM","HNSC","KICH","KIRC","KIRP","LIHC","LUAD","LUSC","DLBC","MESO","OV","PAAD","PCPG","PRAD","READ","SARC","SKCM","STAD","TGCT","THYM","THCA","UCS","UCEC","UVM")
+TCGA_dir <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers"
+
+for (i in seq(length(STUDY_ABREVIATION))){
+  if (i == 1){
+    all_metadata <- readRDS(sprintf("%s/%s/%s_metadata.rds",TCGA_dir,STUDY_ABREVIATION[i],STUDY_ABREVIATION[i]))
+  }
+  fill <- readRDS(sprintf("%s/%s/%s_metadata.rds",TCGA_dir,STUDY_ABREVIATION[i],STUDY_ABREVIATION[i]))
+  all_metadata<-rbind(all_metadata,fill)
+}
+saveRDS(all_metadata,file="/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/TCGA_recount3_metadata.rds")
+
+```
+
+# Building the recount3 metadata file; GTEx
+
+```{r}
+
+GTEX_dir <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/GTEX"
+human_projects <- available_projects()
+proj_info <- subset(
+  human_projects,
+  file_source %in% c("gtex")
+)
+GTEX_STUDIES<-proj_info$project
+
+for (i in seq(length(GTEX_STUDIES))){
+  if (i == 1){
+    all_metadata <- readRDS(sprintf("%s/%s/%s_metadata.rds",GTEX_dir,GTEX_STUDIES[i],GTEX_STUDIES[i]))
+  }
+  fill <- readRDS(sprintf("%s/%s/%s_metadata.rds",GTEX_dir,GTEX_STUDIES[i],GTEX_STUDIES[i]))
+  all_metadata<-rbind(all_metadata,fill)
+}
+saveRDS(all_metadata,file="/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/GTEX_recount3_metadata.rds")
+
+```
+
+# Analyzing recount3 metadata
+
+```{r}
+
+TCGA_metadata<-readRDS("/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/TCGA_recount3_metadata.rds")
+GTEX_metadata<-readRDS("/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/GTEX_recount3_metadata.rds")
+
+```
+
+
+
+# Processing TCGA mutation data
+
+```{r}
+
+mut_dat <- read_excel("/media/theron/My_Passport/TCGA_junctions/ext_dat/13073_2017_424_MOESM3_ESM_coded.xlsx")
+mut_dat_complete<-mut_dat[complete.cases(mut_dat),]
+
+```
+
+
+The TCGA MAF summary file
+
+```{r}
+
+maf_file <- "/media/theron/My_Passport/TCGA_junctions/maf_summary.txt"
+mc3_maf = read.table(maf_file,header=T)
+mc3_maf$Tumor_Sample_ID <- vapply(TCGAbarcode(mc3_maf$Tumor_Sample_Barcode,sample=T),
+                                  function(val){substr(val,1,nchar(val)-1)},
+                                  character(1))
+rownames(mc3_maf) <- mc3_maf$Tumor_Sample_Barcode
+mc3_maf$participant_ID <- TCGAbarcode(mc3_maf$Tumor_Sample_Barcode,participant=T)
+mc3_maf_miss <- mc3_maf[,c("Missense_Mutation","participant_ID")]
+
+```
+
+# Accumulating mutation data per sample
+
+```{r}
+
+junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/juncrse.rds"
+junc_rse <- readRDS(junc_rse_file)
+junc_metadata <- as.data.frame(junc_rse@colData@listData)
+junc_rse_cols <- colnames(junc_metadata)
+
+tumor_data_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/filenames.txt"
+tumor_data <- read.table(tumor_data_file)
+cancers <- basename(tumor_data$V1)
+nogos <- c("ESCA","MESO","PAAD","KIRC","GBM")
+# TMB<-list()
+
+optitype_calls <- read.table("/media/theron/My_Passport/TCGA_junctions/ext_dat/OptiTypeCallsHLA_20171207.tsv",header=T,sep=",")
+which_are_correct<-vapply(optitype_calls$aliquot_id,function(ID){
+  a<-strsplit(ID,"-")[[1]]
+    if (nchar(a[1]) > 4){
+      return(F)  
+    } else {
+      return(T)
+    }
+},logical(1))
+optitype_calls_correct <- optitype_calls[which_are_correct,]
+optitype_calls_correct$particpant_ID <- TCGAbarcode(optitype_calls_correct$aliquot_id,participant=T)
+
+cluster_metrics_tum <- data.frame(cancers)
+
+for (i in seq(nrow(tumor_data))){
+  print(sprintf("%d out of %d",i,nrow(tumor_data)))
+  tumor_dir <- tumor_data[i,]
+  cancer <- basename(tumor_dir)
+  print(cancer)
+  if (cancer %in% nogos){next}
+
+  tumor_meta_file <- sprintf("%s/%s_metadata.txt",tumor_dir,cancer)
+  tumor_meta <- read.table(tumor_meta_file,quote="",sep="\t")
+  tumor_meta$participant_ID <- TCGAbarcode(tumor_meta[,4],participant=T)
+  tumor_meta$nbases<-tumor_meta[,ncol(tumor_meta)-9]
+  mc3_maf_small<-subset(mc3_maf,participant_ID %in% tumor_meta$participant_ID)
+  mc3_maf_small <- mc3_maf_small[complete.cases(mc3_maf_small),]
+  mc3_maf_small$type <- vapply(rownames(mc3_maf_small),function(barcode){
+    type<-as.numeric(substr(strsplit(barcode,"-")[[1]][4],1,2))
+    if (type <= 9){
+      return("T")
+    } else if (type > 9 & type <= 19){
+      return ("N")
+    } else {
+      return ("C")
+    }
+  },character(1))
+  mc3_maf_small$TMB<-log10(mc3_maf_small$total)
+  mc3_maf_small <- mc3_maf_small %>% dplyr::filter(type == "T")
+
+  tumor_geno_file <- sprintf("%s/%s_genotypes.txt",tumor_dir,cancer)
+  tumor_geno <- read.table(tumor_geno_file,header=T)
+  
+  summ_file <- read.table(sprintf("%s/summaries.txt",tumor_dir))
+  summ_file <- summ_file$V1
+  per_sample_summ <- c()
+  for (file in summ_file){
+    summ <- read.table(file)
+    per_sample_summ <- c(per_sample_summ,summ$V1)
+  }
+  per_sample_summ <- data.frame(per_sample_summ,tumor_geno$sample_id,tumor_geno$type)
+  colnames(per_sample_summ) <- c("per_sample_summ","sample_id","type")
+  per_sample_summ <- unique(per_sample_summ)
+  
+  rownames(mc3_maf_small) <- mc3_maf_small$Tumor_Sample_ID
+  per_sample_summ$TMB <- mc3_maf_small[per_sample_summ$sample_id,"TMB"]
+  
+  per_sample_summ <- per_sample_summ %>% dplyr::filter(type == "T" & per_sample_summ > 0)
+  
+  cluster_metrics_tum[cluster_metrics_tum$cancers==cancer,"splice_imm"] <- median(per_sample_summ$per_sample_summ)
+  cluster_metrics_tum[cluster_metrics_tum$cancers==cancer,"TMB"] <- median(per_sample_summ$TMB)
+
+  ggplot(per_sample_summ,aes(x=log10(per_sample_summ),y=TMB))+
+    geom_point()+
+    stat_cor(method = "spearman")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer))
+}
+
+ggplot(cluster_metrics_tum,aes(x=log10(splice_imm),y=TMB,label=cancers))+
+  geom_text()+
+  stat_cor(method = "spearman")+
+  xlab("splicing antigenicity")
+
+```
+
+# Processing the splicing imm data
+
+## Accumulating per cluster metrics 
+
+```{r}
+
+tumor_data_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/filenames.txt"
+tumor_data <- read.table(tumor_data_file)
+cancers <- basename(tumor_data$V1)
+cluster_metrics_tum <- data.frame(cancers)
+cluster_metrics_tum$tumor_clusters <- NA
+nogos <- c("ESCA","MESO","PAAD","KIRC")
+for (i in seq(1,nrow(tumor_data))){
+  print(sprintf("%d out of %d",i,nrow(tumor_data)))
+  tumor_dir <- tumor_data[i,]
+  cancer <- basename(tumor_dir)
+  if (cancer %in% nogos){next}
+  tumor_splicemutr_file <- sprintf("%s/%s_splicemutr_dat.txt",tumor_dir,cancer)
+  tumor_splicemutr <- read.table(tumor_splicemutr_file,header=T,sep="\t")
+  tumor_normal_kmers_file <- sprintf("%s/%s_tumor_normal_kmers.txt",tumor_dir,cancer)
+  tumor_normal_kmers <- read.table(tumor_normal_kmers_file,header=T,sep="\t")
+  cluster_metrics <- data.frame(unique(tumor_splicemutr$cluster))
+  colnames(cluster_metrics)<-"cluster"
+  tumor_splicemutr$peptide_length <- nchar(tumor_splicemutr$peptide)-1
+  tumor_splicemutr <- cbind(tumor_splicemutr,tumor_normal_kmers[,seq(2,ncol(tumor_normal_kmers))])
+  tumor_splicemutr_refined <- tumor_splicemutr %>% dplyr::filter(!is.na(peptide)) %>% 
+    dplyr::filter(!(verdict == "annotated" & modified == "changed")) %>%
+    dplyr::filter(peptide_length >= 20)
+  tumor_splicemutr_refined$deltapsi <- as.numeric(tumor_splicemutr_refined$deltapsi)
+  
+  cluster_metrics$tum_not_norm <- vapply(cluster_metrics$cluster,function(clu){
+    tumor_dat <- tumor_splicemutr_refined %>% dplyr::filter(cluster == clu)
+    tumor_kmers <- tumor_dat$tumor[which(tumor_dat$deltapsi >0)]
+    tumor_kmers <- unlist(str_split(tumor_kmers,":"))
+    normal_kmers <- tumor_dat$tumor[which(tumor_dat$deltapsi <0)]
+    normal_kmers <- unlist(str_split(normal_kmers,":"))
+    tumor_kmers<-unique(tumor_kmers[!(tumor_kmers %in% normal_kmers)])
+    return(length(tumor_kmers))
+  },numeric(1))
+  
+  cluster_metrics_tum[cluster_metrics_tum$cancers==cancer,"tumor_clusters"] <- nrow(cluster_metrics %>% dplyr::filter(tum_not_norm > 0))
+}
+write.table(cluster_metrics_tum,file="/media/theron/My_Passport/TCGA_junctions/cluster_metrics.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+## Accumulating per sample metrics
+
+```{r}
+
+tumor_data_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/filenames.txt"
+tumor_data <- read.table(tumor_data_file)
+cancers <- basename(tumor_data$V1)
+cluster_metrics_tum <- data.frame(cancers)
+cluster_metrics_tum$tumor_clusters <- NA
+nogos <- c("ESCA","MESO","PAAD","KIRC")
+for (i in seq(1,nrow(tumor_data))){
+  print(sprintf("%d out of %d",i,nrow(tumor_data)))
+  tumor_dir <- tumor_data[i,]
+  cancer <- basename(tumor_dir)
+  if (cancer %in% nogos){next}
+  tumor_splicemutr_file <- sprintf("%s/%s_splicemutr_dat.txt",tumor_dir,cancer)
+  tumor_splicemutr <- read.table(tumor_splicemutr_file,header=T,sep="\t")
+  tumor_normal_kmers_file <- sprintf("%s/%s_kmers.txt",tumor_dir,cancer)
+  tumor_normal_kmers <- read.table(tumor_normal_kmers_file,header=T,sep="\t")
+  cluster_metrics <- data.frame(unique(tumor_splicemutr$cluster))
+  colnames(cluster_metrics)<-"cluster"
+  tumor_splicemutr$peptide_length <- nchar(tumor_splicemutr$peptide)-1
+  tumor_splicemutr <- cbind(tumor_splicemutr,tumor_normal_kmers[,seq(2,ncol(tumor_normal_kmers))])
+  tumor_splicemutr_refined <- tumor_splicemutr %>% dplyr::filter(!is.na(peptide)) %>% 
+    dplyr::filter(!(verdict == "annotated" & modified == "changed")) %>%
+    dplyr::filter(peptide_length >= 20)
+  tumor_splicemutr_refined$deltapsi <- as.numeric(tumor_splicemutr_refined$deltapsi)
+  
+  cluster_metrics$tum_not_norm <- vapply(cluster_metrics$cluster,function(clu){
+    tumor_dat <- tumor_splicemutr_refined %>% dplyr::filter(cluster == clu)
+    tumor_kmers <- tumor_dat$tumor[which(tumor_dat$deltapsi >0)]
+    tumor_kmers <- unlist(str_split(tumor_kmers,":"))
+    normal_kmers <- tumor_dat$tumor[which(tumor_dat$deltapsi <0)]
+    normal_kmers <- unlist(str_split(normal_kmers,":"))
+    tumor_kmers<-unique(tumor_kmers[!(tumor_kmers %in% normal_kmers)])
+    return(length(tumor_kmers))
+  },numeric(1))
+  
+  cluster_metrics_tum[cluster_metrics_tum$cancers==cancer,"tumor_clusters"] <- nrow(cluster_metrics %>% dplyr::filter(tum_not_norm > 0))
+}
+write.table(cluster_metrics_tum,file="/media/theron/My_Passport/TCGA_junctions/cluster_metrics.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+
+```{r}
+
+cluster_metrics_tum <- read.table("/media/theron/My_Passport/TCGA_junctions/cluster_metrics.txt",header=T)
+
+```
+
+## Joining TMB and cancer clusters together, plotting
+
+```{r}
+
+splice_ant_TMB <- mut_dat_complete
+tumor_clusters<-vapply(seq(nrow(splice_ant_TMB)),function(row_val){
+  code<-splice_ant_TMB$Code[row_val]
+  a<-which(cluster_metrics_tum$cancers==code)
+  if(length(a)==0){
+    return(-1)
+  } else {
+    return(cluster_metrics_tum[a,"tumor_clusters"])
+  }
+},numeric(1))
+splice_ant_TMB$tumor_clusters<-tumor_clusters
+splice_ant_TMB_filt <- splice_ant_TMB %>% dplyr::filter(tumor_clusters != -1)
+splice_ant_TMB_filt <- splice_ant_TMB_filt[seq(14),]
+splice_ant_TMB_filt[7,"Code"]<-"BRCA(inv_duct)"
+
+ggplot(splice_ant_TMB_filt,aes(x=log10(tumor_clusters),y=`Median TMB`,label=Code))+
+  geom_text()+
+  stat_cor(method = "spearman")+
+  xlab("splicing antigenicity")
+
+```
+
+```{r}
+
+splice_ant_TMB <- TMB
+tumor_clusters<-vapply(seq(nrow(splice_ant_TMB)),function(row_val){
+  code<-splice_ant_TMB$cancers[row_val]
+  a<-which(cluster_metrics_tum$cancers==code)
+  if(length(a)==0){
+    return(-1)
+  } else {
+    return(cluster_metrics_tum[a,"tumor_clusters"])
+  }
+},numeric(1))
+splice_ant_TMB$tumor_clusters<-tumor_clusters
+splice_ant_TMB_filt <- splice_ant_TMB %>% dplyr::filter(tumor_clusters != -1)
+
+ggplot(splice_ant_TMB_filt,aes(x=log10(tumor_clusters),y=TMB_median,label=cancers))+
+  geom_text()+
+  stat_cor(method = "spearman")+
+  xlab("splicing antigenicity")
+
+```
+
+# Analyzing Splicing Factor Mutations per cancer type
+
+```{r}
+
+splicing_factor_genes<-read_excel("/media/theron/My_Passport/TCGA_junctions/ext_dat/splicing_factor_genes1.xlsx")
+splicing_factor_genes<-toupper(splicing_factor_genes$Gene)
+
+```
+
+
+```{r}
+
+mut_counts_1 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations.txt",sep="\t",header=T)
+mut_counts_2 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_1.txt",sep="\t",header=T)
+mut_counts_3 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_2.txt",sep="\t",header=T)
+mut_counts_4 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_3.txt",sep="\t",header=T)
+mut_counts_5 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_4.txt",sep="\t",header=T)
+
+mut_counts <- cbind(mut_counts_1,
+                    mut_counts_2,
+                    mut_counts_3,
+                    mut_counts_4,
+                    mut_counts_5)
+rm(mut_counts_1,
+   mut_counts_2,
+   mut_counts_3,
+   mut_counts_4,
+   mut_counts_5)
+
+cancers <- unique(mut_counts$STUDY_ID)
+genes <- unique(colnames(mut_counts))
+mut_counts_unique <- data.frame(mut_counts[,c("STUDY_ID","SAMPLE_ID")])
+
+gene_counts_1<-function(vals){
+  paste(vals,collapse=";")
+}
+for (gene in genes[seq(3,length(genes))]){
+  gene_col <- which(colnames(mut_counts)==gene)[1]
+  mut_counts_unique[,gene]<-vapply(mut_counts[,gene_col],function(val){
+    if (val == "WT"){
+      return("WT")
+    } else {
+      return("M")
+    }
+  },character(1))
+}
+sf_per_cancer<-data.frame(vapply(cancers,function(cancer){
+  mut_counts_small <- mut_counts_unique %>% dplyr::filter(STUDY_ID==cancer)
+  apply(mut_counts_small,2,gene_counts_1)
+},character(ncol(mut_counts_unique))))
+sf_per_cancer<-sf_per_cancer[seq(3,nrow(sf_per_cancer)),]
+colnames(sf_per_cancer)<-vapply(colnames(sf_per_cancer),function(cancer){
+  toupper(strsplit(cancer,"_")[[1]][1])
+},character(1))
+
+gene_counts_2<-function(vals){
+  return(length(which(vals=="M")))
+}
+sf_per_cancer_2<-data.frame(vapply(cancers,function(cancer){
+  mut_counts_small <- mut_counts_unique %>% dplyr::filter(STUDY_ID==cancer)
+  apply(mut_counts_small,2,gene_counts_2)/nrow(mut_counts_small)
+},numeric(ncol(mut_counts_unique))))
+sf_per_cancer_2<-sf_per_cancer_2[seq(3,nrow(sf_per_cancer_2)),]
+colnames(sf_per_cancer_2)<-vapply(colnames(sf_per_cancer_2),function(cancer){
+  toupper(strsplit(cancer,"_")[[1]][1])
+},character(1))
+sf_per_cancer_2$COAD<-sf_per_cancer_2$COADREAD
+sf_per_cancer_2$READ<-sf_per_cancer_2$COADREAD
+
+sf_per_cancer_2<-sf_per_cancer_2[,colnames(sf_per_cancer_2) != "COADREAD"]
+cols<-colnames(sf_per_cancer_2)
+cluster_metrics_sf <- vapply(cols,function(cancer){
+  a<-which(cluster_metrics_tum$cancers==cancer)
+  if (length(a)==0){
+    return(0)
+  } else if (is.na(cluster_metrics_tum[a,"tumor_clusters"])){
+    return(0)
+  } else {
+    return(cluster_metrics_tum[a,"tumor_clusters"])
+  }
+},numeric(1))
+
+which_not_zero <- which(cluster_metrics_sf != 0)
+cluster_metrics_sf_scale <- cluster_metrics_sf
+cluster_metrics_sf_scale[which_not_zero]<-scale(cluster_metrics_sf_scale[which_not_zero])
+
+Heatmap(scale(sf_per_cancer_2),
+        top_annotation = HeatmapAnnotation(spliceant = anno_barplot(cluster_metrics_sf_scale)),
+        show_row_names=F,
+        show_column_names = T)
+
+Heatmap(scale(sf_per_cancer_2),
+        top_annotation = HeatmapAnnotation(spliceant = anno_barplot(cluster_metrics_sf)),
+        show_row_names=F,
+        show_column_names = T)
+
+Heatmap(scale(sf_per_cancer_2),
+        top_annotation = HeatmapAnnotation(spliceant = anno_barplot(log2(cluster_metrics_sf+1))),
+        show_row_names=F,
+        show_column_names = T)
+
+sf_per_cancer_2_filt<-sf_per_cancer_2[splicing_factor_genes,]
+sf_per_cancer_2_filt<-sf_per_cancer_2_filt[complete.cases(sf_per_cancer_2_filt),]
+Heatmap(scale(sf_per_cancer_2_filt),
+        top_annotation = HeatmapAnnotation(spliceant = anno_barplot(cluster_metrics_sf_scale)),
+        show_row_names=F,
+        show_column_names = T)
+
+Heatmap(scale(sf_per_cancer_2_filt),
+        top_annotation = HeatmapAnnotation(spliceant = anno_barplot(cluster_metrics_sf)),
+        show_row_names=F,
+        show_column_names = T)
+
+Heatmap(scale(sf_per_cancer_2_filt),
+        top_annotation = HeatmapAnnotation(spliceant = anno_barplot(log2(cluster_metrics_sf+1))),
+        show_row_names=F,
+        show_column_names = T)
+
+sf_per_cancer_2_median<-apply(sf_per_cancer_2,2,median)
+sf_per_cancer_2_filt_median<-apply(sf_per_cancer_2_filt,2,median)
+
+sf_per_cancer_median_df <- data.frame(sf_per_cancer_2_median,sf_per_cancer_2_filt_median,cluster_metrics_sf)
+colnames(sf_per_cancer_median_df) <- c("all_genes","target_genes","splice_ant")
+sf_per_cancer_median_df <- sf_per_cancer_median_df %>% dplyr::filter(splice_ant != 0)
+ggplot(sf_per_cancer_median_df,aes(label=rownames(sf_per_cancer_median_df),y=all_genes,x=log2(splice_ant)))+
+  geom_text()+
+  stat_cor(method = "spearman")+
+  xlab("log2(splicing antigenicity)")
+
+ggplot(sf_per_cancer_median_df,aes(label=rownames(sf_per_cancer_median_df),y=target_genes,x=log2(splice_ant)))+
+  geom_text()+
+  stat_cor(method = "spearman")+
+  xlab("log2(splicing antigenicity)")
+
+```
+
+

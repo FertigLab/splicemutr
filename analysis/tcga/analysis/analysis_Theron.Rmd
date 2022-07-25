@@ -1,0 +1,201 @@
+---
+title: "analysis_Theron"
+author: "Theron Palmer"
+date: "8/11/2021"
+output: html_document
+---
+
+```{r}
+
+library(stringr)
+library(dplyr)
+library(TCGAutils)
+library(maftools)
+library(ggplot2)
+library(ggpubr)
+
+
+```
+
+# Processing TCGA mutation data
+
+The TCGA MAF summary file
+
+```{r}
+
+maf_file <- "/media/theron/My_Passport/TCGA_junctions/maf_summary.txt"
+mc3_maf = read.table(maf_file,header=T)
+mc3_maf$Tumor_Sample_ID <- vapply(TCGAbarcode(mc3_maf$Tumor_Sample_Barcode,sample=T),
+                                  function(val){substr(val,1,nchar(val)-1)},
+                                  character(1))
+rownames(mc3_maf) <- mc3_maf$Tumor_Sample_Barcode
+
+```
+
+```{r}
+
+junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/juncrse.rds"
+junc_rse <- readRDS(junc_rse_file)
+junc_metadata <- as.data.frame(junc_rse@colData@listData)
+junc_rse_cols <- colnames(junc_metadata)
+
+tumor_data_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/filenames.txt"
+tumor_data <- read.table(tumor_data_file)
+cancers <- basename(tumor_data$V1)
+nogos <- c("BRCA","ESCA","PRAD","MESO","PAAD","READ","THCA","UCEC")
+TMB<-data.frame(cancers)
+for (i in seq(nrow(tumor_data))){
+  print(sprintf("%d out of %d",i,nrow(tumor_data)))
+  tumor_dir <- tumor_data[i,]
+  cancer <- basename(tumor_dir)
+  if (cancer %in% nogos){next}
+  tumor_geno_file <- sprintf("%s/%s_genotypes.txt",tumor_dir,cancer)
+  tumor_geno <- read.table(tumor_geno_file,header=T,sep="\t")
+  mc3_small <- subset(mc3_maf,Tumor_Sample_ID %in% tumor_geno$sample_id)
+  TMB[TMB$cancers==cancer,"Missense_Mutation_mean"] <-   mean(mc3_small$Missense_Mutation)
+  TMB[TMB$cancers==cancer,"Missense_Mutation_median"] <-   median(mc3_small$Missense_Mutation)
+
+}
+
+```
+
+
+# Processing the splicing imm data
+
+## Accumulating per cluster metrics 
+
+```{r,eval=F}
+
+tumor_data_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/filenames.txt"
+tumor_data <- read.table(tumor_data_file)
+cancers <- basename(tumor_data$V1)
+cluster_metrics_tum <- data.frame(cancers)
+cluster_metrics_tum$tumor_clusters <- NA
+nogos <- c("BRCA","ESCA","PRAD","MESO","PAAD","READ","THCA","UCEC")
+for (i in seq(15,nrow(tumor_data))){
+  print(sprintf("%d out of %d",i,nrow(tumor_data)))
+  tumor_dir <- tumor_data[i,]
+  cancer <- basename(tumor_dir)
+  if (cancer %in% nogos){next}
+  tumor_splicemutr_file <- sprintf("%s/%s_splicemutr.txt",tumor_dir,cancer)
+  tumor_splicemutr <- read.table(tumor_splicemutr_file,header=T,sep="\t")
+  cluster_metrics <- data.frame(unique(tumor_splicemutr$cluster))
+  colnames(cluster_metrics)<-"cluster"
+  tumor_splicemutr$peptide_length <- nchar(tumor_splicemutr$peptide)-1
+  tumor_splicemutr_refined <- tumor_splicemutr %>% dplyr::filter(!is.na(peptide)) %>% 
+    dplyr::filter(!(verdict == "annotated" & modified == "changed")) %>%
+    dplyr::filter(peptide_length >= 20)
+  tumor_splicemutr_refined$deltapsi <- as.numeric(tumor_splicemutr_refined$deltapsi)
+  tumor_splicemutr_refined$mean_tumor_counts <- as.numeric(tumor_splicemutr_refined$mean_tumor_counts)
+  tumor_splicemutr_refined$mean_normal_counts <- as.numeric(tumor_splicemutr_refined$mean_normal_counts)
+
+  cluster_metrics$tum_ov_norm <- vapply(cluster_metrics$cluster,function(clu){
+    tumor_dat <- tumor_splicemutr_refined %>% dplyr::filter(cluster == clu)
+    if (!any(tumor_dat$deltapsi > 0) & ! any(tumor_dat$deltapsi < 0)){
+      max_dat <- 1
+      min_dat <- 1
+    } else if (!any(tumor_dat$deltapsi < 0) & any(tumor_dat$deltapsi > 0)){
+      min_dat <- 1
+      max_dat <- mean(tumor_dat[tumor_dat$deltapsi == max(tumor_dat$deltapsi),"mean_tumor_counts"])+1
+    } else if (!any(tumor_dat$deltapsi > 0) & any(tumor_dat$deltapsi < 0)){
+      min_dat <- mean(tumor_dat[tumor_dat$deltapsi == min(tumor_dat$deltapsi),"mean_normal_counts"])+1
+      max_dat <- 1
+    } else {
+      min_dat <- 1
+      max_dat <- 1
+    }
+    return(log2(max_dat/min_dat))
+  },numeric(1))
+  
+  cluster_metrics_tum[cluster_metrics_tum$cancers==cancer,"tumor_clusters"] <- nrow(cluster_metrics %>% dplyr::filter(tum_ov_norm > 0))
+}
+write.table(cluster_metrics_tum,file="/media/theron/My_Passport/TCGA_junctions/cluster_metrics.txt",
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+
+```{r}
+
+cluster_metrics_tum <- read.table("/media/theron/My_Passport/TCGA_junctions/cluster_metrics.txt",header=T)
+
+```
+
+## Joining TMB and cancer clusters together
+
+```{r}
+
+splice_ant_TMB <- TMB
+splice_ant_TMB <- cbind(splice_ant_TMB,cluster_metrics_tum$tumor_clusters)
+colnames(splice_ant_TMB)<-c("cancer","TMB_mean","TMB_median","tumor_clusters")
+ggplot(splice_ant_TMB,aes(x=tumor_clusters,y=TMB_mean,label=cancer))+
+  geom_text()+
+  stat_cor(method = "spearman")
+ggplot(splice_ant_TMB,aes(x=tumor_clusters,y=TMB_median,label=cancer))+
+  geom_text()+
+  stat_cor(method = "spearman")
+
+```
+
+# Looking at splicing machinery mutations per cancer type
+
+```{r}
+
+count_muts <- function(mut_row){
+  mut_row<-as.character(mut_row)
+  genes <- mut_row[seq(3,length(mut_row)-1)]
+  genes <- which(genes != "WT")
+  if (length(genes) == 0){
+    return(0)
+  }
+  return(length(genes))
+}
+
+mut_1 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations.txt",header=T,sep="\t")
+mut_2 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_1.txt",,header=T,sep="\t")
+mut_3 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_2.txt",,header=T,sep="\t")
+mut_4 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_3.txt",,header=T,sep="\t")
+mut_5 <- read.table("/media/theron/My_Passport/TCGA_junctions/cbioportal_data/mutations_4.txt",,header=T,sep="\t")
+mutations <- cbind(mut_1,mut_2[3:ncol(mut_2)],mut_3[3:ncol(mut_3)],mut_3[3:ncol(mut_3)],mut_3[3:ncol(mut_3)])
+mutations$cancer_type<-vapply(mutations$STUDY_ID,function(ID){toupper(str_split(ID,"_")[[1]][1])},character(1))
+mutations$counts <- apply(mutations,1,count_muts)
+cancers <- unique(mutations$cancer_type)
+splice_muts <- data.frame(cancers)
+splice_muts$counts_mean<- NA
+splice_muts$counts_median<-NA
+for (i in cancers){
+  muts <- mutations[mutations$cancer_type == i,]
+  splice_muts[splice_muts$cancers==i,"counts_mean"] <- mean(muts$counts)
+  splice_muts[splice_muts$cancers==i,"counts_median"] <- median(muts$counts)
+}
+
+
+```
+
+# Joining splice_muts and splice_ant_data
+
+```{r}
+
+splice_ant_TMB$SF_mean <- NA
+splice_ant_TMB$SF_median <- NA
+for (i in seq(nrow(splice_ant_TMB))){
+  cancer <- splice_ant_TMB$cancer[i]
+  if (cancer %in% splice_muts$cancers){
+    splice_ant_TMB[i,"SF_mean"]<- splice_muts[splice_muts$cancers == cancer,"counts_mean"]
+    splice_ant_TMB[i,"SF_median"]<- splice_muts[splice_muts$cancers == cancer,"counts_median"]
+  }
+}
+
+ggplot(splice_ant_TMB,aes(x=tumor_clusters,y=SF_mean,label=cancer))+
+  geom_text()+
+  stat_cor(method = "spearman")
+ggplot(splice_ant_TMB,aes(x=tumor_clusters,y=SF_median,label=cancer))+
+  geom_text()+
+  stat_cor(method = "spearman")
+```
+
+
+

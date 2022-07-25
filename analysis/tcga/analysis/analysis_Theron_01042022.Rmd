@@ -1,0 +1,686 @@
+---
+title: "analysis_Theron_08262021"
+author: "Theron Palmer"
+date: "8/26/2021"
+
+---
+
+# Analysis Pipeline
+
+On ZAPPA. recount3_tcga_juncs_prep.sh -> recount3_tcga_juncs.sh -> splicemutr_leafcutter.sh -> save_introns.sh -> cong_tcga_junc.R -> tcga_form_transcripts.sh -> process_peps.sh -> runMHCnuggets.sh -> process_percentile.sh -> create_genotypes.sh (TCGA_assign_imm.sh) -> TCGA_assign_imm_py.sh -> TCGA_combine_kmers.sh -> create_junc_expr.sh -> TCGA_gene_expr_per_sample.sh -> calc_gene_metric.sh
+
+create_TCGA_TMB_maf_summary.sh
+
+# Loading in necessary libraries
+
+```{r,echo=FALSE}
+
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(TCGAutils)
+library(maftools)
+library(ggpubr)
+library(stringr)
+library(readxl)
+library(ComplexHeatmap)
+library(recount3)
+library(DT)
+
+```
+
+The TCGA MAF summary file
+
+```{r}
+
+maf_file <- "/media/theron/My_Passport/TCGA_junctions/maf_summary.txt"
+mc3_maf = read.table(maf_file,header=T)
+mc3_maf$Tumor_Sample_ID <- vapply(TCGAbarcode(mc3_maf$Tumor_Sample_Barcode,sample=T),
+                                  function(val){substr(val,1,nchar(val)-1)},
+                                  character(1))
+rownames(mc3_maf) <- mc3_maf$Tumor_Sample_Barcode
+mc3_maf$participant_ID <- TCGAbarcode(mc3_maf$Tumor_Sample_Barcode,participant=T)
+
+```
+
+
+```{r}
+
+mut_sig_perc <- readRDS("/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/mut_sig_percentages.rds")
+mut_sig_perc$sample_ID<-vapply(TCGAbarcode(rownames(mut_sig_perc),sample=T),function(sample){
+  substr(sample,1,nchar(sample)-1)
+},character(1))
+apobec <- c("T[C>T]A","T[C>T]T","T[C>G]A","T[C>G]T")
+
+```
+
+
+# Accumulating mutation data per sample only annotated
+
+## junc summary mean
+
+```{r}
+
+TCGA_cibersort_all <- read.table("/media/theron/My_Passport/TCGA_junctions/ext_dat/TCGA.Kallisto.fullIDs.cibersort.relative.tsv",header=T)
+TCGA_cibersort_all$SampleID <- str_replace_all(TCGA_cibersort_all$SampleID,"[.]","-")
+cibersort_cells <- c("participant_ID","B.cells.naive","B.cells.memory","Plasma.cells",
+                     "T.cells.CD8","T.cells.CD4.naive","T.cells.CD4.memory.resting",
+                     "T.cells.CD4.memory.activated","T.cells.follicular.helper",
+                     "T.cells.regulatory..Tregs.","T.cells.gamma.delta","NK.cells.resting",
+                     "NK.cells.activated","Monocytes","Macrophages.M0","Macrophages.M1",
+                     "Macrophages.M2","Dendritic.cells.resting","Dendritic.cells.activated",
+                     "Mast.cells.resting","Mast.cells.activated","Eosinophils","Neutrophils")
+
+junc_rse_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/CHOL/juncrse.rds"
+junc_rse <- readRDS(junc_rse_file)
+junc_metadata <- as.data.frame(junc_rse@colData@listData)
+junc_rse_cols <- colnames(junc_metadata)
+
+tumor_data_file <- "/media/theron/My_Passport/TCGA_junctions/TCGA_cancers/filenames.txt"
+tumor_data <- read.table(tumor_data_file)
+cancers <- basename(tumor_data$V1)
+# TMB<-list()
+
+cluster_metrics_tum <- data.frame(cancers)
+
+TMB_all <- data.frame(cancers)
+TMB_all$av_cor <- NA
+TMB_all$av_pval <- NA
+TMB_all$med_cor <- NA
+TMB_all$med_pval <- NA
+TMB_all$max_cor <- NA
+TMB_all$max_pval <- NA
+rownames(TMB_all) <- cancers
+all_genes <- c()
+
+# cols_to_look_for <- c("tcga.gdc_cases.diagnoses.tumor_stage",
+#                       "tcga.gdc_cases.diagnoses.days_to_death",
+#                       "tcga.cgc_case_primary_therapy_outcome_success",
+#                       "tcga.cgc_case_pathologic_stage")
+stage_1 <- c("Stage I","Stage IA","Stage IB")
+stage_2 <- c("Stage I","Stage IIA","Stage IIB","Stage IIC")
+stage_3 <- c("Stage III", "Stage IIIA", "Stage IIIB", "Stage IIIC")
+stage_4 <- c("Stage IV","Stage IVA", "Stage IVB","Stage IVC")
+
+for (i in seq(nrow(tumor_data))){
+  tumor_dir <- tumor_data[i,]
+  cancer <- basename(tumor_dir)
+  print(sprintf("%s: %d out of %d",cancer,i,nrow(tumor_data)))
+
+  # tumor_meta_file <- sprintf("%s/%s_metadata.txt",tumor_dir,cancer)
+  # tumor_meta <- read.table(tumor_meta_file,quote="",sep="\t")
+
+  tumor_meta_file <- sprintf("%s/%s_metadata.rds",tumor_dir,cancer)
+  tumor_meta <- readRDS(tumor_meta_file)
+  
+  tumor_meta$participant_ID <- vapply(TCGAbarcode(tumor_meta[,4],participant=T,sample=T),function(samp){substr(samp,1,nchar(samp)-1)},character(1))
+  TCGA_cibersort_all$participant_ID <- vapply(TCGAbarcode(TCGA_cibersort_all$SampleID,participant=T,sample=1),
+                                              function(samp){substr(samp,1,nchar(samp)-1)},character(1))
+  tumor_meta$nbases<-tumor_meta[,ncol(tumor_meta)-9]
+  mc3_maf_small<-subset(mc3_maf,Tumor_Sample_ID %in% tumor_meta$participant_ID)
+  TCGA_cibersort_small<-subset(TCGA_cibersort_all,participant_ID %in% tumor_meta$participant_ID)
+
+  mc3_maf_small <- mc3_maf_small[complete.cases(mc3_maf_small),]
+  mc3_maf_small$type <- vapply(rownames(mc3_maf_small),function(barcode){
+    type<-as.numeric(substr(strsplit(barcode,"-")[[1]][4],1,2))
+    if (type <= 9){
+      return("T")
+    } else if (type > 9 & type <= 19){
+      return ("N")
+    } else {
+      return ("C")
+    }
+  },character(1))
+  mc3_maf_small$TMB<-log10(mc3_maf_small$total+1)
+  mc3_maf_small <- mc3_maf_small %>% dplyr::filter(type == "T")
+
+  tumor_geno_file <- sprintf("%s/%s_genotypes.txt",tumor_dir,cancer)
+  tumor_geno <- read.table(tumor_geno_file,header=T)
+  tumor_geno <- tumor_geno %>% dplyr::filter(type=="T")
+  tumor_geno <- tumor_geno[complete.cases(tumor_geno),]
+  external_ids <- tumor_geno$external_id
+  splice_mut_file <- sprintf("%s/filenames.txt",tumor_dir)
+  splice_mut_files <- read.table(splice_mut_file)
+  for (j in seq(length(splice_mut_files$V1))){
+    if (j == 1){
+      combined_gene_metric <- readRDS(splice_mut_files$V1[j])
+    } else {
+      combined_gene_metric <- cbind(combined_gene_metric,readRDS(splice_mut_files$V1[j]))
+    }
+  }
+  combined_gene_metric[combined_gene_metric==-Inf]<-0
+  combined_gene_metric[is.na(combined_gene_metric)]<-0
+
+  combined_gene_metric <- combined_gene_metric[,external_ids]
+  all_genes <- unique(c(all_genes,rownames(combined_gene_metric)))
+
+  colnames(combined_gene_metric) <- vapply(colnames(combined_gene_metric),function(col_name){
+    col_name<-str_replace(col_name,"X","")
+    col_name <- str_replace_all(col_name,"[.]","-")
+    tumor_geno$sample_id[which(tumor_geno$external_id == col_name)[1]]
+  },character(1))
+
+  mc3_maf_small <- mc3_maf_small %>% dplyr::filter(Tumor_Sample_ID %in% colnames(combined_gene_metric))
+  TCGA_cibersort_small <- TCGA_cibersort_all %>% dplyr::filter(participant_ID %in% colnames(combined_gene_metric))
+
+  combined_gene_metric<-combined_gene_metric[,mc3_maf_small$Tumor_Sample_ID]
+  combined_gene_metric_per_sample<-data.frame(colnames(combined_gene_metric))
+  combined_gene_metric_per_sample$av <- vapply(seq(ncol(combined_gene_metric)),
+                                               function(col_val){mean(as.numeric(combined_gene_metric[,col_val]),na.rm=T)},
+                                               numeric(1))
+  combined_gene_metric_per_sample$med <- vapply(seq(ncol(combined_gene_metric)),
+                                               function(col_val){median(as.numeric(combined_gene_metric[,col_val]),na.rm=T)},
+                                               numeric(1))
+  combined_gene_metric_per_sample$max <- vapply(seq(ncol(combined_gene_metric)),
+                                               function(col_val){max(as.numeric(combined_gene_metric[,col_val]),na.rm=T)},
+                                               numeric(1))
+  combined_gene_metric_per_sample$sum <- vapply(seq(ncol(combined_gene_metric)),
+                                               function(col_val){sum(as.numeric(combined_gene_metric[,col_val]),na.rm=T)},
+                                               numeric(1))
+  combined_gene_metric_per_sample$TMB <- mc3_maf_small$TMB
+  combined_gene_metric_per_sample$cancer <- cancer
+  colnames(combined_gene_metric_per_sample) <- c("sample","gene_metric_av","gene_metric_med",
+                                                 "gene_metric_max","gene_metric_sum","TMB","cancer")
+  cibersort_per_samp <- lapply(combined_gene_metric_per_sample$sample,
+                             function(samp){
+                               if (samp %in% TCGA_cibersort_small$participant_ID){
+                                 return(TCGA_cibersort_small[which(TCGA_cibersort_small$participant_ID==samp),cibersort_cells,drop=F])
+                               } else {
+                                 a<-data.frame(t(c(samp,rep(NA,length(cibersort_cells)))))
+                                 colnames(a)<-cibersort_cells
+                                 return(a)
+                               }
+                             })
+  cibersort_per_samp_df<-cibersort_per_samp[[1]]
+  for (k in seq(2,length(cibersort_per_samp))){
+    cibersort_per_samp_df <- rbind(cibersort_per_samp_df,cibersort_per_samp[[k]])
+  }
+  cibersort_per_samp_df[,c("gene_metric_av","TMB","cancer")]<-t(vapply(cibersort_per_samp_df$participant_ID,function(ID){
+    as.character(combined_gene_metric_per_sample[combined_gene_metric_per_sample$sample==ID,c("gene_metric_av","TMB","cancer")])
+  },character(3)))
+  cibersort_per_samp_df$gene_metric_av <- as.numeric(cibersort_per_samp_df$gene_metric_av)
+  cibersort_per_samp_df$TMB <- as.numeric(cibersort_per_samp_df$TMB)
+
+  combined_gene_metric_perc <- data.frame(t(vapply(combined_gene_metric_per_sample$sample,function(samp){
+    a<-which(mut_sig_perc$sample_ID == samp)
+    if (length(a)==0){
+      return(rep(-1,ncol(mut_sig_perc)-1))
+    } else {
+      return(as.numeric(mut_sig_perc[a,seq(96)]))
+    }
+  },numeric(ncol(mut_sig_perc)-1))))
+  colnames(combined_gene_metric_perc)<-colnames(mut_sig_perc)[seq(96)]
+
+  if (i == 1){
+    combined_gene_metric_per_sample_all <- combined_gene_metric_per_sample
+    combined_gene_metric_perc_all <-  combined_gene_metric_perc
+  } else {
+    combined_gene_metric_per_sample_all <- rbind(combined_gene_metric_per_sample_all,combined_gene_metric_per_sample)
+    combined_gene_metric_perc_all <- rbind( combined_gene_metric_perc_all, combined_gene_metric_perc)
+  }
+
+
+  # combined_gene_metric_log10<-as.matrix(log10(combined_gene_metric+1))
+  # colnames(combined_gene_metric_log10)<-colnames(combined_gene_metric)
+  #
+  # print(Heatmap(combined_gene_metric_log10,
+  #         top_annotation = HeatmapAnnotation(TMB=anno_barplot(mc3_maf_small$TMB)),
+  #         show_row_names=F,
+  #         show_column_names = F,
+  #         cluster_rows=T,
+  #         cluster_columns=T))
+
+
+  a<-cor.test(combined_gene_metric_per_sample$gene_metric_av,combined_gene_metric_per_sample$TMB,method="pearson")
+  TMB_all[cancer,"av_cor"]<-a$estimate
+  TMB_all[cancer,"av_pval"]<-a$p.value
+
+  a<-cor.test(combined_gene_metric_per_sample$gene_metric_med,combined_gene_metric_per_sample$TMB,method="pearson")
+  TMB_all[cancer,"med_cor"]<-a$estimate
+  TMB_all[cancer,"med_pval"]<-a$p.value
+
+  a<-cor.test(combined_gene_metric_per_sample$gene_metric_max,combined_gene_metric_per_sample$TMB,method="pearson")
+  TMB_all[cancer,"max_cor"]<-a$estimate
+  TMB_all[cancer,"max_pval"]<-a$p.value
+
+  combined_gene_metric_perc_cor_pval <- data.frame(t(vapply(seq(ncol(mut_sig_perc)-1),function(col_val){
+    ret_val <- c()
+    mut_col <- as.numeric(combined_gene_metric_perc[,col_val])
+
+    aa<-data.frame(combined_gene_metric_per_sample$gene_metric_av,mut_col)
+    colnames(aa)<-c("gene_metric_av","mut_col")
+    aa<-aa %>% dplyr::filter(mut_col >= 0)
+    a<-cor.test(aa$gene_metric_av,aa$mut_col,method="pearson")
+    ret_val <- c(ret_val,a$estimate,a$p.value)
+
+    aa<-data.frame(combined_gene_metric_per_sample$gene_metric_med,mut_col)
+    colnames(aa)<-c("gene_metric_med","mut_col")
+    aa<-aa %>% dplyr::filter(mut_col >= 0)
+    a<-cor.test(aa$gene_metric_med,aa$mut_col,method="pearson")
+    ret_val <- c(ret_val,a$estimate,a$p.value)
+
+    aa<-data.frame(combined_gene_metric_per_sample$gene_metric_max,mut_col)
+    colnames(aa)<-c("gene_metric_max","mut_col")
+    aa<-aa %>% dplyr::filter(mut_col >= 0)
+    a<-cor.test(aa$gene_metric_max,aa$mut_col,method="pearson")
+    ret_val <- c(ret_val,a$estimate,a$p.value)
+  },numeric(6))))
+  colnames(combined_gene_metric_perc_cor_pval)<-c("av_cor","av_pval","med_cor","med_pval","max_cor","max_pval")
+  rownames(combined_gene_metric_perc_cor_pval) <- colnames(combined_gene_metric_perc)
+
+  print(ggplot(combined_gene_metric_per_sample,aes(x=gene_metric_av,y=TMB))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top",)+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  if (i == 1){
+    cibersort_per_samp_df_all <- cibersort_per_samp_df
+  } else {
+    cibersort_per_samp_df_all <- rbind(cibersort_per_samp_df_all,cibersort_per_samp_df)
+  }
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=B.cells.naive))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=B.cells.memory))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Plasma.cells))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=T.cells.CD8))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=T.cells.CD4.naive))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=T.cells.CD4.memory.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=T.cells.CD4.memory.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=T.cells.follicular.helper))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=T.cells.regulatory..Tregs.))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=T.cells.gamma.delta))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=NK.cells.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=NK.cells.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Monocytes))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Macrophages.M0))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Macrophages.M1))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Macrophages.M2))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Dendritic.cells.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Dendritic.cells.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Mast.cells.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Mast.cells.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Eosinophils))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Neutrophils))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm")+
+    labs(title=sprintf(cancer)))
+
+
+  # print(ggplot(combined_gene_metric_per_sample,aes(x=log10(gene_metric_med+1),y=TMB))+
+  #   geom_point()+
+  #   stat_cor(method = "pearson")+
+  #   geom_smooth(method="lm")+
+  #   labs(title=sprintf(cancer)))
+  #
+  # print(ggplot(combined_gene_metric_per_sample,aes(x=log10(gene_metric_max+1),y=TMB))+
+  #   geom_point()+
+  #   stat_cor(method = "pearson")+
+  #   geom_smooth(method="lm")+
+  #   labs(title=sprintf(cancer)))
+
+  combined_gene_metric_perc_cor_pval <- combined_gene_metric_perc_cor_pval %>% dplyr::filter(av_pval <= 0.05 | med_pval <= 0.05 | max_pval <= 0.05)
+  rownames(combined_gene_metric_perc_cor_pval) <- vapply(rownames(combined_gene_metric_perc_cor_pval),function(rname){
+    if (rname %in% apobec){
+      return(sprintf("%s:abobec",rname))
+    } else {
+      return(rname)
+    }
+  },character(1))
+  combined_gene_metric_perc_cor <- combined_gene_metric_perc_cor_pval[,c("av_cor","med_cor","max_cor")]
+  combined_gene_metric_perc_pval <- combined_gene_metric_perc_cor_pval[,c("av_pval","med_pval","max_pval")]
+
+  if (nrow(combined_gene_metric_perc_cor_pval) > 0){
+    print(Heatmap(as.matrix(combined_gene_metric_perc_cor), cell_fun = function(j, i, x, y, w, h, fill) {
+      if(combined_gene_metric_perc_pval[i, j] < 0.005) {
+          grid.text("**", x, y)
+      } else if(combined_gene_metric_perc_pval[i, j] < 0.05) {
+          grid.text("*", x, y)
+      }
+    },name=sprintf("%s: splicemut vs mutation type",cancer),cluster_columns=F))
+  } else {
+    print(sprintf("%s: no significant mutation trends",cancer))
+  }
+}
+
+```
+
+## Correlation Datatable
+
+```{r}
+
+datatable(TMB_all, caption = "TMB")
+
+```
+
+## TMB Correlation for all samples
+
+```{r}
+
+ggplot(combined_gene_metric_per_sample_all,aes(x=gene_metric_av,y=TMB))+
+  geom_point()+
+  stat_cor(method = "pearson",label.x.npc="middle",label.y.npc="top")+
+  geom_smooth(method="lm")+
+    labs("All Samples")
+
+```
+
+## Cell Proportions all samples
+
+```{r}
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=B.cells.naive))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=B.cells.memory))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Plasma.cells))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=T.cells.CD8))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=T.cells.CD4.naive))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=T.cells.CD4.memory.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=T.cells.CD4.memory.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=T.cells.follicular.helper))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=T.cells.regulatory..Tregs.))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=T.cells.gamma.delta))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=NK.cells.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=NK.cells.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Monocytes))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df,aes(x=gene_metric_av,y=Macrophages.M0))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Macrophages.M1))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Macrophages.M2))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Dendritic.cells.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Dendritic.cells.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Mast.cells.resting))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Mast.cells.activated))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Eosinophils))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+  
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Neutrophils))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+  print(ggplot(cibersort_per_samp_df_all,aes(x=gene_metric_av,y=Neutrophils))+
+    geom_point()+
+    stat_cor(method = "pearson",
+             label.x.npc = "left",
+             label.y.npc = "top")+
+    geom_smooth(method="lm"))
+
+```
+

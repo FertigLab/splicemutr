@@ -1,0 +1,440 @@
+---
+title: "Daria HNSCC Analysis"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r}
+
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(writexl)
+library(stringr)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(DT)
+library(ggpubr)
+library(ggprism)
+source("F:/splicemute/R/functions.R")
+
+```
+
+
+# Preprocessing
+
+## Gene metric preprocessing
+
+### Reading in Gene Metric and Group Data for Cohort
+
+```{r}
+
+gene_metric_mean_file_tumor <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/calc_gene_metric_out/gaykalova_gene_metric_mean_len_norm_no_gene_norm_tumor.rds"
+gene_metric_mean_tumor <- readRDS(gene_metric_mean_file_tumor)
+gene_metric_mean_file_normal <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/calc_gene_metric_out/gaykalova_gene_metric_mean_len_norm_no_gene_norm_normal.rds"
+gene_metric_mean_normal <- readRDS(gene_metric_mean_file_normal)
+# junction_expression_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_junc_expression/junc_expr_combined_vst.rds"
+# junction_expression <- readRDS(junction_expression_file)
+splicemutr_data_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/create_comparisons_out/gaykalova_splice_dat_all.rds"
+splicemutr_data <- readRDS(splicemutr_data_file)
+splicemutr_data <- splicemutr_data[as.numeric(splicemutr_data$deltapsi)>0,]
+groups_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/groups_file.txt"
+groups <- read.table(groups_file)
+colnames(groups) <- c("sample","group")
+
+```
+
+### Processing Tumor and normal differential agretopicity
+
+```{r}
+
+tumor_samples <- groups$sample[groups$group=="Tumor"]
+normal_samples <- groups$sample[groups$group=="Normal_Mucosa"]
+all_genes <- unique(c(rownames(gene_metric_mean_tumor,gene_metric_mean_normal)))
+normal_summary <- data.frame(normal_SA=apply(gene_metric_mean_normal[,normal_samples],1,mean,na.rm=T))
+normal_summary <- data.frame(normal_summary[all_genes,])
+normal_summary[is.na(normal_summary)]<-0
+rownames(normal_summary)<-all_genes
+tumor_summary <- data.frame(tumor_SA=apply(gene_metric_mean_tumor[,tumor_samples],1,mean,na.rm=T))
+tumor_summary <- data.frame(tumor_summary[all_genes,])
+tumor_summary[is.na(tumor_summary)]<-0
+rownames(tumor_summary) <- all_genes
+
+DA <- tumor_summary/normal_summary
+DA_inv <- normal_summary/tumor_summary
+DA[is.na(DA)]<-1
+DA[DA_inv==Inf] <- mean(DA[DA_inv!=Inf & DA!=Inf & DA < 1])
+DA[DA==Inf] <- mean(DA[DA_inv!=Inf & DA!=Inf & DA > 1])
+colnames(DA)<-"DA"
+DA$type <- vapply(DA$DA,function(val){
+  if (val < 1){
+    return("normal high")
+  } else if (val > 1){
+    "tumor high"
+  } else {
+    return("equal")
+  }
+},character(1))
+
+DA$DA_filt <- vapply(log2(DA$DA),function(val){
+  if(val>0){
+    return(val)
+  } else if (val<0){
+    return(-1*val)
+  } else {return(val)}
+},numeric(1))
+
+wilcox_test_val_all <- compare_means(DA_filt ~ type, p.adjust.method = "BH", data=DA)
+wilcox_test_val_all$y.position <- c(7.5,8,8.5)
+ggplot(DA,aes(y=DA_filt,x=type))+
+  geom_boxplot()+
+  add_pvalue(wilcox_test_val_all, label = "p.signif", remove.bracket = TRUE)+
+  ylab("Differential Agretopicity")+
+  xlab("Differential Agretopicity Classification")
+
+ggplot(DA,aes(y=DA_filt,x=type))+
+  geom_violin()+
+  add_pvalue(wilcox_test_val_all, label = "p.signif", remove.bracket = TRUE)+
+  ylab("Differential Agretopicity")+
+  xlab("Differential Agretopicity Classification")
+
+DA_table <- data.frame(table(DA$type))
+colnames(DA_table)<-c("type","count")
+ggplot(DA_table,aes(x=type,y=count))+
+  geom_bar(stat="identity")+
+  xlab("Differential Agretopicity Classification")
+ggplot(DA_table,aes(x=type,y=log10(count)))+
+  geom_bar(stat="identity")+
+  xlab("Differential Agretopicity Classification")
+
+```
+
+
+### Extracting 090 and 047 gene metric data
+
+```{r}
+
+gene_metric_cell_lines_tumor <- gene_metric_mean_tumor[,c("DGay18-047-1_1_val","DGay21-090-1_1_val")]
+gene_metric_cell_lines_normal <- gene_metric_mean_normal[,c("DGay18-047-1_1_val","DGay21-090-1_1_val")]
+all_genes <- unique(c(rownames(gene_metric_cell_lines_tumor),rownames(gene_metric_cell_lines_normal)))
+
+SA_090 <- data.frame(t(vapply(all_genes,function(gene){
+  if (gene %in% rownames(gene_metric_cell_lines_tumor)){
+    tumor<-gene_metric_cell_lines_tumor[gene,"DGay21-090-1_1_val"]
+  } else {
+    tumor<-0
+  }
+  if (gene %in% rownames(gene_metric_cell_lines_normal)){
+    normal<-gene_metric_cell_lines_normal[gene,"DGay21-090-1_1_val"]
+  } else {
+    normal<-0
+  }
+  ret <- c(tumor,normal)
+  ret[is.na(ret)]<-0
+  DA <- (ret[1]+1)/(ret[2]+1)
+  return(c(ret,DA))
+},numeric(3))))
+colnames(SA_090)<-c("SA_tumor_090","SA_normal_090","DA_090")
+
+SA_047 <- data.frame(t(vapply(all_genes,function(gene){
+  if (gene %in% rownames(gene_metric_cell_lines_tumor)){
+    tumor<-gene_metric_cell_lines_tumor[gene,"DGay18-047-1_1_val"]
+  } else {
+    tumor<-0
+  }
+  if (gene %in% rownames(gene_metric_cell_lines_normal)){
+    normal<-gene_metric_cell_lines_normal[gene,"DGay18-047-1_1_val"]
+  } else {
+    normal<-0
+  }
+  ret <- c(tumor,normal)
+  ret[is.na(ret)]<-0
+  DA <- (ret[1]+1)/(ret[2]+1)
+  return(c(ret,DA))
+},numeric(3))))
+colnames(SA_047)<-c("SA_tumor_047","SA_normal_047","DA_047")
+
+SA_cell_lines <- cbind(SA_090,SA_047)
+rm(SA_047,SA_090)
+
+```
+
+## JQ1 preprocessing
+
+### Handling JQ1 metatdata
+
+```{r}
+
+JQ1_metadata_file <- "F:/HPV-positiveOPSCC-RNA-JQ1/RNAseqJQ1_fzamune1@jhmi.edu_144134_HPV-HNSCC-090-047_JQ1_Mar2018/Annotations_RNAseqJQ1_fzamune1@jhmi.edu_144134.csv"
+JQ1_metadata <- read.csv(JQ1_metadata_file,header=T)
+rownames(JQ1_metadata) <- JQ1_metadata$File_Name
+
+for (i in seq(nrow(JQ1_metadata))){
+  if (JQ1_metadata$Treatment[i]=="DMSO (non-treatment control)"){
+    JQ1_metadata$Treatment[i] <- "DMSO"
+  } else if(JQ1_metadata$Treatment[i]=="JQ1 (the treatment)") {
+    JQ1_metadata$Treatment[i] <- "JQ1"
+  }
+}
+JQ1_metadata$cell_line_treatment <- vapply(seq(nrow(JQ1_metadata)),function(val){
+  cell_line <- JQ1_metadata$Cell.line.name[val]
+  treatment <- JQ1_metadata$Treatment[val]
+  return(paste(c(cell_line,treatment),collapse=":"))
+},character(1))
+
+```
+
+### Handling SJ.out.tab data
+
+```{r,eval=F}
+
+SJ.out.tab_filenames_file <- "F:/HPV-positiveOPSCC-RNA-JQ1/RNAseqJQ1_fzamune1@jhmi.edu_144134_HPV-HNSCC-090-047_JQ1_Mar2018/SJ.out.tab/filenames.txt"
+SJ.out.tab_filenames <- read.table(SJ.out.tab_filenames_file)
+
+juncs_to_analyze <- unique(splicemutr_data$juncs)
+JQ1_junc_expression <- data.frame(juncs=juncs_to_analyze)
+
+for (i in seq(nrow(SJ.out.tab_filenames))){
+  print(i)
+  file <- str_replace(SJ.out.tab_filenames[i,1],"/mnt/f","F:")
+  file_snipped <- str_remove(basename(file),"SJ.out.tab")
+  junc_data <- star_to_leaf(file)
+  junc_data$juncs <- vapply(seq(nrow(junc_data)),
+                           function(val){
+                             paste(c(junc_data$chrom[val],junc_data$chromStart[val],junc_data$chromEnd[val],junc_data$strand[val]),collapse=":")
+                            },character(1))
+  rownames(junc_data)<-junc_data$juncs
+  junc_fill <- junc_data[juncs_to_analyze,"score"]
+  JQ1_junc_expression[,file_snipped]<-junc_fill
+  
+}
+saveRDS(JQ1_junc_expression,file="F:/HPV-positiveOPSCC-RNA-JQ1/RNAseqJQ1_fzamune1@jhmi.edu_144134_HPV-HNSCC-090-047_JQ1_Mar2018/SJ.out.tab/junc_expression.rds")
+
+```
+
+### Summarizing junc expression per cell line and treatment type
+
+```{r}
+
+JQ1_junc_expression <- readRDS("F:/HPV-positiveOPSCC-RNA-JQ1/RNAseqJQ1_fzamune1@jhmi.edu_144134_HPV-HNSCC-090-047_JQ1_Mar2018/SJ.out.tab/junc_expression.rds")
+cell_line_treatments <- c("O47:DMSO","O47:JQ1","O90:DMSO","O90:JQ1")
+JQ1_junc_expression_summary <- data.frame(juncs= JQ1_junc_expression$juncs)
+JQ1_metadata <- JQ1_metadata[JQ1_metadata$File_Name %in% colnames(JQ1_junc_expression),]
+for (i in cell_line_treatments){
+  JQ1_junc_expression_summary[,i]<-apply(JQ1_junc_expression[,JQ1_metadata[JQ1_metadata$cell_line_treatment==i,"File_Name"]],1,mean,na.rm=T)
+}
+
+rownames(JQ1_junc_expression_summary) <- JQ1_junc_expression_summary$juncs
+JQ1_junc_expression_summary <- JQ1_junc_expression_summary[,seq(2,ncol(JQ1_junc_expression_summary))]
+JQ1_junc_expression_summary[is.na(JQ1_junc_expression_summary)]<-0
+JQ1_junc_expression_summary$JQ1_ov_DMSO_047 <- (JQ1_junc_expression_summary$`O47:JQ1`+1)/(JQ1_junc_expression_summary$`O47:DMSO`+1)
+JQ1_junc_expression_summary$JQ1_ov_DMSO_090 <- (JQ1_junc_expression_summary$`O90:JQ1`+1)/(JQ1_junc_expression_summary$`O90:DMSO`+1)
+splicemutr_data_filt <- unique(splicemutr_data[,c("juncs","gene")])
+JQ1_junc_expression_summary_dup <- JQ1_junc_expression_summary[splicemutr_data_filt$juncs,]
+JQ1_junc_expression_summary_dup$gene <- splicemutr_data_filt$gene
+
+SA_all_dup <- SA_cell_lines[JQ1_junc_expression_summary_dup$gene,]
+
+JQ1_junc_expr_SA <- cbind(JQ1_junc_expression_summary_dup,SA_all_dup)
+# JQ1_junc_expr_SA[is.na(JQ1_junc_expr_SA)]<-0
+
+rm(SA_all_dup,JQ1_junc_expression_summary_dup)
+
+```
+
+# Plotting Junction expression vs splicing antigenicity
+
+```{r}
+
+
+ggplot(JQ1_junc_expr_SA,aes(x=log2(JQ1_ov_DMSO_047),y=log2(DA_047),color=log2(DA_090)))+
+  geom_point(alpha=0.5)+
+  geom_hline(yintercept=0,color="darkblue")+geom_vline(xintercept=0,color="darkblue")+
+  geom_hline(yintercept=median(log2(JQ1_junc_expr_SA$JQ1_ov_DMSO_047),na.rm=T),color="black",linetype = "longdash")+
+  geom_vline(xintercept=median(log2(JQ1_junc_expr_SA$DA_047),na.rm=T),color="black",linetype = "longdash")+
+  scale_color_gradient(low = "green", high = "purple")
+
+ggplot(JQ1_junc_expr_SA,aes(x=log2(JQ1_ov_DMSO_047),y=log2(DA_047),color=log2(JQ1_ov_DMSO_090)))+
+  geom_point(alpha=0.5)+
+  geom_hline(yintercept=0,color="darkblue")+geom_vline(xintercept=0,color="darkblue")+
+  geom_hline(yintercept=median(log2(JQ1_junc_expr_SA$JQ1_ov_DMSO_047),na.rm=T),color="black",linetype = "longdash")+
+  geom_vline(xintercept=median(log2(JQ1_junc_expr_SA$DA_047),na.rm=T),color="black",linetype = "longdash")+
+  scale_color_gradient(low = "green", high = "purple")
+
+
+ggplot(JQ1_junc_expr_SA,aes(x=log2(JQ1_ov_DMSO_090),y=log2(DA_090),color=log2(DA_047)))+
+  geom_point(alpha=0.5)+geom_hline(yintercept=0,color="darkblue")+geom_vline(xintercept=0,color="darkblue")+
+  geom_hline(yintercept=median(log2(JQ1_junc_expr_SA$JQ1_ov_DMSO_090),na.rm=T),color="black",linetype = "longdash")+
+  geom_vline(xintercept=median(log2(JQ1_junc_expr_SA$DA_090),na.rm=T),color="black",linetype = "longdash")+
+  scale_color_gradient(low = "green", high = "purple")
+
+ggplot(JQ1_junc_expr_SA,aes(x=log2(JQ1_ov_DMSO_090),y=log2(DA_090),color=log2(JQ1_ov_DMSO_047)))+
+  geom_point(alpha=0.5)+geom_hline(yintercept=0,color="darkblue")+geom_vline(xintercept=0,color="darkblue")+
+  geom_hline(yintercept=median(log2(JQ1_junc_expr_SA$JQ1_ov_DMSO_090),na.rm=T),color="black",linetype = "longdash")+
+  geom_vline(xintercept=median(log2(JQ1_junc_expr_SA$DA_090),na.rm=T),color="black",linetype = "longdash")+
+  scale_color_gradient(low = "green", high = "purple")
+
+JQ1_junc_expr_SA$pos_DA_FC_both_lines <- vapply(seq(nrow(JQ1_junc_expr_SA)),function(val){
+  vals<-JQ1_junc_expr_SA[val,]
+  if (any(is.na(vals))){return("non-target")}
+  DA_090 <- JQ1_junc_expr_SA$DA_090[val]
+  DA_047 <- JQ1_junc_expr_SA$DA_047[val]
+  JQ1_ov_DMSO_090 <- JQ1_junc_expr_SA$JQ1_ov_DMSO_090[val]
+  JQ1_ov_DMSO_047 <- JQ1_junc_expr_SA$JQ1_ov_DMSO_047[val]
+  if (DA_090>1 & DA_047>1 & JQ1_ov_DMSO_090>1 & JQ1_ov_DMSO_047>1){
+    return("target")
+  } else {
+    return("non-target")
+  }
+  
+},character(1))
+
+ggplot(JQ1_junc_expr_SA,aes(x=log2(JQ1_ov_DMSO_090),y=log2(DA_090),color=pos_DA_FC_both_lines))+
+  geom_point(alpha=0.5)+geom_hline(yintercept=0,color="darkblue")+geom_vline(xintercept=0,color="darkblue")+
+  geom_hline(yintercept=median(log2(JQ1_junc_expr_SA$JQ1_ov_DMSO_090),na.rm=T),color="black",linetype = "longdash")+
+  geom_vline(xintercept=median(log2(JQ1_junc_expr_SA$DA_090),na.rm=T),color="black",linetype = "longdash")
+
+write.csv(JQ1_junc_expr_SA,file="F:/HPV-positiveOPSCC-RNA-JQ1/RNAseqJQ1_fzamune1@jhmi.edu_144134_HPV-HNSCC-090-047_JQ1_Mar2018/SJ.out.tab/JQ1_junc_expr_SA.csv",col.names = T,row.names = T,quote=F)
+
+```
+
+# Overrepresentation analysis for potential targets
+
+```{r}
+
+key_vals <- as.data.frame(org.Hs.egENSEMBL)
+keys <- key_vals$ensembl_id
+vals <- key_vals$gene_id
+dict <- as.list(vals)
+names(dict)<-keys
+geneList <- JQ1_junc_expr_SA$gene[JQ1_junc_expr_SA$pos_DA_FC_both_lines=="target"]
+geneList_entrez <- unlist(dict[geneList])
+
+ego_CC <- enrichGO(gene          = geneList_entrez,
+                OrgDb         = org.Hs.eg.db,
+                ont           = "CC",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+ego_CC_df <- as.data.frame(ego_CC)
+datatable(ego_CC_df,caption="GO CC")
+
+ego_BP <- enrichGO(gene          = geneList_entrez,
+                OrgDb         = org.Hs.eg.db,
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+ego_BP_df <- as.data.frame(ego_BP)
+datatable(ego_BP_df,caption="GO BP")
+
+
+ego_MF <- enrichGO(gene          = geneList_entrez,
+                OrgDb         = org.Hs.eg.db,
+                ont           = "MF",
+                pAdjustMethod = "BH",
+                pvalueCutoff  = 0.01,
+                qvalueCutoff  = 0.05,
+        readable      = TRUE)
+ego_MF_df <- as.data.frame(ego_MF)
+datatable(ego_MF_df,caption="GO MF")
+
+
+KEGG <- enrichKEGG(gene         = geneList_entrez,
+                 organism     = 'hsa',
+                 pvalueCutoff = 0.05,
+                 pAdjustMethod="BH")
+KEGG_df <- as.data.frame(KEGG)
+datatable(KEGG_df,caption="KEGG")
+
+
+```
+
+# Gene set Enrichment Analysis using gene differential agretopicity
+
+```{r}
+
+genes_DA <- unique(JQ1_junc_expr_SA[,c("gene","DA_090","DA_047")])
+DA_090 <-  genes_DA$DA_090
+DA_047 <- genes_DA$DA_047
+entrez_genes <- unlist(lapply(genes_DA$gene,function(gene){
+  a<-dict[gene]
+  if (is.null(a[[1]])){
+    return(NA)
+  } else {
+    return(a[[1]])
+  }
+}))
+genes_DA$entrez <- entrez_genes
+genes_DA<-genes_DA[complete.cases(genes_DA),]
+
+ranks_090 <- log2(genes_DA$DA_090)
+names(ranks_090) <- genes_DA$entrez
+ranks_pos<-ranks_090[ranks_090>=0]
+ranks_neg<-ranks_090[ranks_090<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+ranks_090<-c(ranks_pos,ranks_neg)
+ranks_090 <- sort(ranks_090,decreasing=T)
+
+ranks_047 <- log2(genes_DA$DA_047)
+names(ranks_047) <- genes_DA$entrez
+ranks_pos<-ranks_047[ranks_047>=0]
+ranks_neg<-ranks_047[ranks_047<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+ranks_047<-c(ranks_pos,ranks_neg)
+ranks_047 <- sort(ranks_047,decreasing=T)
+
+
+ego_GSE_090 <- gseGO(geneList     = ranks_090,
+              OrgDb        = org.Hs.eg.db,
+              ont          = "ALL",
+              minGSSize    = 50,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.1,
+              verbose      = FALSE,
+              pAdjustMethod = "BH",
+              by="fgsea")
+ego_GSE_090_df <- as.data.frame(ego_GSE_090)
+datatable(ego_GSE_090_df,caption="090 GSE GO")
+
+ego_GSE_047 <- gseGO(geneList     = ranks_047,
+              OrgDb        = org.Hs.eg.db,
+              ont          = "ALL",
+              minGSSize    = 50,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.1,
+              verbose      = FALSE,
+              by="fgsea",
+              pAdjustMethod = "BH")
+ego_GSE_047_df <- as.data.frame(ego_GSE_047)
+datatable(ego_GSE_047_df,caption="047 GSE GO")
+
+KEGG_090_GSE <- gseKEGG(geneList     = ranks_090,
+               organism     = 'hsa',
+               minGSSize    = 50,
+               pvalueCutoff = 0.1,
+               verbose      = FALSE,
+               pAdjustMethod = "BH",
+               by="fgsea")
+KEGG_090_GSE_df <- as.data.frame(KEGG_090_GSE)
+datatable(KEGG_090_GSE_df,caption="090 GSE KEGG")
+
+KEGG_047_GSE <- gseKEGG(geneList     = ranks_047,
+               organism     = 'hsa',
+               minGSSize    = 50,
+               pvalueCutoff = 0.1,
+               verbose      = FALSE,
+               pAdjustMethod = "BH",
+               by="fgsea")
+KEGG_047_GSE_df <- as.data.frame(KEGG_047_GSE)
+datatable(KEGG_047_GSE_df,caption="047 GSE KEGG")
+
+```
+

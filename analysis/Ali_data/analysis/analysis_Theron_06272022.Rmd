@@ -1,0 +1,925 @@
+---
+title: "analysis_Theron"
+author: "Theron Palmer"
+date: "8/17/2021"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+# Libraries used in the analysis
+
+```{r}
+
+library(DT)
+library(ggplot2)
+library(clusterProfiler)
+library(org.Mm.eg.db)
+library(org.Hs.eg.db)
+library(pathview)
+library(DOSE)
+library(ggnewscale)
+library(readxl)
+library(ComplexHeatmap)
+library(stringr)
+
+```
+
+# Loading in the necessary data
+
+```{r,echo=FALSE}
+
+base_dir <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes"
+PD1_vs_combo <- read.table(sprintf("%s/%s",base_dir,"PD1_vs_Combo_genes_DESeq2.txt"),header=T)
+untreated_vs_combo <- read.table(sprintf("%s/%s",base_dir,"Untreated_vs_Combo_genes_DESeq2.txt"),header=T)
+untreated_vs_PD1 <- read.table(sprintf("%s/%s",base_dir,"Untreated_vs_PD1_genes_DESeq2.txt"),header=T)
+
+```
+
+# PD1 vs Combo (PD1/Combo)
+
+## Differential Expression Data 
+
+RSEM was run on each sample. Using the RSEM-quantified gene expression, DESeq2 was run between arms. The fold change order is as follows: A_vs_B => numerator_vs_denominator. The following table is interactive and shows the differential expression results for PD1 vs combination therapy samples. The magnitude log2 fold change is very small towards PD1 and towards Combo. 
+
+```{r,echo=FALSE}
+
+which_sig <- vapply(as.numeric(PD1_vs_combo$PD1_vs_Combo_pvalue),function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+PD1_vs_combo$significance_pval <- which_sig
+
+which_sig <- vapply(PD1_vs_combo$PD1_vs_Combo_padj,function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+PD1_vs_combo$significance_padj <- which_sig
+
+PD1_vs_combo_table <- PD1_vs_combo[complete.cases(PD1_vs_combo),]
+datatable(PD1_vs_combo_table)
+
+```
+
+
+## Volcano Plots
+
+```{r,echo=F}
+
+ggplot(PD1_vs_combo_table,aes(x=PD1_vs_Combo_log2FoldChange, y=-log10(PD1_vs_Combo_pvalue), color = significance_pval))+
+  geom_text(label=PD1_vs_combo_table$gene_symbol)+
+  labs(title="unadjusted pvalues")
+
+ggplot(PD1_vs_combo_table,aes(x=PD1_vs_Combo_log2FoldChange, y=-log10(PD1_vs_Combo_padj), color = significance_padj))+
+  geom_text(label=PD1_vs_combo_table$gene_symbol)+
+  labs(title="BH-adjusted pvalues")
+
+```
+
+
+## gsea results on GO and KEGG terms
+
+Gene-set enrichment analysis within the GO pathways show enrichment for ribosome pathways, protein synthesis and catalysis, innate and adaptive immune response, B-cell proliferation, an antiviral immune response, interferon production, cellular response to interferon, RNA translation, and RNA and mRNA binding.
+
+```{r,echo=F}
+
+symbol_to_entrez <- as.list(org.Mm.egALIAS2EG)
+PD1_vs_combo_table$entrez <- vapply(symbol_to_entrez[PD1_vs_combo_table$gene_symbol],function(val){
+  if (length(val)>=1){
+    return(val[1])
+  } else {
+    return("")
+  }
+},character(1))
+
+
+diff_dat_filt <- PD1_vs_combo_table %>% dplyr::filter(!is.na(PD1_vs_Combo_log2FoldChange) & !is.na(PD1_vs_Combo_pvalue) & PD1_vs_combo_table$entrez != "")
+genes <- diff_dat_filt$PD1_vs_Combo_log2FoldChange
+names(genes) <- diff_dat_filt$entrez
+ranks <- diff_dat_filt$PD1_vs_Combo_log2FoldChange*-log10(diff_dat_filt$PD1_vs_Combo_pvalue)
+names(ranks)<-diff_dat_filt$entrez
+genes_ranks <- ranks
+names(genes_ranks) <- diff_dat_filt$gene_symbol
+ranks<-ranks[unname(!is.na(ranks))]
+ranks_pos<-ranks[ranks>=0]
+ranks_neg<-ranks[ranks<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+ranks<-c(ranks_pos,ranks_neg)
+
+genes_ranks<-genes_ranks[unname(!is.na(genes_ranks))]
+ranks_pos<-genes_ranks[genes_ranks>=0]
+ranks_neg<-genes_ranks[genes_ranks<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+genes_ranks<-c(ranks_pos,ranks_neg)
+
+ego3_CC <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "CC",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_CC<-setReadable(ego3_CC,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_CC_df <- ego3_CC@result
+
+ego3_BP <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "BP",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_BP<-setReadable(ego3_BP,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_BP_df <- ego3_BP@result
+
+ego3_MF <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "MF",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_MF<-setReadable(ego3_MF,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_MF_df <- ego3_MF@result
+
+KEGG <- gseKEGG(geneList = sort(ranks,decreasing=T),
+               organism     = 'mmu',
+               minGSSize    = 20,
+               pvalueCutoff = 0.05,
+               verbose      = FALSE,
+               by = "fgsea")
+KEGG_rep <- enrichKEGG(gene = names(ranks),
+               organism     = 'mmu',
+               minGSSize    = 20,
+               pvalueCutoff = 0.05)
+KEGG<-setReadable(KEGG,"org.Mm.eg.db",keyType="ENTREZID")
+KEGG_df <- KEGG@result
+
+datatable(ego3_CC_df,caption = "GO_CC")
+datatable(ego3_BP_df,caption = "GO_BP")
+datatable(ego3_MF_df,caption = "GO_MF")
+datatable(KEGG_df,caption = "KEGG")
+
+```
+
+
+# untreated vs Combo (untreated/Combo)
+
+## Differential Expression Data 
+
+RSEM was run on each sample. Using the RSEM-quantified gene expression, DESeq2 was run between arms. The fold change order is as follows: A_vs_B => numerator_vs_denominator. The following table is interactive and shows the differential expression results for PD1 vs combination therapy samples. The magnitude log2 fold change is very small towards PD1 and towards Combo. 
+
+```{r,echo=FALSE}
+
+which_sig <- vapply(as.numeric(untreated_vs_combo$Untreated_vs_Combo_pvalue),function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_combo$significance_pval <- which_sig
+
+which_sig <- vapply(untreated_vs_combo$Untreated_vs_Combo_padj,function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_combo$significance_padj <- which_sig
+
+untreated_vs_combo_table <- untreated_vs_combo[complete.cases(untreated_vs_combo),]
+datatable(untreated_vs_combo_table)
+
+```
+
+
+## Volcano Plots
+
+```{r,echo=F}
+
+ggplot(untreated_vs_combo_table,aes(x=Untreated_vs_Combo_log2FoldChange, y=-log10(Untreated_vs_Combo_pvalue), color = significance_pval))+
+  geom_text(label=untreated_vs_combo_table$gene_symbol)+
+  labs(title="unadjusted pvalues")
+
+ggplot(untreated_vs_combo_table,aes(x=Untreated_vs_Combo_log2FoldChange, y=-log10(Untreated_vs_Combo_padj), color = significance_padj))+
+  geom_text(label=untreated_vs_combo_table$gene_symbol)+
+  labs(title="BH-adjusted pvalues")
+
+```
+
+
+## gsea results on GO and KEGG terms
+
+Gene-set enrichment analysis within the GO pathways show enrichment for ribosome pathways, protein synthesis and catalysis, innate and adaptive immune response, B-cell proliferation, an antiviral immune response, interferon production, cellular response to interferon, RNA translation, and RNA and mRNA binding.
+
+```{r,echo=F}
+
+symbol_to_entrez <- as.list(org.Mm.egALIAS2EG)
+untreated_vs_combo_table$entrez <- vapply(symbol_to_entrez[untreated_vs_combo_table$gene_symbol],function(val){
+  if (length(val)>=1){
+    return(val[1])
+  } else {
+    return("")
+  }
+},character(1))
+
+
+diff_dat_filt <- untreated_vs_combo_table %>% dplyr::filter(!is.na(Untreated_vs_Combo_log2FoldChange) & !is.na(Untreated_vs_Combo_pvalue) & untreated_vs_combo_table$entrez != "")
+genes <- diff_dat_filt$Untreated_vs_Combo_log2FoldChange
+names(genes) <- diff_dat_filt$entrez
+ranks <- diff_dat_filt$Untreated_vs_Combo_log2FoldChange*-log10(diff_dat_filt$Untreated_vs_Combo_pvalue)
+names(ranks)<-diff_dat_filt$entrez
+genes_ranks <- ranks
+names(genes_ranks) <- diff_dat_filt$gene_symbol
+ranks<-ranks[unname(!is.na(ranks))]
+ranks_pos<-ranks[ranks>=0]
+ranks_neg<-ranks[ranks<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+ranks<-c(ranks_pos,ranks_neg)
+
+genes_ranks<-genes_ranks[unname(!is.na(genes_ranks))]
+ranks_pos<-genes_ranks[genes_ranks>=0]
+ranks_neg<-genes_ranks[genes_ranks<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+genes_ranks<-c(ranks_pos,ranks_neg)
+
+ego3_CC <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "CC",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_CC<-setReadable(ego3_CC,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_CC_df <- ego3_CC@result
+
+ego3_BP <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "BP",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_BP<-setReadable(ego3_BP,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_BP_df <- ego3_BP@result
+
+ego3_MF <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "MF",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_MF<-setReadable(ego3_MF,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_MF_df <- ego3_MF@result
+
+KEGG <- gseKEGG(geneList = sort(ranks,decreasing=T),
+               organism     = 'mmu',
+               minGSSize    = 20,
+               pvalueCutoff = 0.05,
+               verbose      = FALSE,
+               by = "fgsea")
+KEGG<-setReadable(KEGG,"org.Mm.eg.db",keyType="ENTREZID")
+KEGG_df <- KEGG@result
+
+datatable(ego3_CC_df,caption = "GO_CC")
+datatable(ego3_BP_df,caption = "GO_BP")
+datatable(ego3_MF_df,caption = "GO_MF")
+datatable(KEGG_df,caption = "KEGG")
+
+```
+
+# untreated vs pd1 (unctreate/pd1)
+
+## Differential Expression Data 
+
+RSEM was run on each sample. Using the RSEM-quantified gene expression, DESeq2 was run between arms. The fold change order is as follows: A_vs_B => numerator_vs_denominator. The following table is interactive and shows the differential expression results for PD1 vs combination therapy samples. The magnitude log2 fold change is very small towards PD1 and towards Combo. 
+
+```{r,echo=FALSE}
+
+which_sig <- vapply(as.numeric(untreated_vs_PD1$Untreated_vs_PD1_pvalue),function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_PD1$significance_pval <- which_sig
+
+which_sig <- vapply(untreated_vs_PD1$Untreated_vs_PD1_padj,function(val){
+  if (is.na(val)){
+    return("Insig")
+  }
+  if (val <= 0.05){
+    return("Sig")
+  } else {
+    return("Insig")
+  }},character(1))
+untreated_vs_PD1$significance_padj <- which_sig
+
+untreated_vs_PD1_table <- untreated_vs_PD1[complete.cases(untreated_vs_PD1),]
+datatable(untreated_vs_PD1_table)
+
+```
+
+
+## Volcano Plots
+
+```{r,echo=F}
+
+ggplot(untreated_vs_PD1_table,aes(x=Untreated_vs_PD1_log2FoldChange, y=-log10(Untreated_vs_PD1_pvalue), color = significance_pval))+
+  geom_text(label=untreated_vs_PD1_table$gene_symbol)+
+  labs(title="unadjusted pvalues")
+
+ggplot(untreated_vs_PD1_table,aes(x=Untreated_vs_PD1_log2FoldChange, y=-log10(Untreated_vs_PD1_padj), color = significance_padj))+
+  geom_text(label=untreated_vs_PD1_table$gene_symbol)+
+  labs(title="BH-adjusted pvalues")
+
+```
+
+
+## gsea results on GO and KEGG terms
+
+Gene-set enrichment analysis within the GO pathways show enrichment for ribosome pathways, protein synthesis and catalysis, innate and adaptive immune response, B-cell proliferation, an antiviral immune response, interferon production, cellular response to interferon, RNA translation, and RNA and mRNA binding.
+
+```{r,echo=F}
+
+symbol_to_entrez <- as.list(org.Mm.egALIAS2EG)
+untreated_vs_PD1_table$entrez <- vapply(symbol_to_entrez[untreated_vs_PD1_table$gene_symbol],function(val){
+  if (length(val)>=1){
+    return(val[1])
+  } else {
+    return("")
+  }
+},character(1))
+
+
+diff_dat_filt <- untreated_vs_PD1_table %>% dplyr::filter(!is.na(Untreated_vs_PD1_log2FoldChange) & !is.na(Untreated_vs_PD1_pvalue) & untreated_vs_PD1_table$entrez != "")
+genes <- diff_dat_filt$Untreated_vs_PD1_log2FoldChange
+names(genes) <- diff_dat_filt$entrez
+ranks <- diff_dat_filt$Untreated_vs_PD1_log2FoldChange*-log10(diff_dat_filt$Untreated_vs_PD1_pvalue)
+names(ranks)<-diff_dat_filt$entrez
+genes_ranks <- ranks
+names(genes_ranks) <- diff_dat_filt$gene_symbol
+ranks<-ranks[unname(!is.na(ranks))]
+ranks_pos<-ranks[ranks>=0]
+ranks_neg<-ranks[ranks<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+ranks<-c(ranks_pos,ranks_neg)
+
+genes_ranks<-genes_ranks[unname(!is.na(genes_ranks))]
+ranks_pos<-genes_ranks[genes_ranks>=0]
+ranks_neg<-genes_ranks[genes_ranks<0]
+ranks_pos<-rank(ranks_pos,ties.method = "random")
+ranks_neg<--1*rank(-1*ranks_neg,ties.method = "random")
+genes_ranks<-c(ranks_pos,ranks_neg)
+
+ego3_CC <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "CC",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_CC<-setReadable(ego3_CC,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_CC_df <- ego3_CC@result
+
+ego3_BP <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "BP",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_BP<-setReadable(ego3_BP,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_BP_df <- ego3_BP@result
+
+ego3_MF <- gseGO(geneList = sort(ranks,decreasing=T),
+              OrgDb        = org.Mm.eg.db,
+              ont          = "MF",
+              minGSSize    = 20,
+              maxGSSize    = 500,
+              pvalueCutoff = 0.05,
+              verbose      = FALSE,
+              by = "fgsea")
+ego3_MF<-setReadable(ego3_MF,"org.Mm.eg.db",keyType="ENTREZID")
+ego3_MF_df <- ego3_MF@result
+
+KEGG <- gseKEGG(geneList = sort(ranks,decreasing=T),
+               organism     = 'mmu',
+               minGSSize    = 20,
+               pvalueCutoff = 0.05,
+               verbose      = FALSE,
+               by = "fgsea")
+KEGG_rep <- enrichKEGG(gene = names(ranks),
+               organism     = 'mmu',
+               minGSSize    = 20,
+               pvalueCutoff = 0.05)
+KEGG<-setReadable(KEGG,"org.Mm.eg.db",keyType="ENTREZID")
+KEGG_df <- KEGG@result
+
+datatable(ego3_CC_df,caption = "GO_CC")
+datatable(ego3_BP_df,caption = "GO_BP")
+datatable(ego3_MF_df,caption = "GO_MF")
+datatable(KEGG_df,caption = "KEGG")
+
+```
+
+# Analyzing the mutation signatures
+
+```{r}
+
+mut_file_1 <- "F:/Ali_data/WES_Data_for_4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/6433_NetMHCpan_mutation_peptides_1.xls.txt"
+mut_file_2 <- "F:/Ali_data/WES_Data_for_4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/6080_NetMHCpan_mutation_peptides_5001.xls.txt"
+mut_file_3 <- "F:/Ali_data/WES_Data_for_4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/31185_NetMHCpan_mutation_peptides_10001.xls.txt"
+
+mut_file_1_dat <- read.table(mut_file_1,skip=2)
+mut_file_2_dat <- read.table(mut_file_2,skip=2)
+mut_file_3_dat <- read.table(mut_file_3,skip=2)
+
+mut_file_data <- rbind(mut_file_1_dat,mut_file_2_dat,mut_file_3_dat)
+
+rm(mut_file_1_dat,mut_file_2_dat,mut_file_3_dat)
+
+maf_file <- "F:/Ali_data/WES_Data_for_4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/MAF_wsequences.maf"
+maf_file_data <- read.table(maf_file,sep="\t",header=T)
+
+maf_row_vals<-unname(vapply(mut_file_data$V3,function(val){as.numeric(strsplit(val,"_")[[1]][2])},numeric(1)))
+mutation_genes_from_maf <- maf_file_data$Hugo_Symbol[maf_row_vals]
+maf_data_all <- maf_file_data[maf_row_vals,]
+
+binding_rank_locs <- c(7,11,15) # location of ranks from NET-MHC output
+binders <- t(vapply(seq(nrow(mut_file_data)),function(val){
+  ranks <- as.numeric(mut_file_data[val,binding_rank_locs])
+  SB <- length(which(ranks<=0.5))
+  WB <- length(which(ranks<=2 & ranks > 0.5))
+  return(c(SB,WB))
+},numeric(2)))
+binders <- as.data.frame(binders)
+colnames(binders)<-c("SB","WB")
+binders$gene <- mutation_genes_from_maf
+maf_data_all <- cbind(maf_data_all,binders)
+
+all_genes <- unique(binders$gene)
+binders_summary <- t(vapply(all_genes,function(gene){
+  binders_small <- binders[binders$gene==gene,]
+  SB <- sum(binders_small$SB)
+  WB <- sum(binders_small$WB)
+  return(c(SB,WB))
+},numeric(2)))
+binders_summary <- as.data.frame(binders_summary)
+colnames(binders_summary) <- c("SB","WB")
+binders_summary$gene <- all_genes
+binders_summary <- binders_summary[binders_summary$SB > 0 | binders_summary$WB > 0,]
+
+```
+
+# Handling Cell type deconvolutions
+
+```{r}
+
+cell_deconv_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/tables/genes/TIMER2.0_estimation_matrix_TPM_20220628.csv"
+cell_deconv_data <- read.table(cell_deconv_file,header=T,sep=",")
+cibersort_rows <- seq(7,28)
+cibersort_deconv <- cell_deconv_data[cibersort_rows,]
+cibersort_deconv$cell_type <- vapply(cibersort_deconv$cell_type,function(val){strsplit(val,"_")[[1]][1]},character(1))
+rownames(cibersort_deconv) <- cibersort_deconv$cell_type
+cibersort_deconv <- cibersort_deconv[,seq(2,ncol(cibersort_deconv))]
+
+cibersort_deconv_scaled <- as.data.frame(t(apply(cibersort_deconv[apply(cibersort_deconv,1,sd)>0,],1,scale)))
+colnames(cibersort_deconv_scaled) <- colnames(cibersort_deconv)
+Heatmap(cibersort_deconv_scaled,cluster_columns=F,cluster_rows=F,show_row_names=T,show_column_names = T,name="CIBERSORT:zscore")
+
+CD8_proportions <- apply(cibersort_deconv[seq(4),,drop=F],2,sum)
+names(CD8_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+CD4_proportions <- apply(cibersort_deconv[seq(5,7),,drop=F],2,sum)
+names(CD4_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+TFH_proportions <- apply(cibersort_deconv[seq(8),,drop=F],2,sum)
+names(TFH_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+TREG_proportions <- apply(cibersort_deconv[seq(10),,drop=F],2,sum)
+names(TREG_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+TGD_proportions <- apply(cibersort_deconv[seq(11),,drop=F],2,sum)
+names(TGD_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+M0_proportions <- apply(cibersort_deconv[seq(14),,drop=F],2,sum)
+names(M0_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+M1_proportions <- apply(cibersort_deconv[seq(15),,drop=F],2,sum)
+names(M1_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+M2_proportions <- apply(cibersort_deconv[seq(16),,drop=F],2,sum)
+names(M2_proportions) <- colnames(cibersort_deconv)[seq(2,ncol(cibersort_deconv))]
+
+cibersort_rows <- seq(1,6)
+cibersort_deconv <- cell_deconv_data[cibersort_rows,]
+cibersort_deconv$cell_type <- vapply(cibersort_deconv$cell_type,function(val){strsplit(val,"_")[[1]][1]},character(1))
+rownames(cibersort_deconv) <- cibersort_deconv$cell_type
+cibersort_deconv <- cibersort_deconv[,seq(2,ncol(cibersort_deconv))]
+
+cibersort_deconv_scaled <- as.data.frame(t(apply(cibersort_deconv[apply(cibersort_deconv,1,sd)>0,],1,scale)))
+colnames(cibersort_deconv_scaled) <- colnames(cibersort_deconv)
+Heatmap(cibersort_deconv_scaled,cluster_columns=F,cluster_rows=F,show_row_names=T,show_column_names = T,name="TIMER2.0:zscore")
+
+
+```
+
+# combining unormalized TPM expression
+
+```{r}
+
+samples <- c("C1","C2","C3","C5","C6","C7","P1","P2","P3","P5","P6","P7","U1","U2","U3")
+for (i in seq(length(samples))){
+  if (i==1){
+    all_TPM <- read.table(sprintf("F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/tables/genes/%s_rsem_mm10.genes.results",samples[i]),header=T)
+    all_TPM <- all_TPM[,c("gene_id","TPM")]
+  } else {
+    TPM_temp <- read.table(sprintf("F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/tables/genes/%s_rsem_mm10.genes.results",samples[i]),header=T)
+    all_TPM <- cbind(all_TPM,TPM_temp[,c("TPM")])
+    colnames(all_TPM)<-c("gene_id",samples[seq(i)])
+  }
+}
+rownames(all_TPM) <- all_TPM$gene
+
+```
+
+
+# Loading in the RSEM gene expression and the DESEQ2 data
+
+```{r}
+
+PD1_vs_Combo_deseq2_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes/PD1_vs_Combo_genes_DESeq2.txt"
+Untreated_vs_Combo_deseq2_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes/Untreated_vs_Combo_genes_DESeq2.txt"
+Untreated_vs_PD1_deseq2_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes/Untreated_vs_PD1_genes_DESeq2.txt"
+
+PD1_vs_Combo_deseq2_data <- read.table(PD1_vs_Combo_deseq2_file,header=T,sep="\t")
+all_sig_genes_tot <- PD1_vs_Combo_deseq2_data$gene_symbol[which(PD1_vs_Combo_deseq2_data$PD1_vs_Combo_pvalue <= 0.05)]
+all_sig_genes_combo <- PD1_vs_Combo_deseq2_data$gene_symbol[which(PD1_vs_Combo_deseq2_data$PD1_vs_Combo_pvalue <= 0.05 & PD1_vs_Combo_deseq2_data$PD1_vs_Combo_log2FoldChange<0)]
+
+Untreated_vs_Combo_deseq2_data <- read.table(Untreated_vs_Combo_deseq2_file,header=T,sep="\t")
+all_sig_genes_tot <- c(all_sig_genes_tot,Untreated_vs_Combo_deseq2_data$gene_symbol[which(Untreated_vs_Combo_deseq2_data$Untreated_vs_Combo_pvalue <= 0.05)])
+
+Untreated_vs_PD1_deseq2_data <- read.table(Untreated_vs_PD1_deseq2_file,header=T,sep="\t")
+all_sig_genes_tot <- c(all_sig_genes_tot,Untreated_vs_Combo_deseq2_data$gene_symbol[which(Untreated_vs_Combo_deseq2_data$Untreated_vs_Combo_pvalue <= 0.05)])
+
+all_sig_genes_tot <- unique(all_sig_genes_tot)
+binders_summary_filt <- binders_summary[binders_summary$gene %in% all_sig_genes_tot,]
+binders_summary_filt_tot <- binders_summary_filt
+
+# reading in gene expression
+
+RSEM_gene_expression_TPM_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/tables/genes/genes_tpm_all_samples_norm.txt"
+RSEM_gene_expression_TPM <- read.table(RSEM_gene_expression_TPM_file,sep="\t",header=T)
+# RSEM_gene_expression_TPM <- all_TPM
+RSEM_gene_expression_TPM_filtered <- RSEM_gene_expression_TPM[RSEM_gene_expression_TPM$gene_id %in% binders_summary_filt$gene,]
+sample_cols <- colnames(RSEM_gene_expression_TPM)[seq(2,ncol(RSEM_gene_expression_TPM))]
+rownames(RSEM_gene_expression_TPM_filtered)<-RSEM_gene_expression_TPM_filtered$gene_id
+RSEM_gene_expression_TPM_filtered <- RSEM_gene_expression_TPM_filtered[,seq(2,ncol(RSEM_gene_expression_TPM_filtered))]
+
+binders_WB_matrix <- as.data.frame(t(matrix(binders_summary_filt$WB, nrow=length(sample_cols), ncol=length(binders_summary_filt$WB), byrow=TRUE)))
+colnames(binders_WB_matrix) <- sample_cols
+rownames(binders_WB_matrix) <- binders_summary_filt$gene
+binders_SB_matrix <- as.data.frame(t(matrix(binders_summary_filt$SB, nrow=length(sample_cols), ncol=length(binders_summary_filt$SB), byrow=TRUE)))
+colnames(binders_SB_matrix) <- sample_cols
+rownames(binders_SB_matrix) <- binders_summary_filt$gene
+
+RSEM_gene_expression_TPM_filtered <- RSEM_gene_expression_TPM_filtered[rownames(binders_WB_matrix),]
+
+RSEM_scaled <- as.data.frame(t(apply(RSEM_gene_expression_TPM_filtered[apply(RSEM_gene_expression_TPM_filtered,1,sd)>0,],1,scale)))
+colnames(RSEM_scaled) <- colnames(RSEM_gene_expression_TPM_filtered)
+Heatmap(RSEM_scaled,cluster_columns=F,name="zscore",show_row_names=F,
+        left_annotation = rowAnnotation(SB=anno_barplot(binders_summary_filt$SB[apply(RSEM_gene_expression_TPM_filtered,1,sd)>0]),
+                                        WB=anno_barplot(binders_summary_filt$WB[apply(RSEM_gene_expression_TPM_filtered,1,sd)>0])),
+        top_annotation = HeatmapAnnotation(CD8=anno_barplot(CD8_proportions),
+                                           CD4=anno_barplot(CD4_proportions)))
+
+RSEM_binders <- cbind(RSEM_gene_expression_TPM_filtered,binders_summary_filt$SB,binders_summary_filt$WB)
+colnames(RSEM_binders) <- c(colnames(RSEM_scaled),"SB","WB")
+
+RSEM_summary <- as.data.frame(vapply(c("combo","PD1","untreated"),function(val){
+  if (val=="combo"){
+    return(apply(RSEM_gene_expression_TPM_filtered[,seq(1,6)],1,mean))
+  } else if (val=="PD1"){
+    return(apply(RSEM_gene_expression_TPM_filtered[,seq(7,12)],1,mean))
+  } else {
+    return(apply(RSEM_gene_expression_TPM_filtered[,seq(13,15)],1,mean))
+  }
+},numeric(nrow(RSEM_binders))))
+
+RSEM_summary$order_min <- vapply(seq(nrow(RSEM_summary)),function(val){
+  expression <- RSEM_summary[val,]
+  if (expression[1]<expression[2] & expression[1]<expression[3]){
+    return("combo")
+  }else if (expression[3]<expression[1] & expression[3]<expression[2]){
+    return("untreated")
+  } else if (expression[2]<expression[3] & expression[2]<expression[1] ){
+    return("PD1")
+  } else {
+    return("NA")
+  }
+},character(1))
+RSEM_summary$order_max <- vapply(seq(nrow(RSEM_summary)),function(val){
+  expression <- RSEM_summary[val,]
+  if (expression[1]>expression[2] & expression[1]>expression[3]){
+    return("combo")
+  }else if (expression[3]>expression[1] & expression[3]>expression[2]){
+    return("untreated")
+  } else if (expression[2]>expression[3] & expression[2]>expression[1] ){
+    return("PD1")
+  } else {
+    return("NA")
+  }
+},character(1))
+RSEM_summary$FC_combo_pd1 <- vapply(seq(nrow(RSEM_summary)),function(val){
+    expression <- RSEM_summary[val,]
+    return((as.numeric(expression[1]+1))/as.numeric((expression[2]+1)))
+},numeric(1))
+RSEM_summary$FC_combo_untreated <- vapply(seq(nrow(RSEM_summary)),function(val){
+    expression <- RSEM_summary[val,]
+    return((as.numeric(expression[1]+1))/as.numeric((expression[3]+1)))
+},numeric(1))
+SB<-binders_summary_filt$SB
+WB<-binders_summary_filt$WB
+RSEM_summary <- cbind(RSEM_summary,SB,WB)
+
+ggplot(RSEM_summary,aes(x=order_min,fill=order_min))+geom_bar()+
+  xlab("gene expression")
+ggplot(RSEM_summary,aes(x=order_max,fill=order_max))+geom_bar()+
+  xlab("gene expression")
+ggplot(RSEM_summary,aes(x=log2(FC_combo_pd1)))+
+  geom_histogram()+
+  xlab("log2(combo TPM / PD1 TPM)")
+ggplot(RSEM_summary,aes(x=log2(FC_combo_untreated)))+
+  geom_histogram()+
+  xlab("log2(combo TPM / untreated TPM)")
+ggplot(RSEM_summary,aes(y=SB,x=log2(FC_combo_pd1)))+
+  geom_point()+
+  xlab("log2(combo TPM / PD1 TPM)")+ylab("SB count")
+ggplot(RSEM_summary,aes(y=SB,x=log2(FC_combo_untreated)))+
+  geom_point()+
+  xlab("log2(combo TPM / untreated TPM)")+ylab("SB count")
+ggplot(RSEM_summary,aes(y=WB,x=log2(FC_combo_pd1)))+
+  geom_point()+
+  xlab("log2(combo TPM / PD1 TPM)")+ylab("WB count")
+ggplot(RSEM_summary,aes(y=WB,x=log2(FC_combo_untreated)))+
+  geom_point()+
+  xlab("log2(combo TPM / untreated TPM)")+ylab("WB count")
+
+RSEM_summary_combo <- RSEM_summary[all_sig_genes_combo,]
+ggplot(RSEM_summary_combo,aes(y=log2(combo),x=log2(PD1),color=log2(SB+WB+1)))+
+  geom_point()+
+  scale_color_gradient(low = "green", high = "purple")
+
+```
+
+
+```{r}
+
+PD1_vs_Combo_deseq2_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes/PD1_vs_Combo_genes_DESeq2.txt"
+Untreated_vs_Combo_deseq2_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes/Untreated_vs_Combo_genes_DESeq2.txt"
+Untreated_vs_PD1_deseq2_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/DESeq2/refseq_genes/Untreated_vs_PD1_genes_DESeq2.txt"
+
+PD1_vs_Combo_deseq2_data <- read.table(PD1_vs_Combo_deseq2_file,header=T,sep="\t")
+all_sig_genes <- PD1_vs_Combo_deseq2_data$gene_symbol[which(PD1_vs_Combo_deseq2_data$PD1_vs_Combo_padj <= 0.05)]
+
+Untreated_vs_Combo_deseq2_data <- read.table(Untreated_vs_Combo_deseq2_file,header=T,sep="\t")
+all_sig_genes <- c(all_sig_genes,Untreated_vs_Combo_deseq2_data$gene_symbol[which(Untreated_vs_Combo_deseq2_data$Untreated_vs_Combo_padj <= 0.05)])
+
+Untreated_vs_PD1_deseq2_data <- read.table(Untreated_vs_PD1_deseq2_file,header=T,sep="\t")
+all_sig_genes <- c(all_sig_genes,Untreated_vs_Combo_deseq2_data$gene_symbol[which(Untreated_vs_Combo_deseq2_data$Untreated_vs_Combo_padj <= 0.05)])
+
+all_sig_genes <- unique(all_sig_genes)
+
+binders_summary_filt <- binders_summary[binders_summary$gene %in% all_sig_genes,]
+
+# reading in gene expression
+
+RSEM_gene_expression_TPM_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/tables/genes/genes_tpm_all_samples_norm.txt"
+RSEM_gene_expression_TPM <- read.table(RSEM_gene_expression_TPM_file,sep="\t",header=T)
+# RSEM_gene_expression_TPM <- all_TPM
+RSEM_gene_expression_TPM_filtered <- RSEM_gene_expression_TPM[RSEM_gene_expression_TPM$gene_id %in% binders_summary_filt$gene,]
+sample_cols <- colnames(RSEM_gene_expression_TPM)[seq(2,ncol(RSEM_gene_expression_TPM))]
+rownames(RSEM_gene_expression_TPM_filtered)<-RSEM_gene_expression_TPM_filtered$gene_id
+RSEM_gene_expression_TPM_filtered <- RSEM_gene_expression_TPM_filtered[,seq(2,ncol(RSEM_gene_expression_TPM_filtered))]
+
+binders_WB_matrix <- as.data.frame(t(matrix(binders_summary_filt$WB, nrow=length(sample_cols), ncol=length(binders_summary_filt$WB), byrow=TRUE)))
+colnames(binders_WB_matrix) <- sample_cols
+rownames(binders_WB_matrix) <- binders_summary_filt$gene
+binders_SB_matrix <- as.data.frame(t(matrix(binders_summary_filt$SB, nrow=length(sample_cols), ncol=length(binders_summary_filt$SB), byrow=TRUE)))
+colnames(binders_SB_matrix) <- sample_cols
+rownames(binders_SB_matrix) <- binders_summary_filt$gene
+
+RSEM_gene_expression_TPM_filtered <- RSEM_gene_expression_TPM_filtered[rownames(binders_WB_matrix),]
+
+RSEM_scaled <- as.data.frame(t(apply(RSEM_gene_expression_TPM_filtered[apply(RSEM_gene_expression_TPM_filtered,1,sd)>0,],1,scale)))
+colnames(RSEM_scaled) <- colnames(RSEM_gene_expression_TPM_filtered)
+Heatmap(RSEM_scaled,cluster_columns=F,name="zscore",show_row_names=F,
+        left_annotation = rowAnnotation(SB=anno_barplot(binders_summary_filt$SB[apply(RSEM_gene_expression_TPM_filtered,1,sd)>0]),
+                                        WB=anno_barplot(binders_summary_filt$WB[apply(RSEM_gene_expression_TPM_filtered,1,sd)>0])),
+        top_annotation = HeatmapAnnotation(CD8=anno_barplot(CD8_proportions),
+                                           CD4=anno_barplot(CD4_proportions)))
+
+RSEM_binders <- cbind(RSEM_gene_expression_TPM_filtered,binders_summary_filt$SB,binders_summary_filt$WB)
+colnames(RSEM_binders) <- c(colnames(RSEM_scaled),"SB","WB")
+
+RSEM_summary <- as.data.frame(vapply(c("combo","PD1","untreated"),function(val){
+  if (val=="combo"){
+    return(apply(RSEM_gene_expression_TPM_filtered[,seq(1,6)],1,mean))
+  } else if (val=="PD1"){
+    return(apply(RSEM_gene_expression_TPM_filtered[,seq(7,12)],1,mean))
+  } else {
+    return(apply(RSEM_gene_expression_TPM_filtered[,seq(13,15)],1,mean))
+  }
+},numeric(nrow(RSEM_binders))))
+
+RSEM_summary$order_min <- vapply(seq(nrow(RSEM_summary)),function(val){
+  expression <- RSEM_summary[val,]
+  if (expression[1]<expression[2] & expression[1]<expression[3]){
+    return("combo")
+  }else if (expression[3]<expression[1] & expression[3]<expression[2]){
+    return("untreated")
+  } else if (expression[2]<expression[3] & expression[2]<expression[1] ){
+    return("PD1")
+  } else {
+    return("NA")
+  }
+},character(1))
+RSEM_summary$order_max <- vapply(seq(nrow(RSEM_summary)),function(val){
+  expression <- RSEM_summary[val,]
+  if (expression[1]>expression[2] & expression[1]>expression[3]){
+    return("combo")
+  }else if (expression[3]>expression[1] & expression[3]>expression[2]){
+    return("untreated")
+  } else if (expression[2]>expression[3] & expression[2]>expression[1] ){
+    return("PD1")
+  } else {
+    return("NA")
+  }
+},character(1))
+RSEM_summary$FC_combo_pd1 <- vapply(seq(nrow(RSEM_summary)),function(val){
+    expression <- RSEM_summary[val,]
+    return((as.numeric(expression[1]+1))/as.numeric((expression[2]+1)))
+},numeric(1))
+RSEM_summary$FC_combo_untreated <- vapply(seq(nrow(RSEM_summary)),function(val){
+    expression <- RSEM_summary[val,]
+    return((as.numeric(expression[1]+1))/as.numeric((expression[3]+1)))
+},numeric(1))
+SB<-binders_summary_filt$SB
+WB<-binders_summary_filt$WB
+RSEM_summary <- cbind(RSEM_summary,SB,WB)
+
+ggplot(RSEM_summary,aes(x=order_min,fill=order_min))+geom_bar()+
+  xlab("gene expression")
+ggplot(RSEM_summary,aes(x=order_max,fill=order_max))+geom_bar()+
+  xlab("gene expression")
+ggplot(RSEM_summary,aes(x=log2(FC_combo_pd1)))+
+  geom_histogram()+
+  xlab("log2(combo TPM / PD1 TPM)")
+ggplot(RSEM_summary,aes(x=log2(FC_combo_untreated)))+
+  geom_histogram()+
+  xlab("log2(combo TPM / untreated TPM)")
+ggplot(RSEM_summary,aes(y=SB,x=log2(FC_combo_pd1)))+
+  geom_point()+
+  xlab("log2(combo TPM / PD1 TPM)")+ylab("SB count")
+ggplot(RSEM_summary,aes(y=SB,x=log2(FC_combo_untreated)))+
+  geom_point()+
+  xlab("log2(combo TPM / untreated TPM)")+ylab("SB count")
+ggplot(RSEM_summary,aes(y=WB,x=log2(FC_combo_pd1)))+
+  geom_point()+
+  xlab("log2(combo TPM / PD1 TPM)")+ylab("WB count")
+ggplot(RSEM_summary,aes(y=WB,x=log2(FC_combo_untreated)))+
+  geom_point()+
+  xlab("log2(combo TPM / untreated TPM)")+ylab("WB count")
+
+
+```
+
+# Preparing mutations for VAF analysis
+
+```{r,eval=T}
+
+MAF_filt <- maf_file_data[maf_row_vals,]
+MAF_filt <- cbind(MAF_filt,binders)
+MAF_filt <- MAF_filt[MAF_filt$Hugo_Symbol %in% all_sig_genes_tot & (MAF_filt$SB>0 | MAF_filt$WB>0),]
+MAF_coords <- MAF_filt[,c("Chromosome","Start_Position")]
+MAF_coords$Chromosome <- vapply(MAF_coords$Chromosome,function(val){paste(c("chr",val),collapse="")},character(1))
+# write.table(MAF_coords,file="F:/Ali_data/WES_Data_for_4T1MIS/MB01JHU503/MB01JHU503_000_analysis/MAF/mutation_coords.txt",
+#             sep="\t",col.names = F,row.names = F,quote=F)
+
+```
+
+# Processing the samtools pileup
+
+```{r}
+
+calc_vaf <- function(vals){
+  pileups <- vals[seq(4,length(vals))]
+  target <- vals[3]
+  vapply(pileups,function(val){
+    a<-strsplit(val,"")[[1]]
+    return(length(which(a==target))/length(a))
+  },numeric(1))
+}
+
+samtools_pileup_file <- "F:/Ali_data/HTMBmice_RNAseq_Data/MB01JHU504/MB01JHU504_000_analysis/RSEM/alignments/all_samples.pileup"
+samtools_pileup <- read.table(samtools_pileup_file)
+MAF_unique_coords <- unique(MAF_filt[,seq(13)])
+MAF_unique_coords$Chromosome <- vapply(MAF_unique_coords$Chromosome,function(val){paste(c("chr",val),collapse="")},character(1))
+tumor_alleles <- vapply(seq(nrow(samtools_pileup)),function(row_val){
+  chromosome <- samtools_pileup$V1[row_val]
+  position <- samtools_pileup$V2[row_val]
+  return(MAF_unique_coords[MAF_unique_coords$Chromosome==chromosome & MAF_unique_coords$Start_Position==position,"Tumor_Seq_Allele2"])
+},character(1))
+samtools_pileup$V3 <- tumor_alleles
+samtools_pileup_filt <- samtools_pileup[,c(1,2,3,seq(5,48,3))]
+
+samtools_vaf <- as.data.frame(t(apply(samtools_pileup_filt,1,calc_vaf)))
+samtools_vaf <- cbind(samtools_pileup_filt[,seq(2)],samtools_vaf)
+colnames(samtools_vaf) <- c("chromosome","position",
+                            "C1","C2","C3","C5","C6","C7",
+                            "P1","P2","P3","P5","P6","P7",
+                            "U1","U2","U3")
+samtools_vaf$chromosome <- str_remove(samtools_vaf$chromosome,"chr")
+samtools_vaf_extended <- lapply(seq(nrow(samtools_vaf)),function(row_val){
+  chrom <- samtools_vaf$chromosome[row_val]
+  position <- samtools_vaf$position[row_val]
+  maf_data_all_small <- maf_data_all[maf_data_all$Chromosome==chrom & maf_data_all$Start_Position==position,]
+  return(cbind(samtools_vaf[row_val,],maf_data_all_small[,seq(ncol(maf_data_all_small)-5,ncol(maf_data_all_small))]))
+})
+for (i in seq(length(samtools_vaf_extended))){
+  if (i==1){
+    samtools_vaf_df <- samtools_vaf_extended[[1]]
+  } else {
+   samtools_vaf_df <- rbind(samtools_vaf_df,samtools_vaf_extended[[i]])
+  }
+}
+samtools_vaf_df <- samtools_vaf_df[samtools_vaf_df$SB>0 | samtools_vaf_df$WB>0,]
+
+samtools_vaf_summary <- unique(samtools_vaf_df[,c(seq(3,17),23)])
+samtools_vaf_summary[,c("SB","WB")]<-vapply(samtools_vaf_summary$gene,function(gene){
+  SB<-binders_summary_filt_tot[binders_summary_filt_tot$gene==gene,"SB"]
+  WB<-binders_summary_filt_tot[binders_summary_filt_tot$gene==gene,"WB"]
+  return(c(SB,WB))
+},numeric(2))
+
+Heatmap(samtools_vaf_summary[,seq(ncol(samtools_vaf_summary)-4)],cluster_columns=F,name="zscore",show_row_names=F,
+        left_annotation = rowAnnotation(SB=anno_barplot(samtools_vaf_summary$SB),
+                                        WB=anno_barplot(samtools_vaf_summary$WB)))
+
+samtools_vaf_summary_scaled <- as.data.frame(t(apply(samtools_vaf_summary[apply(samtools_vaf_summary[,seq(ncol(samtools_vaf_summary)-4)],1,sd)>0,seq(ncol(samtools_vaf_summary)-4)],1,scale)))
+colnames(samtools_vaf_summary_scaled)<-colnames(samtools_vaf_summary)[seq(ncol(samtools_vaf_summary)-4)]
+Heatmap(samtools_vaf_summary_scaled,cluster_columns=F,name="zscore",show_row_names=F,
+        left_annotation = rowAnnotation(SB=anno_barplot(samtools_vaf_summary$SB[apply(samtools_vaf_summary[,seq(ncol(samtools_vaf_summary)-4)],1,sd)>0]),
+                                        WB=anno_barplot(samtools_vaf_summary$WB[apply(samtools_vaf_summary[,seq(ncol(samtools_vaf_summary)-4)],1,sd)>0])))
+
+ggplot(samtools_vaf_summary,aes(x=C1,y=log2(WB+1)))+geom_point()
+ggplot(samtools_vaf_summary,aes(x=C1,y=log2(SB+1)))+geom_point()
+
+
+ggplot(samtools_vaf_summary,aes(x=P1,y=log2(WB+1)))+geom_point()
+ggplot(samtools_vaf_summary,aes(x=P1,y=log2(SB+1)))+geom_point()
+
+ggplot(samtools_vaf_summary,aes(x=U1,y=log2(WB+1)))+geom_point()
+ggplot(samtools_vaf_summary,aes(x=U1,y=log2(SB+1)))+geom_point()
+
+```
+
+
+
+
+
+
+

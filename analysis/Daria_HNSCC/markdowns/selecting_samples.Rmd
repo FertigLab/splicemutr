@@ -1,0 +1,209 @@
+---
+title: "selecting_samples"
+author: "Theron Palmer"
+date: "9/2/2021"
+output: html_document
+---
+
+# Loading in libraries
+
+```{r, echo = FALSE}
+
+library(DT)
+library(knitr)
+library(stringr)
+library(ggplot2)
+library(BalancedSampling)
+library(readxl)
+library(MatchIt)
+library(cobalt)
+
+```
+
+# Reading in excel file and preprocessing data
+
+```{r}
+
+important_cols <- c(6,7,10,17,5)
+cohort_excel <- "/media/theron/My_Passport/head_and_neck_DARIA/for_DOD_app_path_and_clinical_simple.xlsx"
+cohort_data_AA <- read_excel(cohort_excel,sheet="AA")
+orig_cols <- colnames(cohort_data_AA)
+cohort_data_EA <- read_excel(cohort_excel,sheet="EA")
+colnames(cohort_data_AA)[important_cols]<-c("gender","smoker","age","stage","race")
+colnames(cohort_data_EA)[important_cols]<-c("gender","smoker","age","stage","race")
+
+cohort_data <- rbind(cohort_data_AA,cohort_data_EA)
+cohort_data$excel_row <- c(seq(nrow(cohort_data_AA)),seq(nrow(cohort_data_EA)))
+cohort_data$stage <- vapply(cohort_data$stage,function(stage){
+  if (nchar(stage)>1){
+    return(substr(stage,1,1))
+  } else {
+    return(stage)
+  }
+},numeric(1))
+
+```
+
+# Cohort Data Sample Matching using MatchIt
+
+```{r,eval=F}
+
+cohort_data_complete <- cohort_data[complete.cases(cohort_data[important_cols]),]
+cohort_data_complete <- cohort_data_complete %>% dplyr::filter(!is.na(smoker))
+cohort_data_complete$race <- cohort_data_complete$race-1
+m.out1 <- matchit(race ~ gender + smoker + age + stage, 
+                  method = "optimal", 
+                  distance = "glm", data = cohort_data_complete)
+
+weights <- m.out1$weights
+cohort_data_matched<-cohort_data_complete[weights==1,]
+
+# cohort_EA <- sample(which(cohort_data_matched$race==0),100)
+# cohort_AA <- sample(which(cohort_data_matched$race==1),100)
+# 
+# cohort_data_matched <- cohort_data_matched[c(cohort_AA,cohort_EA),]
+
+```
+
+
+```{r,eval=F}
+
+ggplot(cohort_data_matched,aes(x=factor(race),fill=factor(gender)))+
+  geom_bar(position=position_dodge())+
+  xlab("0:AA 1:EA")+
+  guides(fill=guide_legend(title="1:male 2:female"))+
+  labs(title="Gender Breakdown Per Race After Matching")
+
+ggplot(cohort_data_matched,aes(x=factor(race),fill=factor(smoker)))+
+  geom_bar(position=position_dodge())+
+  xlab("0:AA 1:EA")+
+  guides(fill=guide_legend(title="1:smoker 2:non-smoker"))+
+  labs(title="Smoker Breakdown Per Race After Matching")
+
+ggplot(cohort_data_matched,aes(x=age,fill=factor(race)))+
+  geom_density(alpha=0.5)+
+  guides(fill=guide_legend(title="0:AA 1:EA"))+
+  labs(title="Age Distribution Per Race After Matching")
+
+ggplot(cohort_data_matched,aes(x=stage,fill=factor(race)))+
+  geom_bar(position=position_dodge())+
+  guides(fill=guide_legend(title="0:AA 1:EA"))+
+  labs(title="Stage Breakdown Per Race After Matching")
+
+
+```
+
+```{r,eval=F}
+
+cohort_data_matched$race <- as.numeric(cohort_data_matched$race)+1
+race_type <- c("EA","AA")
+gender <- c("male","female")
+smoker <- c("yes","no")
+# cohort_data_matched$race <- vapply(cohort_data_matched$race,function(val){
+#   race_type[val+1]
+# },character(1))
+cohort_data_matched$gender <- vapply(cohort_data_matched$gender,function(val){
+  gender[val]
+},character(1))
+cohort_data_matched$smoker <- vapply(cohort_data_matched$smoker,function(val){
+  smoker[val]
+},character(1))
+
+colnames(cohort_data_matched)<-orig_cols
+datatable(cohort_data_matched)
+
+write.table(cohort_data_matched,
+            file=sprintf("%s/matched_samples.txt",dirname(cohort_excel)),
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+
+```{r,eval=F}
+
+cohort_data_matched <- read.table(sprintf("%s/matched_samples.txt",dirname(cohort_excel)),sep="\t",quote="",header=F)
+colnames(cohort_data_matched) <- c(colnames(cohort_data_AA),"excel_row")
+cohort_data_matched$V51 == cohort_data_matched$V1
+type_1_rows <- which(cohort_data_matched$race == 1)
+type_2_rows <- which(cohort_data_matched$race == 2)
+
+type_1_sample <- sample(type_1_rows,20)
+type_2_sample <- sample(type_2_rows,20)
+
+cohort_data_sample <- cohort_data_matched[c(type_1_sample,type_2_sample),]
+
+ggplot(cohort_data_sample,aes(x=factor(race),fill=factor(gender)))+
+  geom_bar(position=position_dodge())+
+  xlab("0:AA 1:EA")+
+  guides(fill=guide_legend(title="1:male 2:female"))+
+  labs(title="Gender Breakdown Per Race After Matching")
+
+ggplot(cohort_data_sample,aes(x=factor(race),fill=factor(smoker)))+
+  geom_bar(position=position_dodge())+
+  xlab("0:AA 1:EA")+
+  guides(fill=guide_legend(title="1:smoker 2:non-smoker"))+
+  labs(title="Smoker Breakdown Per Race After Matching")
+
+ggplot(cohort_data_sample,aes(x=age,fill=factor(race)))+
+  geom_density(alpha=0.5)+
+  guides(fill=guide_legend(title="0:AA 1:EA"))+
+  labs(title="Age Distribution Per Race After Matching")
+
+ggplot(cohort_data_sample,aes(x=stage,fill=factor(race)))+
+  geom_bar(position=position_dodge())+
+  guides(fill=guide_legend(title="0:AA 1:EA"))+
+  labs(title="Stage Breakdown Per Race After Matching")
+
+
+```
+
+```{r,eval=F}
+
+write.table(cohort_data_sample,
+            file=sprintf("%s/matched_samples_sampled.txt",dirname(cohort_excel)),
+            sep="\t",
+            quote=F,
+            col.names=T,
+            row.names=F)
+
+```
+
+```{r}
+
+cohort_data_sample<-read.table(file=sprintf("%s/matched_samples_sampled.txt",dirname(cohort_excel)),
+            sep="\t",
+            quote="",
+            header=F)
+colnames(cohort_data_sample) <- c(colnames(cohort_data_AA),"excel_row")
+ggplot(cohort_data_sample,aes(x=factor(race),fill=factor(gender)))+
+  geom_bar(position=position_dodge())+
+  xlab("0:AA 1:EA")+
+  guides(fill=guide_legend(title="1:male 2:female"))+
+  labs(title="Gender Breakdown Per Race After Matching")
+
+ggplot(cohort_data_sample,aes(x=factor(race),fill=factor(smoker)))+
+  geom_bar(position=position_dodge())+
+  xlab("0:AA 1:EA")+
+  guides(fill=guide_legend(title="1:smoker 2:non-smoker"))+
+  labs(title="Smoker Breakdown Per Race After Matching")
+
+ggplot(cohort_data_sample,aes(x=age,fill=factor(race)))+
+  geom_density(alpha=0.5)+
+  guides(fill=guide_legend(title="0:AA 1:EA"))+
+  labs(title="Age Distribution Per Race After Matching")
+
+ggplot(cohort_data_sample,aes(x=stage,fill=factor(race)))+
+  geom_bar(position=position_dodge())+
+  guides(fill=guide_legend(title="0:AA 1:EA"))+
+  labs(title="Stage Breakdown Per Race After Matching")
+
+
+```
+
+
+
+
+

@@ -1,0 +1,646 @@
+---
+title: "analysis_Theron_09082021"
+author: "Theron Palmer"
+date: "9/9/2021"
+output: html_document
+---
+
+```{r, echo=F}
+
+library(ggplot2)
+library(stringr)
+library(pheatmap)
+library(dplyr)
+library(ggpubr)
+library(msigdbr)
+library(biomaRt)
+
+```
+
+```{r}
+
+#The directory where all of the data is
+
+genotypes_file <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/genotype_vecs.rds"
+arcas_files <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/arcashla_dirs.txt"
+counts_psi_file <- read.table("/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/data_perind.counts")
+HLA_files <- "/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1/%s_tx_dict_summary.txt"
+splicemutr_dat <- read.table("/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/data_splicemutr_protein_coding_2.txt", sep="\t")
+groups_file <- read.table("/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/groups_file.txt")
+
+```
+
+
+```{r}
+
+#Assigning filenames to genotypes
+
+genotypes <- readRDS(genotypes_file)
+arcas_order <- read.table(arcas_files)
+arcas_file <- vapply(arcas_order$V1,function(file){
+  str_replace(basename(file),"Aligned.out.bam","")
+},character(1))
+names(genotypes) <- arcas_file
+
+
+# Kyte-Doolittle
+
+amino_acids <- c("A","C","D","E",
+                 "F","G","H","I",
+                 "K","L","M","N",
+                 "P","Q","R","S",
+                 "T","V","W","Y","Z")
+KD <- c(1.8, 2.5, -3.5, -3.5, 
+        2.8, -0.4, -3.2, 4.5,
+        -3.9 ,3.8 ,1.9, -3.5,
+        -1.6, -3.5, -4.5, -0.8,
+        -0.7, 4.2, -0.9, -1.3, NA)
+names(KD)<-amino_acids
+
+calc_KD <- function(pep_vector){
+  if (length(pep_vector)==0){return(0)}
+  KD_average <- vapply(pep_vector,function(pep){
+    mean(unname(KD[str_split(pep,'')[[1]]]),na.rm=T)
+  },numeric(1))
+  return(KD_average)
+}
+
+```
+
+```{r,eval=F}
+
+# contructing binding per sample and genotype
+
+SB_dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=length(genotypes)))
+WB_dat <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=length(genotypes)))
+SB_hyd <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=length(genotypes)))
+WB_hyd <- data.frame(matrix(0,nrow=nrow(splicemutr_dat),ncol=length(genotypes)))
+SB_vec <- vector("list",nrow(splicemutr_dat))
+WB_vec <- vector("list",nrow(splicemutr_dat))
+
+for (i in seq(1,length(arcas_file))){
+  row_vec <- rep(F,nrow(splicemutr_dat))
+  print(i)
+  alleles <- genotypes[[arcas_file[i]]]
+  class1_alleles <- alleles[str_detect(alleles,"HLA-A") | str_detect(alleles,"HLA-B") | str_detect(alleles,"HLA-C")]
+  for (allele in class1_alleles){
+    file_HLA <- sprintf(HLA_files,str_replace(allele,":","-"))
+    info = file.info(file_HLA)
+    if (info$size == 0){next}
+    HLA_dat <- read.table(file_HLA)
+    HLA_dat[,1]<-as.numeric(HLA_dat[,1])+1
+    counts <- str_split(HLA_dat[,3],":")
+    kmers_split <- str_split(HLA_dat[,2],":")
+    rows <- HLA_dat[,1]
+    row_vec[rows]<-T
+    kmers <- lapply(seq(length(counts)),function(i){
+      vals <- as.numeric(counts[[i]])
+      all_kmers <- kmers_split[[i]]
+      SBs <- vals <= 50
+      WBs <- vals > 50 & vals <= 500
+      SB_kmers <- all_kmers[SBs]
+      WB_kmers <- all_kmers[WBs]
+      SB_vec[[rows[i]]] <<- unique(c(SB_vec[[rows[i]]], SB_kmers))
+      WB_vec[[rows[i]]] <<- unique(c(WB_vec[[rows[i]]], WB_kmers))
+      return(T)
+    })
+  }
+  SB_counts <- vapply(seq(length(SB_vec)),function(i){
+    length(SB_vec[[i]])
+  },numeric(1))
+  # SB_hydro <- vapply(seq(length(SB_vec)),function(i){
+  #   length(which(calc_KD(SB_vec[[i]]) > 0))
+  # },numeric(1))
+  WB_counts <- vapply(seq(length(WB_vec)),function(i){
+    length(WB_vec[[i]])
+  },numeric(1))
+  # WB_hydro <- vapply(seq(length(WB_vec)),function(i){
+  #   length(which(calc_KD(WB_vec[[i]]) > 0))
+  # },numeric(1))  
+  if (length(SB_counts)==0){
+    SB_dat[,i] <- 0
+  } else {
+    SB_dat[,i] <- SB_counts
+  }
+  if (length(WB_counts)==0){
+    WB_dat[,i] <- 0
+  } else {
+    WB_dat[,i] <- WB_counts
+  }
+  
+  # if (length(SB_hydro)==0){
+  #   SB_hyd[,i] <- 0
+  # } else {
+  #   SB_hyd[,i] <- SB_hydro
+  # }
+  # if (length(WB_hydro)==0){
+  #   WB_hyd[,i] <- 0
+  # } else {
+  #   WB_hyd[,i] <- WB_hydro
+  # }
+}
+colnames(SB_dat)<-arcas_file
+colnames(WB_dat)<-arcas_file
+# colnames(SB_hyd)<-arcas_file
+colnames(WB_dat)<-arcas_file
+
+saveRDS(SB_dat,file="/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1/SB_counts.rds")
+saveRDS(WB_dat,file="/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1/WB_counts.rds")
+
+```
+
+```{r}
+
+SB_dat <- readRDS(file="/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1/SB_counts.rds")
+WB_dat <- readRDS("/media/theron/My_Passport/head_and_neck_DARIA/data/splicemutr_05_26_2021/processed_data/class1/WB_counts.rds")
+
+col_names<-c("cluster","chr","start","end","gene","tx_id","modified","is_UTR",
+             "tx_junc_loc","pep_junc_loc","verdict","deltapsi",
+             "error","peptide","tx_length","start_stop","protein_coding")
+colnames(splicemutr_dat) <- col_names
+
+SB_dat$modified <- splicemutr_dat$modified
+SB_dat$is_UTR <- splicemutr_dat$is_UTR
+SB_dat$verdict <- splicemutr_dat$verdict
+SB_dat$deltapsi <- splicemutr_dat$deltapsi
+SB_dat$error <- splicemutr_dat$error
+SB_dat$tx_length <- splicemutr_dat$tx_length
+SB_dat$cluster <- splicemutr_dat$cluster
+
+
+WB_dat$modified <- splicemutr_dat$modified
+WB_dat$is_UTR <- splicemutr_dat$is_UTR
+WB_dat$verdict <- splicemutr_dat$verdict
+WB_dat$deltapsi <- splicemutr_dat$deltapsi
+WB_dat$error <- splicemutr_dat$error
+WB_dat$tx_length <- splicemutr_dat$tx_length
+WB_dat$cluster <- splicemutr_dat$cluster
+
+```
+
+
+```{r}
+
+# annotating keys with integration status
+
+key_file<-"/media/theron/My_Passport/head_and_neck_DARIA/data/leafcutter_10_21_2020/keys.txt"
+keys<-read.table(key_file,header=F)
+colnames(keys)<-c("original","ID","type")
+
+# annotating keys with HPV integration
+
+int_file<-"/media/theron/My_Passport/head_and_neck_DARIA/data/leafcutter_10_21_2020/cohort_data.tsv"
+cohort_data<-read.table(int_file,sep="\t",header=T)
+keys_tag<-sprintf("%s_1",vapply(keys$original,function(key){
+  str_split(key,"[-]")[[1]][2]
+},character(1)))
+integrated<-unname(vapply(keys_tag,function(key){
+  cohort_data[which(cohort_data$RNAseq.tag==key),
+              "Integration.RNAseq.detected"]
+},character(1)))
+keys$integrated<-integrated
+keys$name <- NA
+keys$name[keys$type == "T"] <- sprintf("%s%s",keys$type[keys$type == "T"],
+                                       seq(length(which(keys$type == "T"))))
+keys$name[keys$type == "N"] <- sprintf("%s%s",keys$type[keys$type == "N"],
+                                       seq(length(which(keys$type == "N"))))
+rownames(keys)<-keys$original
+
+coldata <- keys[arcas_file,c("type","integrated")]
+coldata_refined <- coldata[groups_file$V1,]
+
+```
+
+```{r}
+
+# parsing the psi data
+
+juncs <- sprintf("%s:%s:%s:%s",splicemutr_dat$chr,splicemutr_dat$start,splicemutr_dat$end,splicemutr_dat$cluster)
+splicemutr_dat$juncs <- juncs
+
+chrom <- counts_psi_file$V1[seq(2,length(counts_psi_file$V1))]
+counts_psi_refined <- counts_psi_file[,seq(2,ncol(counts_psi_file))]
+colnames(counts_psi_refined) <- counts_psi_refined[1,]
+counts_psi_refined <- counts_psi_refined[seq(2,nrow(counts_psi_refined)),]
+rownames(counts_psi_refined) <- chrom
+
+numerator <- vapply(seq(ncol(counts_psi_refined)),function(i){
+  vapply(counts_psi_refined[,i],function(val){
+    as.numeric(strsplit(val,"[/]")[[1]][1])
+  },numeric(1))
+},numeric(nrow(counts_psi_refined)))
+denominator <- vapply(seq(ncol(counts_psi_refined)),function(i){
+  vapply(counts_psi_refined[,i],function(val){
+    as.numeric(strsplit(val,"[/]")[[1]][2])
+  },numeric(1))
+},numeric(nrow(counts_psi_refined)))
+
+numerator_df <- data.frame(numerator)
+rownames(numerator_df) <- rownames(counts_psi_refined)
+colnames(numerator_df) <- colnames(counts_psi_refined)
+
+denominator_df <- data.frame(denominator)
+rownames(denominator_df) <- rownames(counts_psi_refined)
+colnames(denominator_df) <- colnames(counts_psi_refined)
+
+psi_df <- numerator_df/denominator_df
+for (i in seq(ncol(psi_df))){
+  psi_df[which(is.nan(psi_df[,i])),i] <- 0
+}
+rownames(psi_df)<-rownames(counts_psi_refined)
+psi_df_refined <- psi_df[juncs,]
+
+```
+
+```{r}
+
+#calculating counts statistics between tumor and normal samples
+keys_tumors <- keys$original[keys$type == "T"]
+keys_normals <- keys$original[keys$type == "N"]
+tumor_mean <- apply(SB_dat[,keys_tumors],1,mean)
+tumor_mean_scale_counts <- SB_dat[,keys_tumors]
+fill<-vapply(seq(ncol(tumor_mean_scale_counts)),function(col_val){
+  vals<- tumor_mean_scale_counts[,col_val]
+  vals<-log2(vals+1)
+  tumor_mean_scale_counts[,col_val] <<- vals
+  # tumor_mean_scale_counts[,col_val] <<- (vals/max(vals))
+  return(T)
+},logical(1))
+rm(fill)
+tumor_mean_scale_counts <- apply(tumor_mean_scale_counts,1,mean)
+
+tumor_sd <- apply(SB_dat[,keys_tumors],1,sd)
+
+normal_mean <- apply(SB_dat[,keys_normals],1,mean)
+normal_mean_scale_counts <- SB_dat[,keys_normals]
+fill<-vapply(seq(ncol(normal_mean_scale_counts)),function(col_val){
+  vals<- normal_mean_scale_counts[,col_val]
+  vals <- log2(vals+1)
+  normal_mean_scale_counts[,col_val] <<- vals
+  # normal_mean_scale_counts[,col_val] <<- (vals/max(vals))
+  return(T)
+},logical(1))
+rm(fill)
+normal_mean_scale_counts <- apply(normal_mean_scale_counts,1,mean)
+
+
+normal_sd <- apply(SB_dat[,keys_normals],1,sd)
+numerator_df_refined <- numerator_df[juncs,]
+numerator_df_scale <- numerator_df_refined
+fill<-vapply(seq(ncol(numerator_df_scale)),function(col_val){
+  vals<- numerator_df_scale[,col_val]
+  numerator_df_scale[,col_val] <<- (vals/sum(vals))*1e6
+  return(T)
+},logical(1))
+rm(fill)
+
+tumor_mean_numerator <- apply(numerator_df_refined[,keys_tumors[keys_tumors %in% colnames(numerator_df_refined)]],1,mean)
+tumor_sd_numerator <- apply(numerator_df_refined[,keys_tumors[keys_tumors %in% colnames(numerator_df_refined)]],1,sd)
+normal_mean_numerator <- apply(numerator_df_refined[,keys_normals[keys_normals %in% colnames(numerator_df_refined)]],1,mean)
+normal_sd_numerator <- apply(numerator_df_refined[,keys_normals[keys_normals %in% colnames(numerator_df_refined)]],1,sd)
+
+tumor_mean_scale <- apply(numerator_df_scale[,keys_tumors[keys_tumors %in% colnames(numerator_df_scale)]],1,mean)
+tumor_sd_scale <- apply(numerator_df_scale[,keys_tumors[keys_tumors %in% colnames(numerator_df_scale)]],1,sd)
+normal_mean_scale <- apply(numerator_df_scale[,keys_normals[keys_normals %in% colnames(numerator_df_scale)]],1,mean)
+normal_sd_scale <- apply(numerator_df_scale[,keys_normals[keys_normals %in% colnames(numerator_df_scale)]],1,sd)
+
+tumor_metadata <- data.frame(tumor_mean,tumor_mean_scale_counts,tumor_sd,
+                             normal_mean,normal_mean_scale_counts,normal_sd,
+                             tumor_mean_numerator,
+                             tumor_sd_numerator,
+                             normal_mean_numerator,
+                             normal_sd_numerator,
+                             tumor_mean_scale,
+                             tumor_sd_scale,
+                             normal_mean_scale,
+                             normal_sd_scale,
+                             splicemutr_dat$modified,
+                             splicemutr_dat$is_UTR,
+                             splicemutr_dat$verdict,
+                             splicemutr_dat$deltapsi,
+                             splicemutr_dat$error,
+                             splicemutr_dat$tx_length,
+                             splicemutr_dat$gene,
+                             splicemutr_dat$cluster)
+colnames(tumor_metadata) <- c("tumor_mean","tumor_mean_scale_counts","tumor_sd",
+                                       "normal_mean","normal_mean_scale_counts","normal_sd",
+                                       "tumor_mean_numerator",
+                                       "tumor_sd_numerator",
+                                       "normal_mean_numerator",
+                                       "normal_sd_numerator",
+                                       "tumor_mean_scale",
+                                       "tumor_sd_scale",
+                                       "normal_mean_scale",
+                                       "normal_sd_scale",
+                                       "modified",
+                                       "is_UTR",
+                                       "verdict",
+                                       "deltapsi",
+                                       "error",
+                                       "tx_length",
+                                       "gene",
+                                       "cluster")
+
+
+```
+
+```{r}
+
+# only keeping suitable samples in SB and WB data
+
+study_samples <- which(colnames(SB_dat) %in% c(rownames(coldata_refined),col_names))
+SB_dat_refined <- SB_dat[,study_samples]
+WB_dat_refined <- WB_dat[,study_samples]
+
+```
+
+```{r}
+
+# finding the commonality between the the HLA genotypes
+
+genotype_comparison <- vapply(seq(length(genotypes)),function(i){
+  genotype <- genotypes[[i]]
+  genotype <- genotype[which(str_detect(genotype,"HLA-A") | str_detect(genotype,"HLA-B") | str_detect(genotype,"HLA-C"))]
+  vapply(seq(length(genotypes)),function(j){
+    inner_genotype <- genotypes[[j]]
+    inner_genotype <- genotype[which(str_detect(inner_genotype,"HLA-A") | str_detect(inner_genotype,"HLA-B") | str_detect(inner_genotype,"HLA-C"))]
+    length(intersect(genotype,inner_genotype))/length(union(genotype,inner_genotype))
+  },numeric(1))
+},numeric(length(genotypes)))
+
+arcas_hla <- names(genotypes)
+colnames(genotype_comparison) <- arcas_hla
+rownames(genotype_comparison) <- arcas_hla
+genotype_comparison_refined <- genotype_comparison[rownames(genotype_comparison) %in% groups_file$V1,
+                                                   colnames(genotype_comparison) %in% groups_file$V1]
+
+```
+
+```{r}
+
+# preparing psi_count data
+
+rowdata <- data.frame(splicemutr_dat$verdict,splicemutr_dat$deltapsi)
+rownames(rowdata)<-seq(nrow(rowdata))
+colnames(rowdata) <- c("verdict","deltapsi")
+for (i in seq(ncol(SB_dat_refined))){
+  SB_dat_refined[,i] <- as.numeric(SB_dat_refined[,i])
+  WB_dat_refined[,i] <- as.numeric(WB_dat_refined[,i])
+}
+SB_dat_ref_small <- SB_dat_refined[,seq(72)]
+rownames(SB_dat_ref_small) <- seq(nrow(SB_dat_ref_small))
+WB_dat_ref_small <- WB_dat_refined[,seq(72)]
+rownames(WB_dat_ref_small) <- seq(nrow(WB_dat_ref_small))
+
+SB_psi_df <- SB_dat_ref_small*psi_df_refined
+SB_psi_mean <- data.frame(t(vapply(seq(ncol(SB_psi_df)),function(col_val){
+  vals <- SB_psi_df[,col_val]
+  vals_psi_df <- psi_df_refined[,col_val]
+  # vals_geom_mean <- prod((vals[vals>0])*(vals_psi_df[vals>0]))^(1/length(vals>0))
+  vals_mean <- mean((vals[vals>0])*(vals_psi_df[vals>0]))
+  vals_sd <- sd((vals[vals>0])*(vals_psi_df[vals>0]))
+  return(c(vals_mean,vals_sd))
+},numeric(2))))
+SB_psi_mean$names<-colnames(SB_psi_df)
+SB_psi_mean$type<-keys[SB_psi_mean$names,"type"]
+SB_psi_mean<-SB_psi_mean[order(SB_psi_mean$type),]
+
+SB_psi_geom_mean <- vapply(seq(ncol(SB_psi_df)),function(col_val){
+  vals <- SB_psi_df[,col_val]
+  vals_psi_df <- psi_df_refined[,col_val]
+  vals_geom_mean <- prod((vals[vals>0])*(vals_psi_df[vals>0]))^(1/length(vals>0))
+  # vals_mean <- mean((vals[vals>0])*(vals_psi_df[vals>0]))
+  # vals_sd <- sd((vals[vals>0])*(vals_psi_df[vals>0]))
+  # return(c(vals_mean,vals_sd))
+},numeric(1))
+
+WB_psi_df <- WB_dat_ref_small*psi_df_refined
+WB_psi_mean <- data.frame(t(vapply(seq(ncol(WB_psi_df)),function(col_val){
+  vals <- WB_psi_df[,col_val]
+  vals_psi_df <- psi_df_refined[,col_val]
+  # vals_geom_mean <- prod((vals[vals>0])*(vals_psi_df[vals>0]))^(1/length(vals>0))
+  vals_mean <- mean((vals[vals>0])*(vals_psi_df[vals>0]))
+  vals_sd <- sd((vals[vals>0])*(vals_psi_df[vals>0]))
+  return(c(vals_mean,vals_sd))
+},numeric(2))))
+WB_psi_mean$names<-colnames(WB_psi_df)
+WB_psi_mean$type<-keys[WB_psi_mean$names,"type"]
+WB_psi_mean<-WB_psi_mean[order(WB_psi_mean$type),]
+WB_psi_geom_mean <- vapply(seq(ncol(WB_psi_df)),function(col_val){
+  vals <- WB_psi_df[,col_val]
+  vals_psi_df <- psi_df_refined[,col_val]
+  vals_geom_mean <- prod((vals[vals>0])*(vals_psi_df[vals>0]))^(1/length(vals>0))
+  # vals_mean <- mean((vals[vals>0])*(vals_psi_df[vals>0]))
+  # vals_sd <- sd((vals[vals>0])*(vals_psi_df[vals>0]))
+  # return(c(vals_mean,vals_sd))
+},numeric(1))
+
+```
+
+```{r}
+
+# evaluating the immunogenicity per sample
+
+# Tumor samples
+
+psi_df_refined <- psi_df_refined[,colnames(SB_dat_ref_small)]
+
+SB_psi_dat <- cbind(SB_dat_ref_small,psi_df_refined)
+colnames(SB_psi_dat)<-seq(ncol(SB_psi_dat))
+
+```
+
+
+```{r}
+
+# conglomerating psi per sample per junction, deltapsi per junction, SB count per junction per sample, and normalized junction counts per sample
+
+# SB_dat_ref_small
+# psi_df_refined
+# numerator_df_scale
+# splicemutr_dat verdict, deltapsi, error
+
+cong_imm_dat <- cbind(SB_dat_ref_small,psi_df_refined[,colnames(SB_dat_ref_small)],numerator_df_scale[,colnames(SB_dat_ref_small)],splicemutr_dat)
+colnames(cong_imm_dat) <- c(sprintf("%s_SB_counts",colnames(SB_dat_ref_small)),
+                                       sprintf("%s_psi",colnames(psi_df_refined)),
+                                       sprintf("%s_junc_counts",colnames(numerator_df_scale)),
+                                       colnames(splicemutr_dat))
+
+```
+
+```{r}
+
+# extracting junctions based on psi and deltapsi and SB count
+
+cong_imm_dat_filt <- cong_imm_dat %>% dplyr::filter(abs(deltapsi)>=0.1)
+hallmark<-msigdbr(species="Homo sapiens",category="H")
+types<-unique(hallmark$gs_name)
+
+juncs_per_sample <- lapply(seq(72),function(sample){
+  which_juncs_fit <- which(cong_imm_dat_filt[,sample] > 1 & cong_imm_dat_filt[,2*sample] > 0.5 & cong_imm_dat_filt[,3*sample] > 10)
+  sample_dat <- data.frame(cong_imm_dat_filt[which_juncs_fit,sample],
+                     cong_imm_dat_filt[which_juncs_fit,2*sample],
+                     cong_imm_dat_filt[which_juncs_fit,3*sample],cong_imm_dat_filt[which_juncs_fit,colnames(splicemutr_dat)])
+  colnames(sample_dat) <- c("SB_counts","psi","junc_counts",colnames(splicemutr_dat))
+
+  pathway_counts <- data.frame(t(vapply(types,function(type){
+    hallmark_type <- hallmark %>% dplyr::filter(gs_name == type)
+    genes_in <- sample_dat$gene[sample_dat$gene %in% hallmark_type$human_ensembl_gene]
+    num_juncs <- length(genes_in)
+    num_genes <- length(unique(genes_in))
+    return(c(num_juncs,num_genes,paste(unique(genes_in),collapse=":")))
+  },character(3))))
+  colnames(pathway_counts)<-c("num_junc_tx_pairs","num_genes","genes")
+
+  this_genotype <- genotypes[colnames(SB_dat_ref_small)[sample]]
+  dat<-list(sample_dat,pathway_counts,this_genotype)
+  names(dat) <- c("sample_dat","pathway_counts","genotype")
+
+  return(dat)
+})
+names(juncs_per_sample) <- sprintf("%s_%s",colnames(SB_dat_ref_small),keys[colnames(SB_dat_ref_small),"type"])
+
+```
+
+```{r}
+# filtering out annotated junctions that modify transcripts
+which_juncs_faulty <- splicemutr_dat$verdict == "annotated" & splicemutr_dat$error != "tx"
+splicemutr_dat_correct <- splicemutr_dat[!which_juncs_faulty,]
+SB_dat_ref_small_correct <- SB_dat_ref_small[!which_juncs_faulty,]
+numerator_df_scale_correct <- numerator_df_scale[!which_juncs_faulty,]
+tumor_metadata_correct <- tumor_metadata[!which_juncs_faulty,]
+
+```
+
+```{r}
+# creating boxplots for strong binder counts in tumor associated junctions per sample
+keys_refined <- keys[which(keys$original %in% colnames(SB_dat_ref_small)),]
+tumor_samples <- keys_refined[keys_refined$type == "T","original"]
+sample_df <- data.frame(log2((SB_dat_ref_small_correct[,tumor_samples[1]]+1)/(tumor_metadata_correct$normal_mean+1)),
+                        rep(tumor_samples[1],nrow(SB_dat_ref_small_correct)),
+                        rep(keys_refined$type[keys_refined$original == tumor_samples[1]],nrow(SB_dat_ref_small_correct)))
+colnames(sample_df) <- c("SB_count","sample","type")
+for (sample in tumor_samples[seq(2,length(tumor_samples))]){
+  temp_df <- data.frame(log2((SB_dat_ref_small_correct[,sample]+1)/(tumor_metadata_correct$normal_mean+1)),
+                        rep(sample,nrow(SB_dat_ref_small_correct)),
+                        rep(keys_refined$type[keys_refined$original == sample],nrow(SB_dat_ref_small_correct)))
+  colnames(temp_df) <- c("SB_count","sample","type")
+  sample_df <- rbind(sample_df,temp_df)
+}
+
+```
+
+```{r}
+
+# filtering out annotated junctions that modify transcripts and are more used in normal samples
+
+which_juncs_faulty <- splicemutr_dat$verdict == "annotated" & splicemutr_dat$error != "tx"
+splicemutr_dat_tum <- splicemutr_dat[!which_juncs_faulty,]
+SB_dat_ref_small_tum <- SB_dat_ref_small[!which_juncs_faulty,]
+numerator_df_scale_tum <- numerator_df_scale[!which_juncs_faulty,]
+tumor_metadata_tum <- tumor_metadata[!which_juncs_faulty,]
+
+keys_refined <- keys[which(keys$original %in% colnames(SB_dat_ref_small)),]
+tumor_samples <- keys_refined[keys_refined$type == "T","original"]
+sample_df_tum <- data.frame((log2(SB_dat_ref_small_tum[,tumor_samples[1]]+1)/(tumor_metadata_tum$normal_mean+1)),
+                        rep(tumor_samples[1],nrow(SB_dat_ref_small_tum)),
+                        rep(keys_refined$type[keys_refined$original == tumor_samples[1]],nrow(SB_dat_ref_small_tum)))
+colnames(sample_df_tum) <- c("SB_count","sample","type")
+for (sample in tumor_samples[seq(2,length(tumor_samples))]){
+  temp_df <- data.frame(log2((SB_dat_ref_small_tum[,sample]+1)/(tumor_metadata_tum$normal_mean+1)),
+                        rep(sample,nrow(SB_dat_ref_small_tum)),
+                        rep(keys_refined$type[keys_refined$original == sample],nrow(SB_dat_ref_small_tum)))
+  colnames(temp_df) <- c("SB_count","sample","type")
+  sample_df_tum <- rbind(sample_df,temp_df)
+}
+
+```
+
+```{r}
+
+# formating splicemutr data for plotting
+
+num_df_SB <- cbind(numerator_df_scale_correct,SB_dat_ref_small_correct)
+colnames(num_df_SB) <- seq(ncol(num_df_SB))
+tumor_meta_samples <- cbind(num_df_SB,tumor_metadata_correct)
+tumor_meta_samples_nov <- tumor_meta_samples %>% dplyr::filter(verdict != "annotated")
+
+tumor_metadata_nonann <- tumor_metadata %>% dplyr::filter(verdict != "annotated")
+
+SB_psi_dat$verdict <- splicemutr_dat$verdict
+SB_psi_dat$deltapsi <- splicemutr_dat$deltapsi
+SB_psi_dat_nov <- SB_psi_dat %>% dplyr::filter(verdict != "annotated")
+
+cluster_metrics <- data.frame(unique(tumor_meta_samples$cluster))
+colnames(cluster_metrics)<-"cluster"
+cluster_metrics$tum_ov_norm <- vapply(cluster_metrics$cluster,function(clu){
+  tumor_dat <- tumor_meta_samples %>% dplyr::filter(cluster == clu)
+  if (!any(tumor_dat$deltapsi > 0) & ! any(tumor_dat$deltapsi < 0)){
+    max_dat <- 1
+    min_dat <- 1
+  } else if (!any(tumor_dat$deltapsi < 0) & any(tumor_dat$deltapsi > 0)){
+    min_dat <- 1
+    max_dat <- mean(tumor_dat[tumor_dat$deltapsi == max(tumor_dat$deltapsi),"tumor_mean"])+1
+  } else if (!any(tumor_dat$deltapsi > 0) & any(tumor_dat$deltapsi < 0)){
+    min_dat <- mean(tumor_dat[tumor_dat$deltapsi == min(tumor_dat$deltapsi),"normal_mean"])+1
+    max_dat <- 1
+  } else {
+    min_dat <- 1
+    max_dat <- 1
+  }
+  return(log2(max_dat/min_dat))
+},numeric(1))
+
+```
+
+```{r}
+
+ggplot(cluster_metrics,aes(x=tum_ov_norm))+geom_histogram(binwidth=0.5)+
+  scale_y_log10()+ylab("log10(count)")+xlab("log2(tumor/normal)")
+
+```
+## Looking at immunogenic clusters
+
+```{r}
+
+tumor_clusters <- cluster_metrics %>% dplyr::filter(tum_ov_norm > 0)
+tumor_clusters_metadata <- tumor_metadata %>% dplyr::filter(cluster %in% tumor_clusters$cluster)
+ensembl<-  useMart("ensembl", dataset="hsapiens_gene_ensembl")
+values<- unique(tumor_clusters_metadata$gene)
+ens_to_symbol <- getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"), filters = "ensembl_gene_id", values = values, mart= ensembl)
+tumor_clusters_metadata$gene_symbol <- vapply(tumor_clusters_metadata$gene,function(gene){
+  a<-which(ens_to_symbol$ensembl_gene_id == gene)
+  if (length(a)==0){return(gene)}
+  symbol <- ens_to_symbol[a,"hgnc_symbol"]
+  if (symbol==""){return(gene)}
+  return(symbol)
+},character(1))
+
+rownames(tumor_clusters)<-tumor_clusters$cluster
+tumor_clusters_metadata$tum_ov_norm<-tumor_clusters[tumor_clusters_metadata$cluster,"tum_ov_norm"]
+tumor_clusters_metadata <- tumor_clusters_metadata %>% dplyr::filter(deltapsi > 0)
+
+ggplot(tumor_clusters_metadata,aes(x=tum_ov_norm,y=log10(tumor_mean_numerator),color=verdict))+geom_point()
+tumor_clusters_metadata_filt <- tumor_clusters_metadata %>% dplyr::filter(log10(tumor_mean_numerator)>1 & tum_ov_norm > 5)
+ggplot(tumor_clusters_metadata_filt,aes(x=tum_ov_norm,y=log10(tumor_mean_numerator),color=verdict))+geom_point()
+ggplot(tumor_clusters_metadata_filt,aes(x=tum_ov_norm,y=log10(tumor_mean_numerator),color=verdict))+geom_text(aes(label=gene_symbol),size=2)
+tumor_clusters_metadata_filt <- tumor_clusters_metadata %>% dplyr::filter(verdict != "annotated")
+ggplot(tumor_clusters_metadata_filt,aes(x=tum_ov_norm,y=log10(tumor_mean_numerator),color=verdict))+geom_point()
+ggplot(tumor_clusters_metadata_filt,aes(x=tum_ov_norm,y=log10(tumor_mean_numerator),color=verdict))+geom_text(aes(label=gene_symbol),size=2)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
