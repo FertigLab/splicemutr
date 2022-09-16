@@ -1,0 +1,14 @@
+LICENSE
+LICENSE.md
+MANIFEST.in
+README.md
+setup.py
+splicemutr.egg-info/PKG-INFO
+splicemutr.egg-info/SOURCES.txt
+splicemutr.egg-info/dependency_links.txt
+splicemutr.egg-info/requires.txt
+splicemutr.egg-info/top_level.txt
+splicemutrcpp/genomic_annotation.cpp
+splicemutrcpp/interval.cpp
+splicemutrcpp/splicemutr.cpp
+splicemutrcpp/splicemutr_bind.cpp

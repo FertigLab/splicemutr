@@ -1,0 +1,3 @@
+[submodule "splicemutrcpp/pybind11"]
+	path = splicemutrcpp/pybind11
+	url = https://github.com/pybind/pybind11.git

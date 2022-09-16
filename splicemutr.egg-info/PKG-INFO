@@ -1,0 +1,43 @@
+Metadata-Version: 2.1
+Name: splicemutr
+Version: 0.1.0
+Summary: My short description for my project.
+Home-page: https://github.com/FertigLab/splicemute.git
+Author: Theron Palmer
+Author-email: tpalme15@jhmi.edu
+License: MIT
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.8.0
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: LICENSE.md
+
+
+splicemute is a tool for evaluating how individual splice junctions affect coding transcripts from RNAseq data.
+
+splicemute is licensed under the [GNU General Public License v3](http://www.gnu.org/licenses/gpl-3.0.html)
+
+splicemute is still a work in progress, but if you find it useful, please cite as follows:
+
+Palmer, T., & Fertig, E. (2021). splicemute [Computer software]. https://github.com/theron-palmer/splicemute.git
+
+# Software USED
+
+STAR: 2.7.3a
+R: 4.0.2
+
+# STAR Alignment of RNAseq data
+
+The fastq files were aligned using the following command:
+
+STAR --genomeDir $GENOME_DIR --readFilesIn ${fastq1} ${fastq2} --twopassMode Basic --outSAMstrandField intronMotif --outFileNamePrefix $outprefix --runThreadN 6 --readFilesCommand zcat --outSAMtype BAM Unsorted
+
+# Converting STAR SJ.out.tab files to splicemutr .junc files
+
+STAR outputs high confidence junction files as well as BAM files. These junction files must be converted to filetypes appropriate for the next steps in the splicemutr pipeline. This is done in the following way, using the associated script file:
+
+splicemute/scripts/STAR_to_leaf.R -o $OUT -s $STAR_FILE
