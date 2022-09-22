@@ -10,6 +10,7 @@ Theron Palmer Jr.
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 class interval{
     protected:
@@ -62,13 +63,22 @@ class gset{
 class transcript{
     protected:
         std::string identity;
+        int start;
+        int end;
+        std::string strand;
+        std::string chromosome;
         gset exons;
         gset cds;
         gset utr5;
         gset utr3;
     public:
         transcript(void);
-        transcript(gset exons_gset, gset cds_gset, gset utr5_gset, gset utr3_gset);
+        transcript(std::string identity_val,int start_val,int end_val,std::string strand_val,std::string chromosome_val);
+        void set_start(int start_val);
+        void set_end(int end_val);
+        void set_strand(std::string strand_val);
+        void set_chromosome(std::string chromosome_val);
+        void set_identity(std::string identity_val);
         bool add_exon(ginterval exon_to_add);
         bool add_cds(ginterval cds_to_add);
         bool add_utr5(ginterval utr5_to_add);
@@ -89,12 +99,17 @@ class gene{
         int end;
         std::string strand;
         std::string chromosome;
-        std::vector<transcript> transcripts;
+        std::map<std::string,transcript> transcripts;
         std::vector<std::string> transcript_identities;
     public:
         gene(void);
         gene(int start_value,int end_value, std::string strand_value, std::string chromosome_value,
-        std::vector<transcript> transcripts_vector, std::string identity_value);
+        std::map<std::string,transcript> transcripts_map, std::string identity_value);
+        void set_start(int start_val);
+        void set_end(int end_val);
+        void set_strand(std::string strand_val);
+        void set_chromosome(std::string chromosome_val);
+        void set_identity(std::string identity_val);
         int get_start(void);
         int get_end(void);
         std::string get_strand(void);
@@ -103,8 +118,8 @@ class gene{
         void add_transcript(transcript transcript_to_add);
         std::vector<std::string> get_transcript_identities(void);
         int find_transcript(std::string transcript_identity);
-        transcript get_transcript(int tx_index);
-        bool is_emtpy(void);
+        transcript get_transcript(std::string tx_id);
+        bool is_empty(void);
 };
 
 #endif

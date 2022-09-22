@@ -226,11 +226,28 @@ ginterval gset::get_range(void){ // gset must have non-overlapping gintervals, s
 
 transcript::transcript(void){};
 
-transcript::transcript(gset exons_gset, gset cds_gset, gset utr5_gset, gset utr3_gset){
-    exons = exons_gset;
-    cds = cds_gset;
-    utr5 = utr5_gset;
-    utr3 = utr3_gset;
+transcript::transcript(std::string identity_val,int start_val,int end_val,std::string strand_val, std::string chromosome_val){
+    identity = identity_val;
+    start = start_val;
+    end = end_val;
+    strand = strand_val;
+    chromosome = chromosome_val;
+};
+
+void transcript::set_start(int start_val){
+    start=start_val;
+};
+void transcript::set_end(int end_val){
+    end=end_val;
+};
+void transcript::set_strand(std::string strand_val){
+    strand=strand_val;
+};
+void transcript::set_chromosome(std::string chromosome_val){
+    chromosome=chromosome_val;
+};
+void transcript::set_identity(std::string identity_val){
+    identity=identity_val;
 };
 
 bool transcript::add_exon(ginterval exon_to_add){ // returns false if fail, true if succeed in adding
@@ -290,7 +307,7 @@ bool transcript::add_utr3(ginterval utr3_to_add){
         };
     };
     if (equality_constraint==true){
-        utr5.add_ginterval(utr3_to_add);
+        utr3.add_ginterval(utr3_to_add);
     }
     return(equality_constraint);
 };
@@ -326,13 +343,29 @@ bool is_valid(void){return(true);};
 gene::gene(void){};
 
 gene::gene(int start_value,int end_value, std::string strand_value, std::string chromosome_value,
-std::vector<transcript> transcripts_vector, std::string identity_value){
+        std::map<std::string,transcript> transcripts_map, std::string identity_value){
     start = start_value;
     end = end_value;
     strand = strand_value;
     chromosome = chromosome_value;
-    transcripts = transcripts_vector;
+    transcripts = transcripts_map;
     identity = identity_value;
+};
+
+void gene::set_start(int start_val){
+    start=start_val;
+};
+void gene::set_end(int end_val){
+    end=end_val;
+};
+void gene::set_strand(std::string strand_val){
+    strand=strand_val;
+};
+void gene::set_chromosome(std::string chromosome_val){
+    chromosome=chromosome_val;
+};
+void gene::set_identity(std::string identity_val){
+    identity=identity_val;
 };
 
 int gene::get_start(void){
@@ -356,7 +389,7 @@ std::string gene::get_chromomosome(void){
 };
 
 void gene::add_transcript(transcript transcript_to_add){
-    transcripts.push_back(transcript_to_add);
+    transcripts[transcript_to_add.get_identity()] = transcript_to_add;
     transcript_identities.push_back(transcript_to_add.get_identity());
 };
 
@@ -373,10 +406,11 @@ int gene::find_transcript(std::string transcript_identity){
     return(-1);
 };
 
-transcript gene::get_transcript(int tx_index){ // mean to be used after find_transcript with external error handling
-    return(transcripts[tx_index]);
+transcript gene::get_transcript(std::string tx_id){ // mean to be used after find_transcript with external error handling
+    return(transcripts[tx_id]);
 };
 
-bool gene::is_emtpy(void){
+bool gene::is_empty(void){
     return(identity.empty());
 };
+
