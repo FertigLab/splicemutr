@@ -195,11 +195,11 @@ GTF build_gtf_ref(std::ifstream &annotation_file_stream, enum ANN_TYPE ann){ // 
                     }
                     current_gene = gene();
                     fill_gene_metadata(line_info,current_gene);
-                    if (num_genes==10){
-                        break;
-                    } else {
-                        num_genes++;
-                    }
+                    // if (num_genes==10){
+                    //     break;
+                    // } else {
+                    //     num_genes++;
+                    // }
                 } else if (*(line_info.begin()+TYPE) == "transcript"){
                     if (FIRST_TX_FLAG){
                         FIRST_TX_FLAG=false;
