@@ -6,19 +6,4 @@ SpliceMutr is still a work in progress, but if you find it useful, please cite a
 
 Palmer, T., & Fertig, E. (2021). splicemutr [Computer software]. https://github.com/theron-palmer/splicemute.git
 
-# Software USED
-
-STAR: 2.7.3a
-R: 4.0.2
-
-# STAR Alignment of RNAseq data
-
-The fastq files were aligned using the following command:
-
-STAR --genomeDir $GENOME_DIR --readFilesIn ${fastq1} ${fastq2} --twopassMode Basic --outSAMstrandField intronMotif --outFileNamePrefix $outprefix --runThreadN 6 --readFilesCommand zcat --outSAMtype BAM Unsorted
-
-# Converting STAR SJ.out.tab files to splicemutr .junc files
-
-STAR outputs high confidence junction files as well as BAM files. These junction files must be converted to filetypes appropriate for the next steps in the splicemutr pipeline. This is done in the following way, using the associated script file:
-
-splicemute/scripts/STAR_to_leaf.R -o $OUT -s $STAR_FILE
+# The instructions that can be used to reproduce the analysis, figures, and tables associated with the manuscript "Aberrant splicing-derived neoantigens associates with enhanced immune infiltration across cancer subtypes but limited response to immune checkpoint blockade" can be found in the folder "manuscript"
