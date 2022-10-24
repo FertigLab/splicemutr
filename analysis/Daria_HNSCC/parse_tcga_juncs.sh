@@ -1,6 +1,0 @@
-# to parse the tcga juncs locally
-
-JUNC_FILE=/media/theron/My_Passport/TCGA_junctions/HNSC/gdac.broadinstitute.org_HNSC.Merge_rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__junction_quantification__data.Level_3.2016012800.0.0/HNSC.rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__junction_quantification__data.data.txt
-OUT_DIR=/media/theron/My_Passport/TCGA_junctions/HNSC/gdac.broadinstitute.org_HNSC.Merge_rnaseqv2__illuminahiseq_rnaseqv2__unc_edu__Level_3__junction_quantification__data.Level_3.2016012800.0.0
-
-./parse_tcga_juncs.py -j $JUNC_FILE -o $OUT_DIR
