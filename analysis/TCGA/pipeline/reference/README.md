@@ -1,4 +1,3 @@
-# Introduction
 
 The reference data used for the TCGA analysis is as follows. All SpliceMutr analysis requires a genomic fasta file as well as a GTF or GFF annotation. The references, preferably the orignals, used for alignment of the RNA-seq data MUST be the references used for SpliceMutr analysis. It is difficult to adapt unmatched references appropriately. 
 
