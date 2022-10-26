@@ -31,9 +31,9 @@ process_bindaff.sh - Filters the output from MHCnuggets MHC:Peptide binding affi
 
 extract_data_large.sh - Extracts the set of binding kmers per allele and maps binders to samples based on sample genotype.
 
-analyze_splicemutr/prep_*.sh - Prepares the directory that will be written to during analyze_splicemutr_*.sh
+analyze_splicemutr/prep_[cancer type].sh - Prepares the directory that will be written to during analyze_splicemutr_*.sh
 
-analyze_splicemutr/analyze_splicemutr_*.sh - Creates the set of files necessary for calculating the splicing antigenicity per TCGA tumor subtype.
+analyze_splicemutr/analyze_splicemutr_[cancer_type].sh - Creates the set of files necessary for calculating the splicing antigenicity per TCGA tumor subtype.
 
 calc_gene_metric.sh - Calculates the splicing antigenicity per TCGA tumor subtype, sample, and gene.
 
