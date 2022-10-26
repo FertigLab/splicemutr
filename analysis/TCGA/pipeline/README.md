@@ -1,7 +1,7 @@
 
 Each .sh file listed below outlines the usage of the associated .R or .py script in the "scripts" or "inst" subdirectories specifically for producing the data used in the manuscript.
 
-# building the necessary reference
+# Building the necessary reference
 
 See the "reference" subdirectory
 
