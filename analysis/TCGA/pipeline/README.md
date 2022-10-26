@@ -19,9 +19,7 @@ TCGA_create_genotypes.sh - Creating the genotype information used during MHC:pep
 
 form_transcripts.sh - Performing the SpliceMutr transcript formation
 
-calc_coding_potential.sh - Recalculating the coding potential. This was necessary for the manuscript because I originally programmed the calculation incorrectly. 
-
-"form_transcripts.R" calculates the coding potential correctly now.
+calc_coding_potential.sh - Recalculating the coding potential. This was necessary for the manuscript because I originally programmed the calculation incorrectly. "form_transcripts.R" calculates the coding potential correctly now.
 
 combine_splicemutr.sh - Typically, SpliceMutr transcript formation is batched. This combines the output of each of those batched jobs.
 
