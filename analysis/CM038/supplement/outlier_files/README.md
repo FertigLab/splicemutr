@@ -1,0 +1,1 @@
+These files contain the information used for performing a one-many outlier splicing analysis. The first line of each file is the "one". Every other file after the file on the first line are the "many", meaning they form reference for comparison against during outlier splicing analysis.
