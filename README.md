@@ -6,4 +6,4 @@ SpliceMutr is still a work in progress, but if you find it useful, please cite a
 
 Palmer, T., & Fertig, E. (2021). splicemutr [Computer software]. https://github.com/theron-palmer/splicemute.git
 
-The instructions that can be used to reproduce the analysis, figures, and tables associated with the manuscript "Aberrant splicing-derived neoantigens associates with enhanced immune infiltration across cancer subtypes but limited response to immune checkpoint blockade" can be found in the folder "analysis"
+The instructions that can be used to reproduce the analysis, figures, and tables associated with the manuscript "***insert appropriate title***" can be found in the folder "analysis"
