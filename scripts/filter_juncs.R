@@ -29,7 +29,12 @@ sj_file<-opt$sj_file
 
 splice_juncs <- read.table(sj_file)
 splice_juncs <- splice_juncs %>% dplyr::filter(V5 != 0)
+<<<<<<< HEAD
 splice_juncs <- splice_juncs %>% dplyr::filter(V7 != 10)
+=======
+splice_juncs <- splice_juncs %>% dplyr::filter(V7 >= 10)
+
+>>>>>>> 940011bba6119b8dc847cd62735da9ce5727e4ce
 
 #------------------------------------------------------------------------------#
 # saving the biologically relevant splice junctions

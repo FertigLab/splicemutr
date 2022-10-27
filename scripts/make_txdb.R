@@ -28,7 +28,7 @@ gtf_file<-opt$gtf
 #------------------------------------------------------------------------------#
 # creating the txdb
 
-txdb<-makeTxDbFromGFF(gtf_file) # making the txdb from gtf
+txdb<-makeTxDbFromGFF(gtf_file,format="gff3") # making the txdb from gtf
 
 #------------------------------------------------------------------------------#
 # saving the txdb

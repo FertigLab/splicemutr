@@ -830,3 +830,347 @@ calc_coding_potential <- function(transcript,sense_codons){
   potential_c <- ((1-f_c)**(sense_codons-1))*f_c
   return(potential_c)
 }
+
+#' @name choose_fusion_exons
+#' @title choose_exons
+#' @param target_junc the target junction to use for analysis
+#' @param exons_by_tx the exons per gene in the genome
+#' @return the unique start and end junction exons
+#' @export
+#' @importFrom BiocGenerics %in%
+choose_fusion_exons<-function(target_junc, exons_by_tx,is_virus=F,is_donor=F){
+  junc_loc<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[4],
+                                     ranges = IRanges::IRanges(start = as.numeric(target_junc[2]), width = c(1)))
+  exons_by_tx_unlisted <- unlist(exons_by_tx)
+  if (!is_virus){
+    exons_by_tx_filt <-  exons_by_tx_unlisted[exons_by_tx_unlisted@strand==target_junc[4]]
+  } else {
+    exons_by_tx_filt <- exons_by_tx_unlisted[which(exons_by_tx_unlisted@seqnames==target_junc[1])]
+  }
+  if (target_junc[4]=="+" & !is_virus){
+    exons_by_tx_sorted<-sort(exons_by_tx_filt)
+    if (is_donor){
+      loc<-GenomicRanges::findOverlaps(exons_by_tx_sorted,junc_loc)
+      hits<-S4Vectors::queryHits(loc)
+      if (length(loc)==0){
+        hits<-which(IRanges::ranges(junc_loc) > IRanges::ranges(exons_by_tx_sorted))
+        hits<-hits[length(hits)]
+        if (length(hits)==0){
+          return(NA)
+        }
+      }
+      exon_val<-unique(exons_by_tx_sorted[hits])
+      transcript <- names(exon_val)
+    } else { # is an acceptor
+      loc<-GenomicRanges::findOverlaps(exons_by_tx_sorted,junc_loc)
+      hits<-S4Vectors::queryHits(loc)
+      if (length(loc)==0){
+        hits<-which(IRanges::ranges(junc_loc) < IRanges::ranges(exons_by_tx_sorted))[1]
+      }
+      exon_val<-unique(exons_by_tx_sorted[hits])
+      transcript <- names(exon_val)
+    }
+    # exons_small<-data.frame(unique(sort(exons_by_gene[[gene]])))
+    # exons_small<-unique(exons_small[,1:3])
+    return(exon_val)
+  } else if (target_junc[4]=="-" & !is_virus) {
+    exons_by_tx_sorted<-sort(exons_by_tx_filt,decreasing=T)
+    if (is_donor){
+      loc<-GenomicRanges::findOverlaps(exons_by_tx_sorted,junc_loc)
+      hits<-S4Vectors::queryHits(loc)
+      if (length(loc)==0){
+        hits<-which(IRanges::ranges(junc_loc) < IRanges::ranges(exons_by_tx_sorted))
+        hits<-hits[length(hits)]
+        if (length(hits)==0){
+          return(NA)
+        }
+      }
+      exon_val<-unique(exons_by_tx_sorted[hits])
+      transcript <- names(exon_val)
+    } else { # is an acceptor
+      loc<-GenomicRanges::findOverlaps(exons_by_tx_sorted,junc_loc)
+      hits<-S4Vectors::queryHits(loc)
+      if (length(loc)==0){
+        hits<-which(IRanges::ranges(junc_loc) > IRanges::ranges(exons_by_tx_sorted))[1]
+      }
+      exon_val<-unique(exons_by_tx_sorted[hits])
+      transcript <- names(exon_val)
+    }
+    # exons_small<-data.frame(unique(sort(exons_by_gene[[gene]])))
+    # exons_small<-unique(exons_small[,1:3])
+    return(exon_val)
+  } else {
+    exons_by_tx_sorted<-sort(exons_by_tx_filt)
+    if (is_donor){
+      loc<-GenomicRanges::findOverlaps(exons_by_tx_sorted,junc_loc)
+      hits<-S4Vectors::queryHits(loc)
+      if (length(loc)==0){
+        hits<-which(IRanges::ranges(junc_loc) > IRanges::ranges(exons_by_tx_sorted))
+        hits<-hits[length(hits)]
+        if (length(hits)==0){
+          return(NA)
+        }
+      }
+      exon_val<-unique(exons_by_tx_sorted[hits])
+      transcript <- names(exon_val)
+    } else { # is an acceptor
+      loc<-GenomicRanges::findOverlaps(exons_by_tx_sorted,junc_loc)
+      hits<-S4Vectors::queryHits(loc)
+      if (length(loc)==0){
+        hits<-which(IRanges::ranges(junc_loc) < IRanges::ranges(exons_by_tx_sorted))[1]
+        if (is.na(hits)){
+          return(NA)
+        }
+      }
+      exon_val<-unique(exons_by_tx_sorted[hits])
+      transcript <- names(exon_val)
+    }
+    # exons_small<-data.frame(unique(sort(exons_by_gene[[gene]])))
+    # exons_small<-unique(exons_small[,1:3])
+    return(exon_val)
+  }
+}
+
+#' @name get_flanking_exons
+#' @title choose_exons
+#' @param target_junc the target junction to use for analysis
+#' @param exons_by_tx the exons per gene in the genome
+#' @return the unique start and end junction exons
+#' @export
+#' @importFrom BiocGenerics %in%
+get_flanking_exons<-function(target_junc,exon_val,exons_by_tx,is_donor=F){
+  junc_loc<-GenomicRanges::GRanges(seqnames = c(target_junc[1]), strand = target_junc[4],
+                                   ranges = IRanges::IRanges(start = as.numeric(target_junc[2]), width = c(1)))
+  exons_by_tx_unlisted <- unlist(exons_by_tx)
+  if (as.character(exon_val@seqnames)=="K02718.1"){ # is HPV
+    exons_by_tx_filt <- exons_by_tx_unlisted[exons_by_tx_unlisted@seqnames=="K02718.1"]
+    exons_by_tx_sorted<-sort(exons_by_tx_filt)
+    if (is_donor){ # need exons before junction
+        hits<-which(IRanges::ranges(junc_loc) > IRanges::ranges(exons_by_tx_sorted))
+        flanking_exons<-unique(exons_by_tx_sorted[hits])
+      } else { # is acceptor: need exons after junction
+        hits<-which(IRanges::ranges(junc_loc) < IRanges::ranges(exons_by_tx_sorted))
+        flanking_exons<-unique(exons_by_tx_sorted[hits])
+      }
+  } else {
+    if (as.character(exon_val@strand)=="+"){
+      exons_by_tx_filt <- exons_by_tx[names(exon_val)]
+      exons_by_tx_sorted<-sort(exons_by_tx_filt,decreasing=F)
+      if (is_donor){ # need exons before junction
+        hits<-which(IRanges::ranges(junc_loc) > IRanges::ranges(exons_by_tx_sorted))
+        flanking_exons<-unlist(unique(exons_by_tx_sorted[hits]))
+      } else { # is acceptor: need exons after junction
+        hits<-which(IRanges::ranges(junc_loc) < IRanges::ranges(exons_by_tx_sorted))
+        flanking_exons<-unlist(unique(exons_by_tx_sorted[hits]))
+      }
+    } else {
+      exons_by_tx_filt <- exons_by_tx[names(exon_val)]
+      exons_by_tx_sorted<-sort(exons_by_tx_filt,decreasing=T)
+      if (is_donor){ # need exons before junction, "+" strand
+        hits<-which(IRanges::ranges(junc_loc) < IRanges::ranges(exons_by_tx_sorted))
+        flanking_exons<-unlist(unique(exons_by_tx_sorted[hits]))
+      } else { # is acceptor: need exons after junction, "-" strand
+        hits<-which(IRanges::ranges(junc_loc) > IRanges::ranges(exons_by_tx_sorted))
+        flanking_exons<-unlist(unique(exons_by_tx_sorted[hits]))
+      }
+    }
+  }
+  return(flanking_exons)
+}
+
+#' @name flankers_are_coding_are_virus
+#' @title choose_exons
+#' @param flanking_exons the target junction to use for analysis
+#' @return whether the flanker exons are virus or coding
+#' @export
+flankers_are_coding_are_virus<-function(cds_by_tx,flanking_exons){
+  if (str_detect(names(flanking_exons)[1],"ENST")){
+    is_virus<-F
+    if(names(flanking_exons)[1] %in% names(cds_by_tx)){
+      is_coding <- T
+    } else {
+      is_coding <- F
+    }
+  } else {
+    is_virus<-T
+    is_coding<-T
+  }
+  strand <- unique(as.character(flanking_exons@strand))
+  meta <- list(is_virus,is_coding,strand)
+  names(meta) <- c("is_virus","is_coding","strand")
+  return(meta)
+}
+
+#' @name merge_granges
+#' @title choose_exons
+#' @param flanking_exons the target junction to use for analysis
+#' @param exon_to_add
+#' @return merged flanking_exons
+#' @export
+merge_granges<-function(flanking_exons,exon_to_add,target_junc,is_donor){
+  exon_to_add_df <- as.data.frame(exon_to_add)
+  if (as.character(exon_to_add@strand)=="+"){
+    if (is_donor){
+      if ((as.numeric(target_junc[2]) >= exon_to_add_df$start) & (as.numeric(target_junc[2]) <= exon_to_add_df$end)){
+        exon_to_add_df$end<-as.numeric(target_junc[2])
+        exon_to_add_df <- adjust_width(exon_to_add_df)
+        exon_to_add_mod <- makeGRangesFromDataFrame(exon_to_add_df,keep.extra.columns=TRUE)
+      } else {
+        exon_to_add_mod <- exon_to_add
+      }
+    } else {
+      if ((as.numeric(target_junc[2]) >= exon_to_add_df$start) & (as.numeric(target_junc[2]) <= exon_to_add_df$end)){
+        exon_to_add_df$start<-as.numeric(target_junc[2])
+        exon_to_add_df <- adjust_width(exon_to_add_df)
+        exon_to_add_mod <- makeGRangesFromDataFrame(exon_to_add_df,keep.extra.columns=TRUE)
+      } else {
+        exon_to_add_mod <- exon_to_add
+      }
+    }
+  } else {
+    if (is_donor){
+      if ((as.numeric(target_junc[2]) >= exon_to_add_df$start) & (as.numeric(target_junc[2]) <= exon_to_add_df$end)){
+        exon_to_add_df$end<-as.numeric(target_junc[2])
+        exon_to_add_df <- adjust_width(exon_to_add_df)
+        exon_to_add_mod <- makeGRangesFromDataFrame(exon_to_add_df,keep.extra.columns=TRUE)
+      } else {
+        exon_to_add_mod <- exon_to_add
+      }
+    } else {
+      if ((as.numeric(target_junc[2]) >= exon_to_add_df$start) & (as.numeric(target_junc[2]) <= exon_to_add_df$end)){
+        exon_to_add_df$start<-as.numeric(target_junc[2])
+        exon_to_add_df <- adjust_width(exon_to_add_df)
+        exon_to_add_mod <- makeGRangesFromDataFrame(exon_to_add_df,keep.extra.columns=TRUE)
+      } else {
+        exon_to_add_mod <- exon_to_add
+      }
+    }
+  }
+  if (!(exon_to_add %in% flanking_exons)){
+    merged_exons <- c(flanking_exons,exon_to_add_mod)
+  } else {
+    exon_to_remove <- which(exon_to_add == flanking_exons)
+    flanking_exons <- flanking_exons[-exon_to_remove]
+    merged_exons <- c(flanking_exons,exon_to_add_mod)
+  }
+  return(merged_exons)
+}
+
+#' @name merge_donor_acceptor
+#' @title choose_exons
+#' @param flanking_exons the target junction to use for analysis
+#' @param exon_to_add
+#' @return merged flanking_exons
+#' @export
+merge_donor_acceptor<-function(bsgenome,donor_flanking_exons,acceptor_flanking_exons,cds_by_tx){
+  donor_flanker_info <- flankers_are_coding_are_virus(cds_by_tx,donor_flanking_exons)
+  acceptor_flanker_info <- flankers_are_coding_are_virus(cds_by_tx,acceptor_flanking_exons)
+  if (donor_flanker_info$is_coding & acceptor_flanker_info$is_coding){
+    if (as.character(donor_flanking_exons@seqnames[1])=="K02718.1"){
+      if (acceptor_flanker_info$strand=="+"){
+        acceptor_flanking_exons_sorted <- sort(acceptor_flanking_exons,decreasing=F)
+      } else {
+        acceptor_flanking_exons_sorted <- sort(acceptor_flanking_exons,decreasing=T)
+      }
+      transcripts <- unique(names(donor_flanking_exons))
+      seq_vals <- vapply(transcripts,function(tx){
+        donor_flanking_exons_small <- donor_flanking_exons[names(donor_flanking_exons) == tx]
+        donor_flanking_exons_small<-sort(donor_flanking_exons_small,decreasing=F)
+        seq_a <- getSeq(bsgenome,donor_flanking_exons_small)
+        seq_b <- getSeq(bsgenome,acceptor_flanking_exons_sorted)
+        seq_c <- find_fusion_orfs(paste(c(seq_a,seq_b),collapse=""))
+        return(substr(seq_c,1,nchar(seq_c)-1))
+      },character(1))
+      return(seq_vals)
+    } else {
+      if (donor_flanker_info$strand=="+"){
+        donor_flanking_exons_sorted <- sort(donor_flanking_exons,decreasing=F)
+      } else {
+        donor_flanking_exons_sorted <- sort(donor_flanking_exons,decreasing=T)
+      }
+      transcripts <- unique(names(acceptor_flanking_exons))
+      seq_vals <- vapply(transcripts,function(tx){
+        acceptor_flanking_exons_small <- acceptor_flanking_exons[names(acceptor_flanking_exons) == tx]
+        acceptor_flanking_exons_small<-sort(acceptor_flanking_exons_small,decreasing=F)
+        seq_a <- getSeq(bsgenome,donor_flanking_exons_sorted)
+        seq_b <- getSeq(bsgenome,acceptor_flanking_exons_small)
+        seq_c <- find_fusion_orfs(paste(c(seq_a,seq_b),collapse=""))
+        return(substr(seq_c,1,nchar(seq_c)-1))
+      },character(1))
+      return(seq_vals)
+    }
+  } else {
+    return(NA)
+  }
+}
+
+#' @name find_fusion_orfs
+#' @title find_orfs
+#' @param sequ The DNA sequence in character form to analyze
+#' @param tx_junc_loc The junction location in the transcript
+#' @return a vector of error type, protein if translatable or DNA sequence, ensembl transcript name , junction location relative to peptide start, modified transcript length, start and stop codon locations
+#' @export
+#'
+find_fusion_orfs<-function(sequ){
+  start_codon<-"ATG"
+  stop_codons<-c("TAG","TAA","TGA")
+  errors <- NA
+  sequ_len <- nchar(sequ)
+  x<-1
+  if (x >= nchar(sequ)){
+    return(NA)
+    return(c("seq_too_small",NA,NA,NA,NA,NA,NA,sequ_len))
+  } else {
+    sequence_split<-stringi::stri_sub(str = sequ,
+                                      from = seq(x, nchar(sequ) - 3 + 1,by = 3),
+                                      length = 3)
+
+    start_cods<-which(sequence_split %in% start_codon)
+    # no translation
+    if (length(start_cods)==0){
+      return(NA)
+      stop_cods<-which(sequence_split %in% stop_codons)
+      if (length(stop_cods) == 0){
+        return(c("no_starts:no_stops",sequ,NA,NA,NA,NA))
+      } else if (stop_cods[1] != length(sequence_split)){
+        orf_loc<-c(NA, 1 + (stop_cods[1]*3)-1 -1+x)
+        return(c("no_starts:stop_not_end",sequ,NA,NA,sequ_len,paste(c(orf_loc[1],orf_loc[2]),collapse=":")))
+      } else {
+        orf_loc<-c(NA, 1 + (stop_cods[1]*3)-1 -1+x)
+        return(c("no_starts",sequ,NA,NA,sequ_len,paste(c(orf_loc[1],orf_loc[2]),collapse=":")))
+      }
+    }
+    sequence_split<-sequence_split[start_cods[1]:length(sequence_split)]
+    stop_cods<-which(sequence_split %in% stop_codons)
+    if (length(stop_cods)==0){
+      return(NA)
+      if (start_cods[1] != 1){
+        orf_loc<-c((start_cods[1]*3)-2-1+x, NA)
+        orf_seq<-paste(sequence_split[1:length(sequence_split)],collapse="")
+        return(c("starts_not_beg:no_stops",sequ,NA,NA,sequ_len,paste(c(orf_loc[1],orf_loc[2]),collapse=":")))
+      } else {
+        orf_loc<-c((start_cods[1]*3)-2-1+x, NA)
+        return(c("no_stops",sequ,NA,NA,sequ_len,paste(c(orf_loc[1],orf_loc[2]),collapse=":")))
+      }
+    }
+    if (start_cods[1] != 1 & stop_cods[1] != length(sequence_split)){
+      error <- "start_not_beg:stop_not_end"
+    } else if (start_cods[1] == 1 & stop_cods[1] != length(sequence_split)){
+      error <- "stop_not_end"
+    } else if (start_cods[1] != 1 & stop_cods[1] == length(sequence_split)){
+      error <- "start_not_beg"
+    } else {
+      error <- "tx"
+    }
+    orf_seq<-paste(sequence_split[1:stop_cods[1]],collapse="")
+    seq_str_set<-Biostrings::DNAStringSet(orf_seq)
+    trans<-Biostrings::translate(seq_str_set,no.init.codon = F)
+    orf_loc<-c((start_cods[1]*3)-2, (start_cods[1]*3)-2 + (stop_cods[1]*3)-1)-1+x
+    out<-c(error,
+           orf_seq,
+           as.character(trans),
+           sequ_len,
+           paste(c(orf_loc[1],orf_loc[2]),collapse=":"))
+    return(out[3])
+  }
+}

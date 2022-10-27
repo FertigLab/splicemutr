@@ -1,0 +1,21 @@
+# I think I Need to make are chromosome names that are not numbers into quotations.
+Package: BSgenome.Hsapiens.GENCODE.GRCh38.p13
+Title: Full genome sequences for Homo sapiens (GRCh38.p13)
+Description: Genome Reference Consortium Human Build 38 patch release 13 (GRCh38.p13)
+Version: 0.1
+Author: Theron Palmer
+Maintainer: Theron<theropalm@gmail.com>
+License: ?
+#genome: GRCh38.p13
+organism: Homo sapiens
+common_name: human
+provider: GENCODE
+provider_version: GRCh38.p13
+release_name: Genome Reference Consortium Human Build 38 patch release 13 (GRCh38.p13)
+release_date: 2019-02-28
+source_url: http://labshare.cshl.edu/shares/gingeraslab/www-data/dobin/STAR/STARgenomes/Human/GRCh38_Ensembl99_sparseD3_sjdbOverhang99/
+organism_biocview: Homo_sapiens
+BSgenomeObjname: Hsapiens
+seqfile_name: Homo_sapiens.GRCh38.dna.primary_assembly.2bit
+seqs_srcdir: /users/tpalmer/valsamo/reference/GRCh38_Ensembl99_sparseD3_sjdbOverhang99
+seqfiles_suffix: .2bit

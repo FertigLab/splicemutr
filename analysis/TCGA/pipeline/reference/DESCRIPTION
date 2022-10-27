@@ -1,0 +1,19 @@
+Package: BSgenome.Hsapiens.GENCODE.GRCh38.p10
+Title: Full genome sequences for Homo sapiens GRCh38.p10
+Description: Full genome sequences for Homo sapiens (human) as provided by GENCODE (Genome Reference Consortium Human Build 38 patch release 10)
+Version: 0.1
+Author: Theron Palmer
+Maintainer: Theron<tpalme15@jhmi.edu>
+Suggests:
+License: ?
+organism: Homo sapiens
+common_name: human
+seqs_srcdir: /home/tpalme15/splicemutr_project/reference_genomes/SEQUENCES/GENCODE/recount3
+seqfile_name: GRCh38.primary_assembly.genome.2bit 
+provider: GENCODE
+provider_version: GRCh38.p10
+release_name: GRCh38.p10
+release_date: 03/28/2017
+source_url: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_35/
+organism_biocview: AnnotationData, Genetics, BSgenome, Homo_sapiens
+BSgenomeObjname: Hsapiens
