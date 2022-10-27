@@ -41,4 +41,5 @@ valsamo_analyze_splicemutr.sh - Calculating the binding kmer counts per SpliceMu
 valsamo_create_comparisons_cp.sh - Using CM038 and SpliceMutr metadata to create the files necessary for the splicing antigenicity calculation per comparison.
 
 updated_calc_gene_metric_len_norm.sh - Calculating the splicing antigenicity using the output from valsamo_create_comparisons_cp.sh.
- 
+
+analysis_Theron_10132022.Rmd - Performing final analysis and figure generation for the manuscript.  
