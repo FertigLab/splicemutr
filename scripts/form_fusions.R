@@ -166,3 +166,7 @@ sequences <- seq_vals$sequence
 names(sequences) <- sprintf("seq_%d",seq(length(sequences)))
 sequences<-AAStringSet(sequences)
 writeXStringSet(sequences,sprintf("%s/%s.fa",out_dir,str_remove(basename(intron_file),"Chimeric.out.junction")))
+sequences <- data.frame(peps=seq_vals$sequence)
+write.table(sequences,
+            file=sprintf("%s/%s.peps.fa",out_dir,str_remove(basename(intron_file),"Chimeric.out.junction")),
+            quote=F,sep="\t",col.names = T,row.names = F)
