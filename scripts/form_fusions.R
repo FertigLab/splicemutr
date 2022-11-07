@@ -26,7 +26,8 @@ library(optparse)
 library(dplyr)
 library(rlist)
 library(AnnotationDbi)
-library(splicemute)
+library(Biostrings)
+# library(splicemute)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -34,20 +35,21 @@ library(splicemute)
 arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups_file",
                                      description="form transcripts per junction for the given input junction file",
                                      option_list=list(
-                                       make_option(c("-o","--out_prefix"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
+                                       make_option(c("-o","--out_dir"), default = sprintf("%s",getwd()), help="The output directory for the kmer data"),
                                        make_option(c("-t","--txdb"), default=NULL, help="The txdb object"),
                                        make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
                                        make_option(c("-b","--bsgenome_name"),default = "bsgenome_name",help="the bsgenome object name"),
-                                       make_option(c("-m","--chr_map"),default=F,help="the chromosome map"))))
+                                       make_option(c("-m","--chr_map"),default=F,help="the chromosome map"),
+                                       make_option(c("-f","--funcs"),default=F,help="functions"))))
 
 opt=arguments
 
-out_prefix<-opt$out_prefix
+out_dir<-opt$out_dir
 txdb_file<-opt$txdb
 chr_map<-opt$chr_map
 
 bsgenome_name <- opt$bsgenome_name # bsgenome_name so that can create bsgenome object
-library(bsgenome_name,character.only = T) # assigning bsgenome object to "bsgenome" variable
+library(bsgenome_name,character.only=T) # assigning bsgenome object to "bsgenome" variable
 assign("bsgenome",get(bsgenome_name))
 
 introns <-readRDS(opt$juncs) # loading in the introns data
@@ -61,23 +63,26 @@ if (typeof(chr_map)!="logical"){ # this is done in the case that there is a spec
   },character(1))
 }
 introns<-format_introns(introns)
-
-#------------------------------------------------------------------------------#
-# format fusion junctions
-
-library(BSgenome)
-library(BSgenome.Hsapienshpv16.GENCODE.GRCh38.107)
-bsgenome <- BSgenome.Hsapienshpv16.GENCODE.GRCh38.107
-# intron_file <-"F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay14-39174_trimedChimeric.out.junction"
-intron_file <-"F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay21-090-1_1_valChimeric.out.junction"
-# intron_file <- "F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay18-047-1_1_valChimeric.out.junction"
-introns <- read.table(intron_file,header=T)
 introns_HPVfusions <-  introns[(introns$chr_donorA == "K02718.1" & introns$chr_acceptorB != "K02718.1") | (introns$chr_donorA != "K02718.1" & introns$chr_acceptorB == "K02718.1"),]
 
-txdb_file <- "F:/reference_genomes/human_hpv16/Homo_sapiens.GRCh38.107.hpv16_mod.txdb"
-source("F:/splicemute/R/functions.R")
-chr_map <- F
-out_dir <- "F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out"
+source(opt$funcs)
+
+#------------------------------------------------------------------------------#
+# local input
+
+# library(BSgenome)
+# library(BSgenome.Hsapienshpv16.GENCODE.GRCh38.107)
+# bsgenome <- BSgenome.Hsapienshpv16.GENCODE.GRCh38.107
+# intron_file <-"F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay14-39174_trimedChimeric.out.junction"
+# intron_file <-"F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay21-090-1_1_valChimeric.out.junction"
+# intron_file <- "F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay18-047-1_1_valChimeric.out.junction"
+# introns <- read.table(intron_file,header=T)
+# introns_HPVfusions <-  introns[(introns$chr_donorA == "K02718.1" & introns$chr_acceptorB != "K02718.1") | (introns$chr_donorA != "K02718.1" & introns$chr_acceptorB == "K02718.1"),]
+
+# txdb_file <- "F:/reference_genomes/human_hpv16/Homo_sapiens.GRCh38.107.hpv16_mod.txdb"
+# source("F:/splicemute/R/functions.R")
+# chr_map <- F
+# out_dir <- "F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out"
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
@@ -157,3 +162,7 @@ seq_vals <- seq_vals[complete.cases(seq_vals),]
 write.table(seq_vals,
             file=sprintf("%s/%s.fusion.peptides",out_dir,str_remove(basename(intron_file),"Chimeric.out.junction")),
             quote=F,sep="\t",col.names = T,row.names = F)
+sequences <- seq_vals$sequence
+names(sequences) <- sprintf("seq_%d",seq(length(sequences)))
+sequences<-AAStringSet(sequences)
+writeXStringSet(sequences,sprintf("%s/%s.fa",out_dir,str_remove(basename(intron_file),"Chimeric.out.junction")))
