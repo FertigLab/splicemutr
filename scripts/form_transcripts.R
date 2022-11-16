@@ -53,6 +53,7 @@ bsgenome_name <- opt$bsgenome_name # bsgenome_name so that can create bsgenome o
 library(bsgenome_name,character.only = T) # assigning bsgenome object to "bsgenome" variable
 assign("bsgenome",get(bsgenome_name))
 
+print("reading in splice-junctions")
 introns <-readRDS(opt$juncs) # loading in the introns data
 introns$chr <- str_replace(introns$chr,"chr","") # replacing the chr with ""
 if (typeof(chr_map)!="logical"){ # this is done in the case that there is a specific chromosome mapping that needs to be done
