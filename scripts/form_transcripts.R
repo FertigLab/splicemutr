@@ -43,6 +43,8 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
 
 opt=arguments
 
+source(opt$funcs)
+
 out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
 chr_map<-opt$chr_map
@@ -62,7 +64,6 @@ if (typeof(chr_map)!="logical"){ # this is done in the case that there is a spec
   },character(1))
 }
 introns<-format_introns(introns)
-source(opt$funcs)
 
 #------------------------------------------------------------------------------#
 # preparing the references for transcript formation and kmerization
@@ -638,8 +639,10 @@ locs <- lapply(seq(length(unique_juncs)),function(junc_val){
 })
 data_canon <- rbind(data_canon_ann,data_canon_fill[,seq(ncol(data_canon_ann))])
 sequences <- c(sequences_ann,sequences_fill)
-data_canon$coding_potential_LGC<-vapply(sequences,calc_coding_potential_LGC,numeric(1))
-data_canon$coding_potential<-vapply(sequences,calc_coding_potential,numeric(1))
+#data_canon$coding_potential_LGC<-vapply(sequences,calc_coding_potential_LGC,numeric(1))
+data_canon$coding_potential_LGC<-NA
+#data_canon$coding_potential<-vapply(sequences,calc_coding_potential,numeric(1))
+data_canon$coding_potential<-NA
 
 #------------------------------------------------------------------------------#
 # saving data
