@@ -52,6 +52,7 @@ bsgenome_name <- opt$bsgenome_name # bsgenome_name so that can create bsgenome o
 library(bsgenome_name,character.only=T) # assigning bsgenome object to "bsgenome" variable
 assign("bsgenome",get(bsgenome_name))
 
+print("intron_file stage")
 intron_file <- opt$juncs
 if (str_detect(intron_file,".rds")){
   introns <-readRDS(opt$juncs) # loading in the introns data
@@ -59,6 +60,7 @@ if (str_detect(intron_file,".rds")){
   introns <- read.table(intron_file,header=T)
 }
 
+print("chr_map stage")
 introns$chr <- str_replace(introns$chr,"chr","") # replacing the chr with ""
 if (typeof(chr_map)!="logical"){ # this is done in the case that there is a specific chromosome mapping that needs to be done
   chr_map_file <- opt$chr_map
@@ -68,7 +70,7 @@ if (typeof(chr_map)!="logical"){ # this is done in the case that there is a spec
     return(chr_map$mapped[chr_map$chr==chrom])
   },character(1))
 }
-introns<-format_introns(introns)
+# introns<-format_introns(introns)
 introns_HPVfusions <-  introns[(introns$chr_donorA == "K02718.1" & introns$chr_acceptorB != "K02718.1") | (introns$chr_donorA != "K02718.1" & introns$chr_acceptorB == "K02718.1"),]
 
 source(opt$funcs)
@@ -76,13 +78,13 @@ source(opt$funcs)
 #------------------------------------------------------------------------------#
 # local input
 
-# library(BSgenome)
-# library(BSgenome.Hsapienshpv16.GENCODE.GRCh38.107)
-# bsgenome <- BSgenome.Hsapienshpv16.GENCODE.GRCh38.107
+library(BSgenome)
+library(BSgenome.Hsapienshpv16.GENCODE.GRCh38.107)
+bsgenome <- BSgenome.Hsapienshpv16.GENCODE.GRCh38.107
 # intron_file <-"F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay14-39174_trimedChimeric.out.junction"
-# intron_file <-"F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay21-090-1_1_valChimeric.out.junction"
+intron_file <-"F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay21-090-1_1_valChimeric.out.junction"
 # intron_file <- "F:/head_and_neck_DARIA/CalifanoHPVOP/star_fusion_out/DGay18-047-1_1_valChimeric.out.junction"
-# introns <- read.table(intron_file,header=T)
+introns <- read.table(intron_file,header=T)
 # introns_HPVfusions <-  introns[(introns$chr_donorA == "K02718.1" & introns$chr_acceptorB != "K02718.1") | (introns$chr_donorA != "K02718.1" & introns$chr_acceptorB == "K02718.1"),]
 
 # txdb_file <- "F:/reference_genomes/human_hpv16/Homo_sapiens.GRCh38.107.hpv16_mod.txdb"
