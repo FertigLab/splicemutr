@@ -50,6 +50,7 @@ out_prefix<-opt$out_prefix
 txdb_file<-opt$txdb
 chr_map<-opt$chr_map
 
+print("loading Bsgenome")
 bsgenome_name <- opt$bsgenome_name # bsgenome_name so that can create bsgenome object
 library(bsgenome_name,character.only = T) # assigning bsgenome object to "bsgenome" variable
 assign("bsgenome",get(bsgenome_name))
