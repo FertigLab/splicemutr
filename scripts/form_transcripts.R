@@ -43,6 +43,7 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
 
 opt=arguments
 
+print("sourcing functions")
 source(opt$funcs)
 
 out_prefix<-opt$out_prefix
