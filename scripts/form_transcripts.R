@@ -39,11 +39,12 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
    make_option(c("-j","--juncs"), default=NULL, help="The junction file (path and file)"),
    make_option(c("-b","--bsgenome_name"),default = "bsgenome_name",help="the bsgenome object name"),
    make_option(c("-m","--chr_map"),default=F,help="the chromosome map"),
-   make_option(c("-f","--funcs"),default=F,help="functions"))))
+   make_option(c("-f","--funcs"),default="",help="functions"))))
 
 opt=arguments
 
 print("sourcing functions")
+print(opt$funcs)
 source(opt$funcs)
 
 out_prefix<-opt$out_prefix
