@@ -112,7 +112,7 @@ colnames(psi_all)<-"comp_juncs_parsed"
 rownames(psi_all)<-psi_all$comp_juncs_parsed
 
 for (target in targets){
-  psi_file <- sprintf("%s/%s_%s_juncs_perind.counts",leaf_dir,target,comparison)
+  psi_file <- sprintf("%s/%s_%s_juncs_perind.counts.gz",leaf_dir,target,comparison)
   psi_dat <- read.table(psi_file,header=T)
   juncs <- as.data.frame(matrix(unlist(strsplit(psi_dat$chrom,":")),byrow=T,nrow=nrow(psi_dat)))
   strand <- as.data.frame(matrix(unlist(strsplit(juncs$V4,"_")),byrow=T,nrow=nrow(psi_dat)))
