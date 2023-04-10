@@ -5,6 +5,7 @@
 
 library(optparse)
 library(dplyr)
+library(stringr)
 
 #------------------------------------------------------------------------------#
 # handling command line input
