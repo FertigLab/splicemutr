@@ -22,18 +22,22 @@ splice_files <- opt$splice_files
 #------------------------------------------------------------------------------#
 # combining and extracting proteins
 
-splicemutr_files<-read.table(splice_files,header=F)
-splicemutr_files$nums <- vapply(splicemutr_files$V1,function(file){as.numeric(strsplit(basename(file),"_")[[1]][4])},numeric(1))
-splicemutr_files <- splicemutr_files[order(splicemutr_files$nums),]
-a<-vapply(seq(nrow(splicemutr_files)),function(row_val){
-  print(row_val)
-  if (row_val==1){
-    splice_data <<- readRDS(splicemutr_files$V1[row_val])
-  } else {
-    splice_data <<- rbind(splice_data,readRDS(splicemutr_files$V1[row_val]))
-  }
-  return(T)
-},logical(1))
+if (str_detect(splice_files,".txt")){
+  splicemutr_files<-read.table(splice_files,header=F)
+  splicemutr_files$nums <- vapply(splicemutr_files$V1,function(file){as.numeric(strsplit(basename(file),"_")[[1]][4])},numeric(1))
+  splicemutr_files <- splicemutr_files[order(splicemutr_files$nums),]
+  a<-vapply(seq(nrow(splicemutr_files)),function(row_val){
+    print(row_val)
+    if (row_val==1){
+      splice_data <<- readRDS(splicemutr_files$V1[row_val])
+    } else {
+      splice_data <<- rbind(splice_data,readRDS(splicemutr_files$V1[row_val]))
+    }
+    return(T)
+  },logical(1))
+} else if (str_detect(splice_files,".rds")){
+  splice_data <- readRDS(splice_files)
+}
 splice_data <- splice_data %>% dplyr::filter(protein_coding == "Yes")
 splice_data_ann <- splice_data %>% dplyr::filter(error == "tx" & annotated == "annotated")
 splice_data <- splice_data %>% dplyr::filter(annotated != "annotated")
