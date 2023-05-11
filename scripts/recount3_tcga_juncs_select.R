@@ -81,18 +81,14 @@ cancer <- junc_metadata$study[1]
 all_juncs <- rownames(junc_dat)
 pre_junc_file <- create_junc_file(all_juncs)
 
-cancer_dir <- sprintf("%s/%s",tcga_junc_dir, cancer)
 
-if (!dir.exists(cancer_dir)){
-  dir.create(cancer_dir)
-}
 for (i in seq(1,length(tcga_barcode))){
   if (tcga_barcode[i] %in% samples){
     file <- tcga_barcode[i]
     print(sprintf("%s",file))
     junc_file <- pre_junc_file
     junc_file$counts <- junc_dat[,file]
-    tcga_file <- sprintf("%s/%s.junc",cancer_dir,file)
+    tcga_file <- sprintf("%s/%s.junc",tcga_junc_dir,file)
     write.table(junc_file,tcga_file,quote = F,sep="\t",col.names = F,row.names=F)
   }
 }
