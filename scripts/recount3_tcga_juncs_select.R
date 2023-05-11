@@ -89,7 +89,7 @@ if (!dir.exists(cancer_dir)){
 for (i in seq(1,length(tcga_barcode))){
   if (tcga_barcode[i] %in% samples){
     file <- tcga_barcode[i]
-    print(sprintf("%d:%s",iter,file))
+    print(sprintf("%s",file))
     junc_file <- pre_junc_file
     junc_file$counts <- junc_dat[,file]
     tcga_file <- sprintf("%s/%s.junc",cancer_dir,file)
