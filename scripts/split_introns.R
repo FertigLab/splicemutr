@@ -3,7 +3,7 @@
 # splitting the introns input file into a set of introns files
 
 #------------------------------------------------------------------------------#
-# loding libraries
+# loading libraries
 
 library(optparse)
 
