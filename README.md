@@ -6,4 +6,4 @@ SpliceMutr is still a work in progress, but if you find it useful, please cite a
 
 Palmer, T., & Fertig, E. (2021). splicemutr [Computer software]. https://github.com/theron-palmer/splicemute.git
 
-The instructions that can be used to reproduce the analysis, figures, and tables associated with the manuscript "***insert appropriate title***" can be found in the folder "analysis"
+The instructions that can be used to give examples of how the SpliceMutr pipeline scripts have been used for the analyis associated with the manuscript "Relating splicing-derived neoantigen burden to the tumor mutational burden, mutations in the splicing machinery, and inhibitor response with SpliceMutr" can be found in the folder "analysis" under the TCGA and CM038 headings and within the pipeline section. There is a jupyter notebook explaining usage of the appropriate scripts.
