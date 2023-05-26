@@ -7,3 +7,5 @@ SpliceMutr is still a work in progress, but if you find it useful, please cite a
 Palmer, T., & Fertig, E. (2021). splicemutr [Computer software]. https://github.com/theron-palmer/splicemute.git
 
 Examples of how the SpliceMutr pipeline scripts have been used for the analyis associated with the manuscript "SpliceMutr enables pan-cancer analysis of splicing-derived neoantigen burden in tumors" can be found in the folder "analysis" under the TCGA and CM038 headings and within the pipeline section. There is a jupyter notebook explaining usage of the appropriate scripts.
+
+The SpliceMutr package is under development and is still being made into a bioconductor-installable package. 
