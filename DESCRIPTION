@@ -13,7 +13,6 @@ Imports:
     annotate,
     AnnotationDbi,
     biomaRt,
-    BSgenome.Hsapiens.GENCODE.GRCh38.p13,
     DataCombine,
     dplyr,
     ensembldb,
