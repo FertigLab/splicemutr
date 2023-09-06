@@ -19,6 +19,7 @@ Imports:
     GenomicRanges,
     optparse,
     org.Hs.eg.db,
+    rjson,
     rlist,
     rtracklayer,
     stringi,
@@ -26,4 +27,11 @@ Imports:
     IRanges,
     BiocGenerics,
     Biostrings,
-    S4Vectors
+    S4Vectors,
+    optparse,
+    DESeq2,
+    maftools,
+    recount3,
+    TCGAutils
+    
+    
