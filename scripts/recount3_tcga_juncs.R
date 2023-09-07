@@ -24,7 +24,6 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
 opt=arguments
 
 tcga_junc_dir <- opt$output_directory
-iter <- as.numeric(opt$iter)
 
 #------------------------------------------------------------------------------#
 # internal functions
@@ -56,14 +55,13 @@ proj_info <- subset(
   human_projects,
   file_source == "tcga"
 )
-proj_info <-  readRDS("/home/tpalme15/splicemutr_project/scripts/tcga/proj_info.rds")
+#proj_info <-  readRDS("/home/tpalme15/splicemutr_project/scripts/tcga/proj_info.rds")
 
 #------------------------------------------------------------------------------#
 # reading data in from each tcga project
 
 
 for (iter in seq(2,nrow(proj_info))){
-  # iter <- 31
   groups_file_T <- c()
   groups_file_N <- c()
   junc_files <- c()
