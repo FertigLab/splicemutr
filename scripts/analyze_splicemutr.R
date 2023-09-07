@@ -40,7 +40,7 @@ sample_num <- as.numeric(opt$sample_num)
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
+#genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
 # summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/run_12072021/predictions_1"
 # splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_12072021/data_splicemutr.txt"
 # counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
