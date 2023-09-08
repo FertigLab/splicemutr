@@ -2,7 +2,12 @@ The reference data used for the TCGA analysis is as follows. All SpliceMutr anal
 
 # Reference file GENCODE links
 
+<<<<<<< HEAD
 GENCODE fasta: <https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz> GENCODE GTF: <https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz>
+=======
+GENCODE fasta: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz\
+GENCODE GTF: https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz\
+>>>>>>> 994788a43085bac0eec7ee5b17944c4463df4683
 
 # Scripts used to build references for LeafCutter and SpliceMutr
 
@@ -12,6 +17,10 @@ prep_references.sh - creating the reference files necessary to run LeafCutter an
 ## Building the BSgenome reference used by SpliceMutr
 
 convert_2bit.sh - converting the fasta reference to a .2bit\
+<<<<<<< HEAD
 Building the BSgenome package is done using the following directions: <https://www.bioconductor.org/packages/devel/bioc/vignettes/BSgenome/inst/doc/BSgenomeForge.pdf>
+=======
+Building the BSgenome package is done using the following directions: https://www.bioconductor.org/packages/devel/bioc/vignettes/BSgenome/inst/doc/BSgenomeForge.pdf
+>>>>>>> 994788a43085bac0eec7ee5b17944c4463df4683
 
 The "DESCRIPTION" file functions as the "seed" file described in the BSgenome documentation above. When you look at this file you will see conflicting reference names. This is only a naming issue. The correct GENCODE reference version (V26) was used to create the BSgenome and associated .txdb reference files for the TCGA analysis. Gencode V26 matches the splice-junction recount3 metadata information.
