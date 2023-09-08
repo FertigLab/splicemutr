@@ -1,0 +1,54 @@
+rule prep_leafcutter_references(make_txdb.sh):
+  input:
+    REF_DIR="splicemutr_references"
+    SPLICEMUTR_SCRIPTS="/splicemute/scripts"
+    GTF_URL="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+    GTF_FILE="gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+  output:
+    OUT_FILE="G026_txdb.sqlite"
+  shell:
+    "conda activate miniconda3/envs/splicemutr
+
+    mkdir {input.REF_DIR}
+    cd {input.REF_DIR}
+    wget GTF_URL
+    {input.SPLICEMUTR_SCRIPTS}/make_txdb.R -o {input.REF_DIR}/{output.OUT_FILE} -g {input.REF_DIR}/{input.GTF_FILE}
+
+    conda deactivate"
+
+rule prep_bsgenome_reference(convert_2bit.sh):
+  input:
+    FASTA_URL="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz"
+    REF_DIR="splicemutr_references"
+    FA_TO_TWOBIT_EXEC="faToTwoBit"
+    FASTA_FILE="GRCh38.primary_assembly.genome.fa"
+    FASTA_FILE_GZ="GRCh38.primary_assembly.genome.fa.gz"
+  output:
+    TWOBIT_FILE=GRCh38.primary_assembly.genome.2bit
+  shell:
+    "conda activate miniconda3/envs/splicemutr
+
+    mkdir {input.REF_DIR}
+    cd {input.REF_DIR}
+    gunzip {input.FASTA_FILE_GZ}
+
+    {input.FA_TO_TWOBIT_EXEC} {input.REF_DIR}/{input.FASTA_FILE} {input.REF_DIR}/{output.TWOBIT_FILE}
+
+    conda deactivate"
+
+
+rule prepare_leafcutter_references (prep_references.sh):
+  input:
+    LEAF_DIR="leafcutter"
+    GTF="splicemutr_references/"gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+  output:
+    ANN_DIR="splicemutr_references/annotations"
+  shell:
+    "{input.LEAF_DIR}/scripts/gtf_to_exons.R $GTF {ouput.ANN_DIR}/G026.exons.txt.gz
+
+    cd $ANN_DIR
+
+    {input.LEAF_DIR}/leafviz/gtf2leafcutter.pl -o G026 {input.GTF}"
+
+
+
