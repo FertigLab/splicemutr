@@ -16,7 +16,7 @@ rule make_txdb:
 
     conda deactivate"
 
-rule prep_bsgenome_reference(convert_2bit.sh):
+rule prep_bsgenome_reference:
   input:
     FASTA_URL="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz"
     REF_DIR="splicemutr_references"
@@ -182,11 +182,10 @@ rule run_arcasHLA:
   input:
     GENOTYPES_DIR=/genotypes
     FILENAMES_FILE=/bamfiles.txt # all bamfiles for cohort listed in file
-    ARCAS_SCRIPTS=/users/tpalmer/arcasHLA/scripts
     NUM_BAM_FILES=8
   output:
   shell:
-    "conda activate miniconda3/envs/splicemutr
+    "conda activate miniconda3/envs/arcashla
     START=1
     for VAR in {$START..{input.NUM_BAM_FILES}}
     do
@@ -198,13 +197,13 @@ rule run_arcasHLA:
       # sort bam file
       samtools sort -o ${FILE}.sorted $FILE
 
-      python $ARCAS_SCRIPTS/extract.py ${FILE} -o $FILE_DIR -v
+      extract ${FILE} -o $FILE_DIR -v
 
       cd $FILE_DIR
 
       FASTQ1=$(ls *.extracted.1*)
       FASTQ2=$(ls *.extracted.2*)
-      python {input.ARCAS_SCRIPTS}/genotype.py $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
+      genotype $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
     done"
 
 rule run_MHCnuggets:
