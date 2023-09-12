@@ -20,27 +20,27 @@ arguments <- parse_args(OptionParser(usage = "",
                    make_option(c("-d","--splice_dat_file"),
                                default = sprintf("%s",getwd()),
                                help="splicemutr file"),
-                   make_option(c("-c","--counts_file"),
-                               default = sprintf("%s",getwd()),
-                               help="sample junc file"),
                    make_option(c("-o","--out_dir"),
                                default = sprintf("%s",getwd()),
                                help="output directory"),
                    make_option(c("-t","--summary_type"),
                                default = "",
-                               help="summary type"))))
+                               help="summary type"),
+                   make_option(c("-n","--sample_num"),
+                               default = "",
+                               help="the sample num"))))
 opt=arguments
 genotypes_file <- opt$genotypes_file
 summary_dir <- opt$summary_dir
 splice_dat_file <- opt$splice_dat_file
-counts_file <- opt$counts_file
 out_dir <- opt$out_dir
 summary_type <- opt$summary_type
+sample_num <- as.numeric(opt$sample_num)
 
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-# genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
+#genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
 # summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/run_12072021/predictions_1"
 # splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_12072021/data_splicemutr.txt"
 # counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
@@ -50,20 +50,12 @@ summary_type <- opt$summary_type
 
 genotypes <- readRDS(genotypes_file)
 splice_dat <- readRDS(splice_dat_file)
-counts <- read.table(counts_file)
-
-#------------------------------------------------------------------------------#
-# formatting counts file
-
-counts$V2 <- as.numeric(counts$V2)
-counts$V3 <- as.numeric(counts$V3)
-counts$V5 <- as.numeric(counts$V5)
-counts$juncs <- sprintf("%s:%s:%s:%s",counts$V1,counts$V2,counts$V3,counts$V6)
 
 #------------------------------------------------------------------------------#
 # reading in the genotype for the specific sample
 
-sample <- basename(str_replace(counts_file,".filt.junc",""))
+samples <- names(genotypes)
+sample <-samples[sample_num]
 sample_geno <- unname(genotypes[[which(names(genotypes) == sample)]])
 class_1 <- c("HLA-A","HLA-B","HLA-C")
 sample_geno <- str_replace(sample_geno[which(str_detect(sample_geno,class_1[1]) |
@@ -101,10 +93,38 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
 # annotating sample_kmers with junctions
 
 juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$strand)
+groups <- splice_dat$cluster
 splice_dat$juncs <- juncs
 sample_kmers$juncs <- juncs
-rownames(counts)<-counts$juncs
-sample_kmers$counts <- counts[sample_kmers$juncs,"V5"]
+sample_kmers$groups <- groups
+sample_kmers$deltapsi <- as.numeric(splice_dat$deltapsi)
+
+#------------------------------------------------------------------------------#
+# filtering the sample kmers
+
+unique_groups <- unique(groups)
+normal_kmers <- list()
+tumor_kmers <- list()
+a<-vapply(seq(length(unique_groups)),function(i){
+  print(i)
+  group <- groups[i]
+  normal_rows <- which((sample_kmers$groups==group) & (sample_kmers$deltapsi<0))
+  tumor_rows <- which((sample_kmers$groups==group) & (sample_kmers$deltapsi>0))
+  sample_kmers_small <- sample_kmers[sample_kmers$groups==group,]
+  sample_kmers_small_norm <- sample_kmers_small[sample_kmers$deltapsi<0,]
+  sample_kmers_small_tumor <- sample_kmers_small[sample_kmers$deltapsi>0,]
+  normal_kmers[[group]] <- unlist(strsplit(sample_kmers_small_norm$kmers,":"))
+  tumor_kmers[[group]] <- unlist(strsplit(sample_kmers_small_tumor$kmers,":"))
+  a<-vapply(normal_rows,function(norm_row){
+    a<-unlist(strsplit(sample_kmers[norm_row,"kmers"],":"))
+    sample_kmers[norm_row,"kmers"] <<- paste(a[!(a %in% tumor_kmers[[group]])],collapse=":")
+  },character(1))
+  a<-vapply(tumor_rows,function(tum_row){
+    a<-unlist(strsplit(sample_kmers[tum_row,"kmers"],":"))
+    sample_kmers[tum_row,"kmers"] <<- paste(a[!(a %in% normal_kmers[[group]])],collapse=":")
+  },character(1))
+  return(T)
+},logical(1))
 
 #------------------------------------------------------------------------------#
 # saving samples_kmers file
