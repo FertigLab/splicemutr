@@ -81,7 +81,6 @@ cancer <- junc_metadata$study[1]
 all_juncs <- rownames(junc_dat)
 pre_junc_file <- create_junc_file(all_juncs)
 
-
 for (i in seq(1,length(tcga_barcode))){
   if (tcga_barcode[i] %in% samples){
     file <- tcga_barcode[i]

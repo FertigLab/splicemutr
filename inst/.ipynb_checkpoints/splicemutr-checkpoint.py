@@ -120,9 +120,11 @@ def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
     tumor_kmers = [set() for i in range(len(rows))]
     normal_kmers = [set() for i in range(len(rows))]
     kmers = [[] for i in range(len(rows))]
-    hlas = genotypes_file[0][0:6]
-    sample_type = genotypes_file[0][7]
-    sample_name = genotypes_file[0][8]
+    #hlas = genotypes_file[0][0:6]
+    #sample_type = genotypes_file[0][7]
+    #sample_name = genotypes_file[0][8]
+    hlas = genotypes[0].split(",")
+    sample_name = genotypes[0][1]
     for hla in hlas:
         if (type(hla) is float):
             print("%s: break"%hla)

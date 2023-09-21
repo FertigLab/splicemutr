@@ -75,7 +75,7 @@ output_directory - the directory to write the .junc file to\
 star_file - the sj.out.tab file to convert into the .junc file\
 splicemutr_functions - the splicemutr functions.R file to load into the script\
 
-6)  Run LeafCutter on the .junc files generated for your experiment. You will need to format the groups and junctions files for your experiments. The groups file is a tab-delimited file with junc file name in one column and binary experimental grouping in the second column. The first experimental group in the groups file must be your reference group for the analysis. Further details about running LeafCutter are explained at [LeafCutter](https://davidaknowles.github.io/leafcutter/) and are covered in the rule running_leafcutter in the snakemake within this directory.
+6)  Run LeafCutter on the .junc files generated for your experiment. You will need to format the groups and junctions files for your experiments. The groups file is a tab-delimited file with junc file name in one column and binary experimental grouping in the second column. The first experimental group in the groups file must be your reference group for the analysis. Further details about running LeafCutter are explained at [LeafCutter](https://davidaknowles.github.io/leafcutter/) and are covered in the rule running_leafcutter in the snakemake within this directory. For this step you will need to use splicemutr_leafcutter_cluster_regtools.py instead of leafcutter_cluster_regtools.py. This replacement script removes the dependence of the script on the .bed format blocksizes and blockcount sections since STAR sj.out.tab files do not rely upon this bed format for specifying splice junctions. Therefore, the conversion to .junc files does not account for blocksizes or blockcounts in the start and end coordinates for the splice junction. 
 
 7)  This step takes the LeafCutter LeafViz output and saves the introns in a format suitable for input into SpliceMutr format_transcripts.R. This is covered in rule save_introns in the associated snakemake file within this directory.
 
@@ -157,9 +157,15 @@ peptides.txt - the peptides.txt file output from combine_splicemutr.R\
 output_directory - the directory to write the kmer-transcript map dictionary and the peps_9.txt file\
 kmer_length - the kmer length to use for the kmerization of the peptides in petides.txt
 
-12) This step runs arcasHLA on the STAR generated .bam files. arcasHLA performs HLA genotyping on bulk RNA-seq data. The output of arcasHLA will need to be formatted using the genotype.txt format outlined [here](). The rule, run_arcasHLA in the snakemake within this directory covers running arcasHLA.
+12) This step runs arcasHLA on the STAR generated .bam files. arcasHLA performs HLA genotyping on bulk RNA-seq data. The output of arcasHLA will need to be formatted using the genotype.txt format. The rule, run_arcasHLA in the snakemake within this directory covers running arcasHLA. The genotype.txt format is a tab delimited file and follows the following format:
 
-13) This step runs MHcnuggets on the HLA genotypes, or superalleles associated with the HLA genotypes, output from arcasHLA and formatted as a file with one allele per line using the genotypes.txt HLA format and the peps_kmer_length.txt file generated from combine_splicemutr.R.
+```
+sample_1  HLA-A01-01,HLA-B02-01,HLA-C03-01
+sample_2  HLA-A01-01,HLA-B02-01,HLA-C03-01
+sample_3  HLA-A01-01,HLA-B02-01,HLA-C03-01
+```
+
+13) This step runs MHCnuggets on the HLA genotypes, or superalleles associated with the HLA genotypes, output from arcasHLA and formatted as a file with one allele per line using the genotypes.txt HLA format and the peps_kmer_length.txt file generated from combine_splicemutr.R.
 
 ``` bash
 runMHCnuggets.py
