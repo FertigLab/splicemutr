@@ -46,7 +46,7 @@ splice_data <- rbind(splice_data,splice_data_ann)
 
 saveRDS(splice_data,file=sprintf("%s/%s",out_dir,"data_splicemutr_all.rds"))
 write.table(splice_data,file=sprintf("%s/%s",out_dir,"data_splicemutr_all.txt"),
-            col.names = T,quote=F,row.names=F)
+            col.names = T,quote=F,row.names=F,sep="\t")
 splice_data <- splice_data %>% dplyr::filter(!is.na(peptide))
 
 proteins <- data.frame(splice_data$peptide)

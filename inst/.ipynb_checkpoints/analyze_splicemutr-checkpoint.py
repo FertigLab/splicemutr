@@ -10,7 +10,7 @@ def main(options, args):
     
     # handling command line input
     genotypes_file = pd.read_table(options.genotypes_file)
-    splice_dat = pd.read_table(options.splice_dat,sep=" ") # change the save .txt files to have \t separator
+    splice_dat = pd.read_table(options.splice_dat,sep="\t") # change the save .txt files to have \t separator
     hla_dir = options.summary_dir
     output_dir = options.output_dir
     summary_type = options.summary_type
@@ -28,10 +28,10 @@ def main(options, args):
         print("sample_num > number of samples")
     else:
         genotypes_file_small = genotypes_file[sample_num:sample_num+1]
-        try:
-            splice_kmers,sample_name = sp.assign_kmers(genotypes_file_small,rows,hla_dir,hla_file)
-        except:
-            sys.exit("Error: no genotypes for current sample")
+        #try:
+        splice_kmers,sample_name = sp.assign_kmers(genotypes_file_small,rows,hla_dir,hla_file)
+        #except:
+        #    sys.exit("Error: no genotypes for current sample")
 
     if "cluster" in splice_dat.columns.values: # determining whether the groups are leafcutter cluster or not
         groups=splice_dat.cluster.tolist()
