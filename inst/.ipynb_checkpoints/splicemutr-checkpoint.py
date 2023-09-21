@@ -123,8 +123,8 @@ def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
     #hlas = genotypes_file[0][0:6]
     #sample_type = genotypes_file[0][7]
     #sample_name = genotypes_file[0][8]
-    hlas = genotypes[0].split(",")
-    sample_name = genotypes[0][1]
+    hlas = genotypes_file[0].split(",")
+    sample_name = genotypes_file[0][1]
     for hla in hlas:
         if (type(hla) is float):
             print("%s: break"%hla)

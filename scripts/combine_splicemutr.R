@@ -54,4 +54,4 @@ proteins <- data.frame(splice_data$peptide)
 write.table(proteins,file=sprintf("%s/%s",out_dir,"proteins.txt"),col.names = F,sep="\t",quote=F,row.names = F)
 saveRDS(splice_data,file=sprintf("%s/%s",out_dir,"data_splicemutr_all_pep.rds"))
 write.table(splice_data,file=sprintf("%s/%s",out_dir,"data_splicemutr_all_pep.txt"),
-            col.names=T,quote=F,row.names=F)
+            col.names=T,quote=F,row.names=F,sep="\t")
