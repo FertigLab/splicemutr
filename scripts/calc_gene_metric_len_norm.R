@@ -87,7 +87,7 @@ format_juncs <- function(juncs){
 # }
 
 if (str_detect(splice_dat_file,".txt")){
-  splice_dat <- read.table(splice_dat_file,header=T,sep=" ")
+  splice_dat <- read.table(splice_dat_file,header=T,sep="\t")
   splice_dat$juncs <- format_juncs(splice_dat$juncs)
 } else {
   splice_dat <- readRDS(splice_dat_file)
