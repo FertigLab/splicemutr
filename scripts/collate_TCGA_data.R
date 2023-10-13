@@ -183,11 +183,6 @@ tumor_purity <- readRDS("./input_data/TCGA_mastercalls.abs_tables_JSedit.fixed.r
 tumor_purity_filt <- tumor_purity %>% dplyr::filter(solution=="new")
 tumor_purity_filt$sample_ID <- vapply(TCGAbarcode(tumor_purity_filt$sample,sample=T),
                                       function(val){substr(val,1,nchar(val)-1)},character(1))
-ggplot(tumor_purity,aes(x=purity))+geom_histogram()
-print(length(which(tumor_purity$purity<=0.5))/nrow(tumor_purity))
-print(length(which(tumor_purity$purity<=0.6))/nrow(tumor_purity))
-print(length(which(tumor_purity$purity<=0.7))/nrow(tumor_purity))
-print(length(which(tumor_purity$purity<=0.8))/nrow(tumor_purity))
 
 #------------------------------------------------------------------------------#
 # processing the tumor genotype file
