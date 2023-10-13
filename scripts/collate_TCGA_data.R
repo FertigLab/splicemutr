@@ -159,7 +159,7 @@ leukocyte_fraction$cohort <- factor(leukocyte_fraction$cohort,levels=rownames(le
 #------------------------------------------------------------------------------#
 # Preparing Immunogenic SNV Data
 
-binding_snv <- readRDS(binding_snv)
+binding_snv <- readRDS(binding_snv_file)
 binding_snv$patient_ID <- TCGAbarcode(binding_snv$barcode)
 binding_snv$sample_ID <- vapply(TCGAbarcode(binding_snv$barcode,sample=T),
                                 function(val){substr(val,1,nchar(val)-1)},character(1))
