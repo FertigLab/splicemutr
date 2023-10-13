@@ -36,9 +36,12 @@ arguments <- parse_args(OptionParser(usage = "",
                                        make_option(c("-g","--genotypes"),
                                                    default = "",
                                                    help="the genotypes file"),
-                                       make_option(c("-s","--splicemutr"),
+                                       make_option(c("-s","--splicemutr_tumor"),
                                                    default = "",
-                                                   help="the splicemutr file containing all splicemutr files output from calc_gene_metric"),
+                                                   help="the splicemutr file containing all splicemutr files output from calc_gene_metric for tumor splicing alterations"),
+                                       make_option(c("-s","--splicemutr_normal"),
+                                                   default = "",
+                                                   help="the splicemutr file containing all splicemutr files output from calc_gene_metric for normal splicing alterations"),
                                        make_option(c("-f","--coding_potential"),
                                                    default = "",
                                                    help="the coding potential file"),
@@ -54,7 +57,8 @@ tcr_clonality_file <- opt$tcr_clonality
 tumor_purity_file <- opt$tumor_purity
 cancer <- opt$cancer
 genotypes_file <- opt$genotypes
-splicemutr_file <- opt$splicemutr
+splicemutr_file_tumor <- opt$splicemutr_tumor
+splicemutr_file_normal <- opt$splicemutr_normal
 coding_potential_file <- opt$coding_potential
 
 out_dir <- opt$out_dir
@@ -204,14 +208,12 @@ tumor_geno <- tumor_geno[complete.cases(tumor_geno),] # only keeping those sampl
 #------------------------------------------------------------------------------#
 # combining the tumor splicemutr files batched based off of splice junction expression
 
-splice_mut_files <- read.table(splice_mut_file)
+splice_mut_files <- read.table(splicemutr_file_tumor)
 for (j in seq(length(splice_mut_files$V1))){ # splicing antigenicity
   if (j == 1){
-    combined_gene_metric_tumor <- readRDS(new_path(splice_mut_files$V1[j],
-                                                   sprintf("%s/%s/GENE_METRIC_CP",TCGA_ROOT_DIR,cancer)))
+    combined_gene_metric_tumor <- readRDS(splice_mut_files$V1[j])
   } else {
-    a<-readRDS(new_path(splice_mut_files$V1[j],
-                        sprintf("%s/%s/GENE_METRIC_CP",TCGA_ROOT_DIR,cancer)))
+    a<-readRDS(splice_mut_files$V1[j])
     combined_gene_metric_tumor <- cbind(combined_gene_metric_tumor,a)
   }
 }
@@ -225,14 +227,12 @@ HIGH_CP_GENES <- rownames(coding_potential_LGC_tumor)[coding_potential_LGC_tumor
 #------------------------------------------------------------------------------#
 # combining the normal splicemutr files batched based off of splice junction expression
 
-splice_mut_files <- read.table(splice_mut_file)
+splice_mut_files <- read.table(splicemutr_file_normal)
 for (j in seq(length(splice_mut_files$V1))){
   if (j == 1){
-    combined_gene_metric_normal <- readRDS(new_path(splice_mut_files$V1[j],
-                                                    sprintf("%s/%s/GENE_METRIC_CP",TCGA_ROOT_DIR,cancer)))
+    combined_gene_metric_normal <- readRDS(splice_mut_files$V1[j])
   } else {
-    a<-readRDS(new_path(splice_mut_files$V1[j],
-                        sprintf("%s/%s/GENE_METRIC_CP",TCGA_ROOT_DIR,cancer)))
+    a<-readRDS(splice_mut_files$V1[j])
     combined_gene_metric_normal <- cbind(combined_gene_metric_normal,a)
   }
 }
