@@ -185,8 +185,7 @@ tcr_clonality$Study <- factor(tcr_clonality$Study,levels=rownames(tcr_clonality_
 #------------------------------------------------------------------------------#
 # Preparing the tumor purity information
 
-tumor_purity_file <-
-tumor_purity <- readRDS("./input_data/TCGA_mastercalls.abs_tables_JSedit.fixed.rds")
+tumor_purity <- readRDS(tumor_purity_file)
 tumor_purity_filt <- tumor_purity %>% dplyr::filter(solution=="new")
 tumor_purity_filt$sample_ID <- vapply(TCGAbarcode(tumor_purity_filt$sample,sample=T),
                                       function(val){substr(val,1,nchar(val)-1)},character(1))
