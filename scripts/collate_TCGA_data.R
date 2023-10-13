@@ -38,10 +38,13 @@ arguments <- parse_args(OptionParser(usage = "",
                                                    help="the genotypes file"),
                                        make_option(c("-s","--splicemutr"),
                                                    default = "",
-                                                   help="the genotypes file"),
+                                                   help="the splicemutr file containing all splicemutr files output from calc_gene_metric"),
                                        make_option(c("-f","--coding_potential"),
                                                    default = "",
-                                                   help="the coding potential file"))))
+                                                   help="the coding potential file"),
+                                       make_option(c("-o","--out_dir"),
+                                                   default = "",
+                                                   help="the output directory"))))
 opt=arguments
 tcga_cibersort_file <- opt$tcga_cibersort
 mutation_load_file <- opt$mutation_load
@@ -647,4 +650,4 @@ save(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig,
      TMB_all_pvals,
      cibersort_all_cor,
      cibersort_all_pvals,
-     "splicing_antigenicity.Rdata")
+     file=sprintf("%s/%s_splicing_antigenicity.Rdata",out_dir,cancer))
