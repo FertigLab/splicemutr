@@ -381,10 +381,9 @@ splicing_antigenicity_normal_samples_cohort$sample_ID <- vapply(splicing_antigen
 #------------------------------------------------------------------------------#
 # filtering out low DA genes and finding the intersection in differential and high coding potential genes
 
-high_DA_genes <-  splicing_antigenicity_DA[splicing_antigenicity_DA$DA>1,"genes"] # filtering out low DA genes, this was done incorrectly previously, I did not filter out low DA genes it as > 0, this entire section needs to be rerun
+high_DA_genes <-  splicing_antigenicity_DA[splicing_antigenicity_DA$DA>0,"genes"] # filtering out low DA genes, this was done incorrectly previously, I did not filter out low DA genes it as > 0, this entire section needs to be rerun
 high_DA_genes <- high_DA_genes[!is.na(high_DA_genes)] # filtering out all genes with NA DA
 HIGH_DA_HIGH_CP_genes <- intersect(intersect(high_DA_genes,HIGH_CP_GENES),diff_sig_genes) # finding the intersection between differential genes, high coding potential genes, and differential genes
-print(HIGH_DA_HIGH_CP_genes)
 splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig<-splicing_antigenicity_tumor_norm[HIGH_DA_HIGH_CP_genes,] # saving the high differential agretopicity (DA), high coding potential (CP), and significantly differerential splicing antigenicity genes (between tumor and normal samples)
 
 #------------------------------------------------------------------------------#
@@ -609,7 +608,7 @@ cibersort_per_samp_df <- cibersort_per_samp_df[!(cibersort_per_samp_df$SampleID 
 
 #------------------------------------------------------------------------------#
 # performing kendall tau statistical tests between the splicing antigenicity and various markers of resoponse to immune checkpoint inhibition
-if (!all(is.nan(splicing_antigenicity_per_sample$splicing_antigenicity))){
+if (length(HIGH_DA_HIGH_CP_genes)>0){
 
   a<-cor.test(splicing_antigenicity_per_sample$splicing_antigenicity,log10(splicing_antigenicity_per_sample$non_silent_mutations_per_mb+1),method="kendall")
   TMB_all_cor[cancer,"SA_vs_TMB_cor"]<-a$estimate
@@ -653,4 +652,6 @@ save(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig,
      TMB_all_pvals,
      cibersort_all_cor,
      cibersort_all_pvals,
+     splicing_antigenicity_normal_genes_cohort,
+     splicing_antigenicity_tumor_samples_cohort,
      file=sprintf("%s/%s_splicing_antigenicity.Rdata",out_dir,cancer))
