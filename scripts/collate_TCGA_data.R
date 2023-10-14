@@ -4,7 +4,7 @@ library(dplyr)
 library(stringr)
 library(optparse)
 library(TCGAutils)
-
+library(ggpubr)
 
 #------------------------------------------------------------------------------#
 # handling command line input
