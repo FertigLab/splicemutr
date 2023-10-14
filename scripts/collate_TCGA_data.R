@@ -411,6 +411,7 @@ TCGA_cibersort_small <- TCGA_cibersort_all %>% dplyr::filter(sample_ID %in% coln
 
 splicing_antigenicity_per_sample<-data.frame(sample_ID=colnames(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig),
                                              barcode=splicing_antigenicity_barcode)
+print(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig)
 splicing_antigenicity_per_sample$splicing_antigenicity <- vapply(seq(ncol(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig)),
                                                                  function(col_val){mean(as.numeric(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig[,col_val]),
                                                                                         na.rm=T)},numeric(1))
@@ -608,7 +609,6 @@ cibersort_per_samp_df <- cibersort_per_samp_df[!(cibersort_per_samp_df$SampleID 
 #------------------------------------------------------------------------------#
 # performing kendall tau statistical tests between the splicing antigenicity and various markers of resoponse to immune checkpoint inhibition
 
-print(splicing_antigenicity_per_sample)
 a<-cor.test(splicing_antigenicity_per_sample$splicing_antigenicity,log10(splicing_antigenicity_per_sample$non_silent_mutations_per_mb+1),method="kendall")
 TMB_all_cor[cancer,"SA_vs_TMB_cor"]<-a$estimate
 TMB_all_pvals[cancer,"SA_vs_TMB_pval"]<-a$p.value
