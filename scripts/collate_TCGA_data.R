@@ -608,6 +608,7 @@ cibersort_per_samp_df <- cibersort_per_samp_df[!(cibersort_per_samp_df$SampleID 
 #------------------------------------------------------------------------------#
 # performing kendall tau statistical tests between the splicing antigenicity and various markers of resoponse to immune checkpoint inhibition
 
+print(splicing_antigenicity_per_sample)
 a<-cor.test(splicing_antigenicity_per_sample$splicing_antigenicity,log10(splicing_antigenicity_per_sample$non_silent_mutations_per_mb+1),method="kendall")
 TMB_all_cor[cancer,"SA_vs_TMB_cor"]<-a$estimate
 TMB_all_pvals[cancer,"SA_vs_TMB_pval"]<-a$p.value
