@@ -381,14 +381,12 @@ splicing_antigenicity_normal_samples_cohort$sample_ID <- vapply(splicing_antigen
 #------------------------------------------------------------------------------#
 # filtering out low DA genes and finding the intersection in differential and high coding potential genes
 
-high_DA_genes <-  splicing_antigenicity_DA[splicing_antigenicity_DA$DA>0,"genes"] # filtering out low DA genes, this was done incorrectly previously, I did not filter out low DA genes it as > 0, this entire section needs to be rerun
+high_DA_genes <-  splicing_antigenicity_DA[splicing_antigenicity_DA$DA>1,"genes"] # filtering out low DA genes, this was done incorrectly previously, I did not filter out low DA genes it as > 0, this entire section needs to be rerun
 high_DA_genes <- high_DA_genes[!is.na(high_DA_genes)] # filtering out all genes with NA DA
 HIGH_DA_HIGH_CP_genes <- intersect(intersect(high_DA_genes,HIGH_CP_GENES),diff_sig_genes) # finding the intersection between differential genes, high coding potential genes, and differential genes
 splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig<-splicing_antigenicity_tumor_norm[HIGH_DA_HIGH_CP_genes,] # saving the high differential agretopicity (DA), high coding potential (CP), and significantly differerential splicing antigenicity genes (between tumor and normal samples)
 
-print(length(diff_sig_genes))
-print(length(HIGH_CP_genes))
-print(length(high_DA_genes))
+print(sprintf("%d:%d:%d",length(diff_sig_genes),length(HIGH_CP_GENES),length(high_DA_genes)))
 
 #------------------------------------------------------------------------------#
 # renaming the splicing antigenicity using the tumor sample ID
@@ -415,7 +413,6 @@ TCGA_cibersort_small <- TCGA_cibersort_all %>% dplyr::filter(sample_ID %in% coln
 
 splicing_antigenicity_per_sample<-data.frame(sample_ID=colnames(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig),
                                              barcode=splicing_antigenicity_barcode)
-print(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig)
 splicing_antigenicity_per_sample$splicing_antigenicity <- vapply(seq(ncol(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig)),
                                                                  function(col_val){mean(as.numeric(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig[,col_val]),
                                                                                         na.rm=T)},numeric(1))
