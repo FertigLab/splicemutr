@@ -386,6 +386,10 @@ high_DA_genes <- high_DA_genes[!is.na(high_DA_genes)] # filtering out all genes 
 HIGH_DA_HIGH_CP_genes <- intersect(intersect(high_DA_genes,HIGH_CP_GENES),diff_sig_genes) # finding the intersection between differential genes, high coding potential genes, and differential genes
 splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig<-splicing_antigenicity_tumor_norm[HIGH_DA_HIGH_CP_genes,] # saving the high differential agretopicity (DA), high coding potential (CP), and significantly differerential splicing antigenicity genes (between tumor and normal samples)
 
+print(length(diff_sig_genes))
+print(length(HIGH_CP_genes))
+print(length(high_DA_genes))
+
 #------------------------------------------------------------------------------#
 # renaming the splicing antigenicity using the tumor sample ID
 
