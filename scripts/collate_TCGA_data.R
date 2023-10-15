@@ -653,6 +653,8 @@ save(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig,
      TMB_all_pvals,
      cibersort_all_cor,
      cibersort_all_pvals,
+     splicing_antigenicity_tumo_genes_cohort,
      splicing_antigenicity_normal_genes_cohort,
      splicing_antigenicity_tumor_samples_cohort,
+     splicing_antigenicity_normal_samples_cohort,
      file=sprintf("%s/%s_splicing_antigenicity.Rdata",out_dir,cancer))
