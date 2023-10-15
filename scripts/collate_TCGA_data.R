@@ -384,6 +384,8 @@ splicing_antigenicity_normal_samples_cohort$sample_ID <- vapply(splicing_antigen
 high_DA_genes <-  splicing_antigenicity_DA[splicing_antigenicity_DA$DA>1,"genes"] # filtering out low DA genes, this was done incorrectly previously, I did not filter out low DA genes it as > 0, this entire section needs to be rerun
 high_DA_genes <- high_DA_genes[!is.na(high_DA_genes)] # filtering out all genes with NA DA
 HIGH_DA_HIGH_CP_genes <- intersect(intersect(high_DA_genes,HIGH_CP_GENES),diff_sig_genes) # finding the intersection between differential genes, high coding potential genes, and differential genes
+HIGH_DA_HIGH_CP_genes_df <- data.frame(relevant_genes=HIGH_DA_HIGH_CP_genes)
+
 splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig<-splicing_antigenicity_tumor_norm[HIGH_DA_HIGH_CP_genes,] # saving the high differential agretopicity (DA), high coding potential (CP), and significantly differerential splicing antigenicity genes (between tumor and normal samples)
 
 print(sprintf("%d:%d:%d",length(diff_sig_genes),length(HIGH_CP_GENES),length(high_DA_genes)))
@@ -658,3 +660,8 @@ save(splicing_antigenicity_tumor_HIGH_DA_HIGH_CP_diff_sig,
      splicing_antigenicity_tumor_samples_cohort,
      splicing_antigenicity_normal_samples_cohort,
      file=sprintf("%s/%s_splicing_antigenicity.Rdata",out_dir,cancer))
+
+
+write.table(HIGH_DA_HIGH_CP_genes_df,
+            file=sprintf("%s/%s_target_genes.txt",out_dir,cancer),
+            col.names = T,quote=F,row.names = F)
