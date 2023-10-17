@@ -158,6 +158,8 @@ if __name__ == "__main__":
                       help="the BRCA target genes file output from slicemutr collate TCGA data")
     parser.add_option("-s", "--splicemutr_data_file", dest="splicemutr_data_file",
                       help="the splicemutr (BRCA) all_pep.txt file")
+    parser.add_option("-k", "--kmers_file", dest="splicemutr_data_file",
+                      help="one of the files output from analyze_splicemutr_out")
     parser.add_option("-g", "--genotypes_file", dest="genotypes_file",
                       help="the TCGA genotyps file containing external id and TCGA barcode mappings")
     parser.add_option("-o", "--out_dir", dest="out_dir",
