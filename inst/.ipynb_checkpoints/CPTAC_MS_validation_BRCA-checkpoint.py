@@ -26,8 +26,6 @@ def main(options):
     #------------------------------------------------------------------#
     ## Cleaning modification information from psm
 
-
-
     psms = [re.sub("[0-9,.,+]+",'',i) for i in psm.psm.tolist()]
     psm['psm_clean']=psms
     
@@ -97,8 +95,8 @@ def main(options):
     
     kmers = pd.read_csv(kmers_file,sep="\t")
     kmers_to_keep = kmers[kmers.rows.isin(rows_to_keep)]
-    kmers_to_keep.assign(gene=genes)
-    kmers_to_keep.assign(juncs=juncs)
+    kmers_to_keep['gene']=genes
+    kmers_to_keep['juncs']=juncs
 
     #------------------------------------------------------------------#
     ## d) Generating per gene kmer list
