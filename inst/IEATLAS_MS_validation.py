@@ -7,6 +7,13 @@ from os.path import basename
 
 def main(options):
     
+    target_genes_file = options.target_genes_file
+    splicemutr_data_file = options.splicemutr_data_file
+    kmers_file = options.kmers_file
+    genotypes_file = options.genotypes_file
+    ieatlas_file = options.ieatlas_file
+    out_dir = options.out_dir
+    
     #------------------------------------------------------------------#
     ## a) Reading in the target genes
 
@@ -30,8 +37,8 @@ def main(options):
     
     kmers = pd.read_csv(kmers_file,sep="\t")
     kmers_to_keep = kmers[kmers.rows.isin(rows_to_keep)]
-    kmers_to_keep.assign(gene=genes)
-    kmers_to_keep.assign(juncs=juncs)
+    kmers_to_keep['gene']=genes
+    kmers_to_keep['juncs']=juncs
 
     #------------------------------------------------------------------#
     ## d) Generating per gene kmer list
@@ -76,7 +83,7 @@ def main(options):
     overlap = len(gene_kmers_set.intersection(set(epitopes)))
     total = len(gene_kmers_set)
     
-    out_file = "%s/%s_psm_overlap.txt"%(out_dir,sample_id)
+    out_file = "%s/%s_pep_overlap.txt"%(out_dir,sample_id)
     
     data = [[sample_id,overlap,total]]
     pd.DataFrame(data, columns=['sample_id','overlap','total']).to_csv(out_file,sep="\t",index=False,header=False)
@@ -87,17 +94,20 @@ if __name__ == "__main__":
 
     parser = OptionParser()
 
+    
     parser.add_option("-t", "--target_genes_file", dest="target_genes_file",
                       help="the BRCA target genes file output from slicemutr collate TCGA data")
     parser.add_option("-s", "--splicemutr_data_file", dest="splicemutr_data_file",
                       help="the splicemutr (BRCA) all_pep.txt file")
+    parser.add_option("-k", "--kmers_file", dest="kmers_file",
+                      help="one of the files output from analyze_splicemutr_out")
     parser.add_option("-g", "--genotypes_file", dest="genotypes_file",
                       help="the TCGA genotyps file containing external id and TCGA barcode mappings")
+    parser.add_option("-i", "--ieatlas_file", dest="ieatlas_file",
+                      help="the ieatlas file to be used for mass spec validation")
+       
     parser.add_option("-o", "--out_dir", dest="out_dir",
                       help="the output_directory")
-    parser.add_option("-i", "--ieatlas_file", dest="ieatlas_file",
-                      help="the ieatlas epitopes file, either basic or cancer, to be used for MS validation")
-    
     (options, args) = parser.parse_args()
 
     main(options)
