@@ -130,17 +130,18 @@ def main(options):
     #------------------------------------------------------------------#
     ## g) preparing the per sample target data
     
-    psm_per_sample_target = psm_per_sample_list[sample_id]
-    
-    gene_kmers_set = set()
-    gene_kmers_set_fill = [gene_kmers_set.update(i) for i in list(gene_kmers.values())]
-    overlap = len(gene_kmers_set.intersection(set(psm_per_sample_target)))
-    total = len(gene_kmers_set)
-    
-    out_file = "%s/%s_psm_overlap.txt"%(out_dir,sample_id)
-    
-    data = [[sample_id,overlap,total]]
-    pd.DataFrame(data, columns=['sample_id','overlap','total']).to_csv(out_file,sep="\t",index=False,header=False)
+    if sample_id in psm_per_sample_list.keys():
+        psm_per_sample_target = psm_per_sample_list[sample_id]
+
+        gene_kmers_set = set()
+        gene_kmers_set_fill = [gene_kmers_set.update(i) for i in list(gene_kmers.values())]
+        overlap = len(gene_kmers_set.intersection(set(psm_per_sample_target)))
+        total = len(gene_kmers_set)
+
+        out_file = "%s/%s_psm_overlap.txt"%(out_dir,sample_id)
+
+        data = [[sample_id,overlap,total]]
+        pd.DataFrame(data, columns=['sample_id','overlap','total']).to_csv(out_file,sep="\t",index=False,header=False)
     
 if __name__ == "__main__":
 
