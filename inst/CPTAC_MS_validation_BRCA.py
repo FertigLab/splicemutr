@@ -149,13 +149,6 @@ if __name__ == "__main__":
     from optparse import OptionParser
 
     parser = OptionParser()
-
-    psm_file = options.psm_file
-    metadata_file = options.metadata_file
-    target_genes_file = options.target_genes_file
-    splicemutr_data_file = options.splicemutr_data_file
-    kmers_file = options.kmers_file
-    genotypes_file = options.genotypes_file
     
     parser.add_option("-p", "--psm_file", dest="psm_file",
                       help="the BRCA psm file")
