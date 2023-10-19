@@ -1,23 +1,24 @@
+import os
+
 configfile: "config.yaml"
+
+os.mkdir(config["REF_DIR"])
+os.chdir(config["REF_DIR"])
+os.system("wget %s"%config["GTF_URL"])
+os.system("wget %s"%config["FASTA_URL"])
 
 rule get_reference_data:
     input:
-        REF_DIR=config["REF_DIR"],
-        GTF_URL=config["GTF_URL"],
-        FASTA_URL=config["FASTA_URL"]
-    output:
         GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
         FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
     shell:
         """
         mkdir {input.REF_DIR}
         cd {input.REF_DIR}
-        wget {input.GTF_URL}
         gunzip {output.GTF_FILE_GZ}
-        wget {input.FASTA_URL}
         gunzip {output.FASTA_FILE_GZ}
         """
-
+"""
 rule make_txdb:
     input:
         REF_DIR=config["REF_DIR"],
@@ -77,3 +78,4 @@ rule create_bsgenome:
         R CMD check {input.BSGENOME}.tar.gz
         R CMD INSTALL {input.BSGENOME}.tar.gz
         """
+"""
