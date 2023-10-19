@@ -8,17 +8,18 @@ rule get_reference_data:
         GTF_FILE_GZ=config["get_reference_data"]["GTF_FILE_GZ"],
         FASTA_FILE_GZ=config["get_reference_data"]["FASTA_FILE_GZ"]
     shell:
-        "mkdir {input.REF_DIR}
-        cd {input.REF_DIR}
-        wget {input.GTF_URL}
-        gunzip {input.GTF_FILE_GZ}
-        wget {input.FASTA_URL}
-        gunzip {input.FASTA_FILE_GZ}"
+        "echo "what""
+        #mkdir {input.REF_DIR}
+        #cd {input.REF_DIR}
+        #wget {input.GTF_URL}
+        #gunzip {input.GTF_FILE_GZ}
+        #wget {input.FASTA_URL}
+        #gunzip {input.FASTA_FILE_GZ}
 
 rule make_txdb:
     input:
-        REF_DIR=config["make_txdb"]["REF_DIR"],
-        SPLICEMUTR_SCRIPTS=config["make_txdb"]["SPLICEMUTR_SCRIPTS"],
+        REF_DIR=config["make_txdb"]["REF_DIR"]
+        SPLICEMUTR_SCRIPTS=config["make_txdb"]["SPLICEMUTR_SCRIPTS"]
         GTF_FILE=config["make_txdb"]["GTF_FILE"]
     output:
         OUT_FILE=config["make_txdb"]["OUT_FILE"]
@@ -29,7 +30,7 @@ rule make_txdb:
     
 rule prepare_leafcutter_references:
     input:
-        LEAF_DIR=config["prepare_leafcutter_references"]["LEAF_DIR"],
+        LEAF_DIR=config["prepare_leafcutter_references"]["LEAF_DIR"]
         GTF=["prepare_leafcutter_references"]["GTF"]
     output:
         ANN_DIR=["prepare_leafcutter_references"]["ANN_DIR"]
@@ -42,8 +43,8 @@ rule prepare_leafcutter_references:
 
 rule convert_fasta_twobit:
     input:
-        REF_DIR=config["convert_fasta_twobit"]["REF_DIR"],
-        FA_TO_TWOBIT_EXEC=config["convert_fasta_twobit"]["FA_TO_TWOBIT_EXEC"],
+        REF_DIR=config["convert_fasta_twobit"]["REF_DIR"]
+        FA_TO_TWOBIT_EXEC=config["convert_fasta_twobit"]["FA_TO_TWOBIT_EXEC"]
         FASTA_FILE=config["convert_fasta_twobit"]["FASTA_FILE"]
     output:
         TWOBIT_FILE=["convert_fasta_twobit"]["TWOBIT_FILE"]
@@ -52,9 +53,9 @@ rule convert_fasta_twobit:
   
 rule create_bsgenome:
     input:
-        REF_DIR=config["create_bsgenome"]["REF_DIR"],
-        SEED_FILE=config["create_bsgenome"]["SEED_FILE"],
-        SPLICEMUTR_SCRIPTS=config["create_bsgenome"]["SPLICEMUTR_SCRIPTS"],
+        REF_DIR=config["create_bsgenome"]["REF_DIR"]
+        SEED_FILE=config["create_bsgenome"]["SEED_FILE"]
+        SPLICEMUTR_SCRIPTS=config["create_bsgenome"]["SPLICEMUTR_SCRIPTS"]
         BSGENOME=config["create_bsgenome"]["BSGENOME"]
     shell:
         "
