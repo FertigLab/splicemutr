@@ -22,8 +22,6 @@ rule get_reference_data:
         gunzip {input.GTF_FILE_GZ}
         gunzip {input.FASTA_FILE_GZ}
         """
-'''
-
 
 rule make_txdb:
     input:
@@ -34,39 +32,23 @@ rule make_txdb:
         OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"]
     shell:
         """
-        conda activate R-4.0.2
 
-        {input.SPLICEMUTR_SCRIPTS}/make_txdb.R -o {input.REF_DIR}/{output.OUT_FILE} -g {input.REF_DIR}/{input.GTF_FILE}
+        {input.SPLICEMUTR_SCRIPTS}/make_txdb.R -o {output.OUT_FILE} -g {input.GTF_FILE}
         """
 '''
 
-rule prepare_leafcutter_references:
-    input:
-        LEAF_DIR=config["LEAF_DIR"],
-        GTF=config["GTF"]
-    output:
-        ANN_DIR=config["ANN_DIR"]
-    shell:
-        """
-        {input.LEAF_DIR}/scripts/gtf_to_exons.R $GTF {ouput.ANN_DIR}/G026.exons.txt
-
-        cd $ANN_DIR
-
-        {input.LEAF_DIR}/leafviz/gtf2leafcutter.pl -o G026 {input.GTF)
-        """
-
 rule convert_fasta_twobit:
     input:
-        REF_DIR=config["REF_DIR"],
         FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
-        FASTA_FILE=config["FASTA_FILE"]
+        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"]
     output:
-        TWOBIT_FILE=config["TWOBIT_FILE"]
+        TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
     shell:
         """
-        {input.FA_TO_TWOBIT_EXEC} {input.REF_DIR}/{input.FASTA_FILE} {input.REF_DIR}/{output.TWOBIT_FILE}
+        {input.FA_TO_TWOBIT_EXEC} {input.FASTA_FILE} {output.TWOBIT_FILE}
         """
-  
+'''
+
 rule create_bsgenome:
     input:
         REF_DIR=config["REF_DIR"],
