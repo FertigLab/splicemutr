@@ -175,7 +175,9 @@ runMHCnuggets.py
 -o output
 ```
 
-type - the HLA allele type "I" or "II" kmers - the peps_kmer_length.txt file containing the set of unique peptide kmers mhc - the mhc allele file with one allele per line output - the output directory to write the mhcnuggets results to
+type - the HLA allele type "I" or "II" \
+kmers - the peps_kmer_length.txt file containing the set of unique peptide kmers \
+mhc - the mhc allele file with one allele per line output - the output directory to write the mhcnuggets results to
 
 14) This step processes the binding affinity prediction results output from MHCnuggets and filters the kmers for those that have predicted IC50 scores \<=500 nM. The rule process_bindaffinity details usage for this step.
 
@@ -187,7 +189,10 @@ process_bindaff.py
 -k kmer_length
 ```
 
-binders - a MHCnuggets .txt output file pickle_dir - the directory that the pickle file is written to out - the output directory to write the filtered binders file to kmer_length - the kmer_length to process
+binders - a MHCnuggets .txt output file \
+pickle_dir - the directory that the pickle file is written to \
+out - the output directory to write the filtered binders file to \
+kmer_length - the kmer_length to process
 
 15) This step extracts the binding location data from the pickle and from the associated allele kmers and generates a summary file per allele that contains location and binding kmer information for the specific allele. The rule extract_data in the snakemake within this directory details usage for this step.
 
