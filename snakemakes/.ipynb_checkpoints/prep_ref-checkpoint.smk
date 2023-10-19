@@ -6,8 +6,8 @@ rule get_reference_data:
         GTF_URL=config["GTF_URL"],
         FASTA_URL=config["FASTA_URL"]
     output:
-        GTF_FILE_GZ=config["REF_DIR"]/config["GTF_FILE_GZ"],
-        FASTA_FILE_GZ=config["REF_DIR"]/config["FASTA_FILE_GZ"]
+        GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
+        FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
     shell:
         """
         mkdir {input.REF_DIR}
