@@ -3,7 +3,7 @@ get_reference_data:
     GTF_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
     GTF_FILE_GZ : "gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
     FASTA_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz"
-    FASTA_FILE_GZ. : "GRCh38.primary_assembly.genome.fa.gz"
+    FASTA_FILE_GZ : "GRCh38.primary_assembly.genome.fa.gz"
     
 make_txdb:
     REF_DIR : "splicemutr_references"

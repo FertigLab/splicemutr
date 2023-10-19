@@ -2,11 +2,11 @@ configfile: "config.yaml"
 
 rule get_reference_data:
     input:
-        REF_DIR=config["get_reference_data"]["REF_DIR"],
-        GTF_URL=config["get_reference_data"]["GTF_URL"],
-        FASTA_URL=config["get_reference_data"]["FASTA_URL"],
-        GTF_FILE_GZ=config["get_reference_data"]["GTF_FILE_GZ"],
-        FASTA_FILE_GZ=config["get_reference_data"]["FASTA_FILE_GZ"]
+        REF_DIR=config["REF_DIR"],
+        GTF_URL=config["GTF_URL"],
+        FASTA_URL=config["FASTA_URL"],
+        GTF_FILE_GZ=config["GTF_FILE_GZ"],
+        FASTA_FILE_GZ=config["FASTA_FILE_GZ"]
     shell:
         """
         mkdir {input.REF_DIR}
