@@ -34,9 +34,9 @@ rule make_txdb:
 rule prepare_leafcutter_references:
     input:
         LEAF_DIR=config["LEAF_DIR"],
-        GTF=["GTF"]
+        GTF=config["GTF"]
     output:
-        ANN_DIR=["ANN_DIR"]
+        ANN_DIR=config["ANN_DIR"]
     shell:
         """
         {input.LEAF_DIR}/scripts/gtf_to_exons.R $GTF {ouput.ANN_DIR}/G026.exons.txt
@@ -50,9 +50,9 @@ rule convert_fasta_twobit:
     input:
         REF_DIR=config["REF_DIR"],
         FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
-        FASTA_FILE=confi["convert_fasta_twobit"]["FASTA_FILE"]
+        FASTA_FILE=config["FASTA_FILE"]
     output:
-        TWOBIT_FILE=["convert_fasta_twobit"]["TWOBIT_FILE"]
+        TWOBIT_FILE=config["TWOBIT_FILE"]
     shell:
         """
         {input.FA_TO_TWOBIT_EXEC} {input.REF_DIR}/{input.FASTA_FILE} {input.REF_DIR}/{output.TWOBIT_FILE}
