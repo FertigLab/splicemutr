@@ -19,11 +19,11 @@ rule get_reference_data:
 
 rule make_txdb:
     input:
-        REF_DIR=config["make_txdb"]["REF_DIR"],
-        SPLICEMUTR_SCRIPTS=config["make_txdb"]["SPLICEMUTR_SCRIPTS"],
-        GTF_FILE=config["make_txdb"]["GTF_FILE"]
+        REF_DIR=config["REF_DIR"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
+        GTF_FILE=config["GTF_FILE"]
     output:
-        OUT_FILE=config["make_txdb"]["OUT_FILE"]
+        OUT_FILE=config["OUT_FILE"]
     shell:
         """
         conda activate miniconda3/envs/splicemutr
@@ -33,10 +33,10 @@ rule make_txdb:
     
 rule prepare_leafcutter_references:
     input:
-        LEAF_DIR=config["prepare_leafcutter_references"]["LEAF_DIR"],
-        GTF=["prepare_leafcutter_references"]["GTF"]
+        LEAF_DIR=config["LEAF_DIR"],
+        GTF=["GTF"]
     output:
-        ANN_DIR=["prepare_leafcutter_references"]["ANN_DIR"]
+        ANN_DIR=["ANN_DIR"]
     shell:
         """
         {input.LEAF_DIR}/scripts/gtf_to_exons.R $GTF {ouput.ANN_DIR}/G026.exons.txt
@@ -48,9 +48,9 @@ rule prepare_leafcutter_references:
 
 rule convert_fasta_twobit:
     input:
-        REF_DIR=config["convert_fasta_twobit"]["REF_DIR"],
-        FA_TO_TWOBIT_EXEC=config["convert_fasta_twobit"]["FA_TO_TWOBIT_EXEC"],
-        FASTA_FILE=config["convert_fasta_twobit"]["FASTA_FILE"]
+        REF_DIR=config["REF_DIR"],
+        FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
+        FASTA_FILE=confi["convert_fasta_twobit"]["FASTA_FILE"]
     output:
         TWOBIT_FILE=["convert_fasta_twobit"]["TWOBIT_FILE"]
     shell:
@@ -60,10 +60,10 @@ rule convert_fasta_twobit:
   
 rule create_bsgenome:
     input:
-        REF_DIR=config["create_bsgenome"]["REF_DIR"],
-        SEED_FILE=config["create_bsgenome"]["SEED_FILE"],
-        SPLICEMUTR_SCRIPTS=config["create_bsgenome"]["SPLICEMUTR_SCRIPTS"],
-        BSGENOME=config["create_bsgenome"]["BSGENOME"]
+        REF_DIR=config["REF_DIR"],
+        SEED_FILE=config["SEED_FILE"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
+        BSGENOME=config["BSGENOME"]
     shell:
         """
         conda activate splicemutr
