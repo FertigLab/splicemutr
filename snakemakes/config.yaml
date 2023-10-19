@@ -13,7 +13,7 @@ make_txdb:
     
 prepare_leafcutter_references:
     LEAF_DIR : "leafcutter"
-    GTF : "splicemutr_references/gencode.v26.chr_patch_hapl_scaff.annotation.gtf"
+    GTF : "splicemutr_references/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
     ANN_DIR : "splicemutr_references/annotations"
     
 convert_fasta_twobit:
