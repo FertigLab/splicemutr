@@ -1,21 +1,19 @@
 configfile: "config.yaml"
 
 rule get_reference_data:
-  input:
-    REF_DIR=config["get_reference_data"]["REF_DIR"]
-    GTF_URL=config["get_reference_data"]["GTF_URL"]
-    FASTA_URL=config["get_reference_data"]["FASTA_URL"]
-    GTF_FILE_GZ=config["get_reference_data"]["GTF_FILE_GZ"]
-    FASTA_FILE_GZ=config["get_reference_data"]["FASTA_FILE_GZ"]
-  shell:
-  "
-  mkdir {input.REF_DIR}
-  cd {input.REF_DIR}
-  wget {input.GTF_URL}
-  gunzip {input.GTF_FILE_GZ}
-  wget {input.FASTA_URL}
-  gunzip {input.FASTA_FILE_GZ}
-  "
+    input:
+        REF_DIR=config["get_reference_data"]["REF_DIR"]
+        GTF_URL=config["get_reference_data"]["GTF_URL"]
+        FASTA_URL=config["get_reference_data"]["FASTA_URL"]
+        GTF_FILE_GZ=config["get_reference_data"]["GTF_FILE_GZ"]
+        FASTA_FILE_GZ=config["get_reference_data"]["FASTA_FILE_GZ"]
+    shell:
+        "mkdir {input.REF_DIR}
+        cd {input.REF_DIR}
+        wget {input.GTF_URL}
+        gunzip {input.GTF_FILE_GZ}
+        wget {input.FASTA_URL}
+        gunzip {input.FASTA_FILE_GZ}"
 
 rule make_txdb:
   input:
@@ -77,5 +75,4 @@ rule create_bsgenome:
     R CMD BUILD {input.BSGENOME}
     R CMD check {input.BSGENOME}.tar.gz
     R CMD INSTALL {input.BSGENOME}.tar.gz
-    
     "
