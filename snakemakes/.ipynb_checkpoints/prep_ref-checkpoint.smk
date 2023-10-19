@@ -9,7 +9,8 @@ if not os.path.isfile(config["GTF_URL"]:
     os.system("wget %s"%config["GTF_URL"])
 if not os.path.isfile(config["FASTA_URL"])
     os.system("wget %s"%config["FASTA_URL"])
-
+    
+'''
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"]
@@ -22,20 +23,23 @@ rule get_reference_data:
         gunzip {input.FASTA_FILE_GZ}
         """
 '''
+
+
 rule make_txdb:
     input:
         REF_DIR=config["REF_DIR"],
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-        GTF_FILE=config["GTF_FILE"]
+        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
-        OUT_FILE=config["OUT_FILE"]
+        OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"]
     shell:
         """
-        conda activate miniconda3/envs/splicemutr
+        conda activate R-4.0.2
 
         {input.SPLICEMUTR_SCRIPTS}/make_txdb.R -o {input.REF_DIR}/{output.OUT_FILE} -g {input.REF_DIR}/{input.GTF_FILE}
         """
-    
+'''
+
 rule prepare_leafcutter_references:
     input:
         LEAF_DIR=config["LEAF_DIR"],
