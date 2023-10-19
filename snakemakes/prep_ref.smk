@@ -21,7 +21,7 @@ rule make_txdb:
     input:
         REF_DIR=config["make_txdb"]["REF_DIR"],
         SPLICEMUTR_SCRIPTS=config["make_txdb"]["SPLICEMUTR_SCRIPTS"],
-        GTF_FILE=config["make_txdb"]["GTF_FILE]
+        GTF_FILE=config["make_txdb"]["GTF_FILE"]
     output:
         OUT_FILE=config["make_txdb"]["OUT_FILE"]
     shell:
