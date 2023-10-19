@@ -2,10 +2,13 @@ import os
 
 configfile: "config.yaml"
 
-os.mkdir(config["REF_DIR"])
+if not os.path.exists(config["REF_DIR"]):
+    os.mkdir(config["REF_DIR"])
 os.chdir(config["REF_DIR"])
-os.system("wget %s"%config["GTF_URL"])
-os.system("wget %s"%config["FASTA_URL"])
+if not os.path.isfile(config["GTF_URL"]:
+    os.system("wget %s"%config["GTF_URL"])
+if not os.path.isfile(config["FASTA_URL"])
+    os.system("wget %s"%config["FASTA_URL"])
 
 rule get_reference_data:
     input:
@@ -14,10 +17,9 @@ rule get_reference_data:
         FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
     shell:
         """
-        mkdir {input.REF_DIR}
         cd {input.REF_DIR}
-        gunzip {output.GTF_FILE_GZ}
-        gunzip {output.FASTA_FILE_GZ}
+        gunzip {input.GTF_FILE_GZ}
+        gunzip {input.FASTA_FILE_GZ}
         """
 '''
 rule make_txdb:
