@@ -18,7 +18,7 @@ rule get_reference_data:
         gunzip {output.GTF_FILE_GZ}
         gunzip {output.FASTA_FILE_GZ}
         """
-"""
+'''
 rule make_txdb:
     input:
         REF_DIR=config["REF_DIR"],
@@ -78,4 +78,4 @@ rule create_bsgenome:
         R CMD check {input.BSGENOME}.tar.gz
         R CMD INSTALL {input.BSGENOME}.tar.gz
         """
-"""
+'''
