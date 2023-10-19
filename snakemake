@@ -1,8 +1,8 @@
 rule make_txdb:
   input:
-    REF_DIR="splicemutr_references"
-    SPLICEMUTR_SCRIPTS="/splicemute/scripts"
-    GTF_URL="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+    REF_DIR="splicemutr_references",
+    SPLICEMUTR_SCRIPTS="/splicemute/scripts",
+    GTF_URL="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz",
     GTF_FILE="gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
   output:
     OUT_FILE="G026_txdb.sqlite"
@@ -18,10 +18,10 @@ rule make_txdb:
 
 rule prep_bsgenome_reference:
   input:
-    FASTA_URL="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz"
-    REF_DIR="splicemutr_references"
-    FA_TO_TWOBIT_EXEC="faToTwoBit"
-    FASTA_FILE="GRCh38.primary_assembly.genome.fa"
+    FASTA_URL="https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz",
+    REF_DIR="splicemutr_references",
+    FA_TO_TWOBIT_EXEC="faToTwoBit",
+    FASTA_FILE="GRCh38.primary_assembly.genome.fa",
     FASTA_FILE_GZ="GRCh38.primary_assembly.genome.fa.gz"
   output:
     TWOBIT_FILE=GRCh38.primary_assembly.genome.2bit
@@ -39,7 +39,7 @@ rule prep_bsgenome_reference:
 
 rule prepare_leafcutter_references (prep_references.sh):
   input:
-    LEAF_DIR="leafcutter"
+    LEAF_DIR="leafcutter",
     GTF="splicemutr_references/"gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
   output:
     ANN_DIR="splicemutr_references/annotations"
@@ -52,10 +52,10 @@ rule prepare_leafcutter_references (prep_references.sh):
 
 rule form_transcripts:
   input:
-    INTRON_FILE=introns.rds
-    OUT=/formed_transcripts
-    TXDB=/splicemutr_references/txdb_file.sqlite
-    SCRIPT_DIR=/splicemute/scripts
+    INTRON_FILE=introns.rds,
+    OUT=/formed_transcripts,
+    TXDB=/splicemutr_references/txdb_file.sqlite,
+    SCRIPT_DIR=/splicemute/scripts,
     BSGENOME=BSgenome.Hsapiens.GENCODE.GRCh38.p10
   shell:
     "conda activate miniconda3/envs/splicemutr
@@ -68,8 +68,8 @@ rule form_transcripts:
 
 rule calcualte_coding_potential:
   input:
-      SPLICE_FILE=/formed_transcripts/introns_data_splicemutr.rds
-      FUNCS=/splicemute/R/functions.R
+      SPLICE_FILE=/formed_transcripts/introns_data_splicemutr.rds,
+      FUNCS=/splicemute/R/functions.R,
       SCRIPT_DIR=/splicemute/scripts
   output:
     OUT=/formed_transcripts
@@ -86,7 +86,7 @@ rule calcualte_coding_potential:
 
 rule combine_splicemutr:
   input:
-    SPLICE_FILES=/formed_transcripts/filenames_cp.txt
+    SPLICE_FILES=/formed_transcripts/filenames_cp.txt,
     SCRIPT_DIR=/splicemute/scripts
   output:
       OUT=/combine_splicemutr_out_cp
@@ -102,9 +102,9 @@ rule combine_splicemutr:
 
 rule process_peptides:
   input:
-    SCRIPT_DIR=/splicemute/inst
-    PEPTIDES=/combine_splicemutr_out_cp/proteins.txt
-    OUT_DIR=/process_peptides_out
+    SCRIPT_DIR=/splicemute/inst,
+    PEPTIDES=/combine_splicemutr_out_cp/proteins.txt,
+    OUT_DIR=/process_peptides_out,
     KMER_LENGTH=9
   output:
     OUT_DIR=/process_peptides_out
@@ -119,8 +119,8 @@ rule process_peptides:
 
 rule run_arcasHLA:
   input:
-    GENOTYPES_DIR=/genotypes
-    FILENAMES_FILE=/bamfiles.txt # all bamfiles for cohort listed in file
+    GENOTYPES_DIR=/genotypes,
+    FILENAMES_FILE=/bamfiles.txt, # all bamfiles for cohort listed in file
     NUM_BAM_FILES=8
   output:
   shell:
@@ -147,9 +147,9 @@ rule run_arcasHLA:
 
 rule run_MHCnuggets:
   input:
-    TYPE="I"
-    INPUT_KMERS=/process_peptides_out/peps_9.txt # an ouput from the previous step
-    MHC_ALLELE_FILE=class1_alleles.txt
+    TYPE="I",
+    INPUT_KMERS=/process_peptides_out/peps_9.txt, # an ouput from the previous step
+    MHC_ALLELE_FILE=class1_alleles.txt,
     SCRIPT_DIR=/users/tpalmer/splicemute/inst
   output:
     OUT_DIR=/mhcnuggets_out
@@ -167,10 +167,10 @@ rule run_MHCnuggets:
 
 rule process_bindaffinity:
   input:
-    ALLELE_FILES=/mhcnuggets_out/allele_files.txt
-    SCRIPT_DIR=/users/tpalmer/splicemute/inst
-    KMER_LENGTH=9
-    PICKLE_DIR=/process_peptides_out
+    ALLELE_FILES=/mhcnuggets_out/allele_files.txt,
+    SCRIPT_DIR=/users/tpalmer/splicemute/inst,
+    KMER_LENGTH=9,
+    PICKLE_DIR=/process_peptides_out,
     NUM_ALLELE_FILES=6
   output:
     OUT_DIR=/process_bindaff_out
@@ -192,9 +192,9 @@ rule process_bindaffinity:
 rule extract_data:
 
   input:
-    ALLELE_FILES=class_1_alleles.txt
-    NUM_ALLELE_FILES=6
-    SCRIPT_DIR=/splicemute/inst
+    ALLELE_FILES=class_1_alleles.txt,
+    NUM_ALLELE_FILES=6,
+    SCRIPT_DIR=/splicemute/inst,
     PICKLE_DIR=/process_bindaff_out
   shell:
     "conda activate miniconda3/envs/splicemutr
@@ -212,10 +212,10 @@ rule extract_data:
 
 rule analyze_splicemutr(python):
   input:
-    GENOTYPES=/ANALYSIS_NAME_genotypes.txt
-    SUMMARY_DIR=process_bindaff_out
-    SPLICE_DAT_FILE=/combine_splicemutr_out/data_splicemutr_all_pep.txt
-    SUMMARY_TYPE='IC50'
+    GENOTYPES=/ANALYSIS_NAME_genotypes.txt,
+    SUMMARY_DIR=process_bindaff_out,
+    SPLICE_DAT_FILE=/combine_splicemutr_out/data_splicemutr_all_pep.txt,
+    SUMMARY_TYPE='IC50',
     SCRIPT_DIR=/splicemute/inst
     NUM_SAMPLES=8
   output:
@@ -235,7 +235,7 @@ rule analyze_splicemutr(python):
 
 rule compile_kmer_counts:
   input:
-    KMERS_FILES=/analyze_splicemutr_out/filenames.txt
+    KMERS_FILES=/analyze_splicemutr_out/filenames.txt,
     SCRIPT_DIR=/users/tpalmer/splicemute/inst
   output:
     OUT_DIR=/kmer_counts
@@ -250,8 +250,8 @@ rule compile_kmer_counts:
 
 rule create_junction_expression:
   input:
-      SCRIPT_DIR=/splicemute/scripts
-      JUNC_FILES=/junc_files/filenames.txt
+      SCRIPT_DIR=/splicemute/scripts,
+      JUNC_FILES=/junc_files/filenames.txt,
       JUNC_DIR=/junc_files
   output:
       OUT_DIR=/create_junc_expression_out
@@ -264,9 +264,9 @@ rule create_junction_expression:
 
 rule calculate_gene_metric:
   input:
-    SCRIPT_DIR=/users/tpalmer/splicemute/scripts
-    SPLICE_DAT_FILE=combine_splicemutr_out_cp/data_splicemutr_all_pep.rds
-    KMER_COUNTS_directory=/kmer_counts/all_kmers.rds
+    SCRIPT_DIR=/users/tpalmer/splicemute/scripts,
+    SPLICE_DAT_FILE=combine_splicemutr_out_cp/data_splicemutr_all_pep.rds,
+    KMER_COUNTS_directory=/kmer_counts/all_kmers.rds,
     JUNC_EXPR_FILE=/junc_files/junc_expr_combined_vst.rds
   output:
     OUT_PREFIX=/calc_gene_metric_out
