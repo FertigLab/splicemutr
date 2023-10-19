@@ -12,9 +12,24 @@ library(ggpubr)
 arguments <- parse_args(OptionParser(usage = "",
                                      description="",
                                      option_list=list(
+                                       make_option(c("-t","--tcga_cibersort"),
+                                                   default = "",
+                                                   help="cibersort data"),
+                                       make_option(c("-m","--mutation_load"),
+                                                   default = "",
+                                                   help="the muatation load"),
+                                       make_option(c("-l","--leukocyte_fraction"),
+                                                   default = "",
+                                                   help="the leokocyte fraction"),
+                                       make_option(c("-b","--binding_snv"),
+                                                   default = "",
+                                                   help="the binding snv"),
+                                       make_option(c("-c","--tcr_clonality"),
+                                                   default = "",
+                                                   help="the tcr clonality"),
                                        make_option(c("-p","--tumor_purity"),
                                                    default = "",
-                                                   help="the tumor purity ")
+                                                   help="the tumor purity "),
                                        make_option(c("-k","--cancer"),
                                                    default = "",
                                                    help="the tcga cancer subtype"),
@@ -34,6 +49,11 @@ arguments <- parse_args(OptionParser(usage = "",
                                                    default = "",
                                                    help="the output directory"))))
 opt=arguments
+tcga_cibersort_file <- opt$tcga_cibersort
+mutation_load_file <- opt$mutation_load
+leukocyte_fraction_file <- opt$leukocyte_fraction
+binding_snv_file <- opt$binding_snv
+tcr_clonality_file <- opt$tcr_clonality
 tumor_purity_file <- opt$tumor_purity
 cancer <- opt$cancer
 genotypes_file <- opt$genotypes
@@ -44,18 +64,145 @@ coding_potential_file <- opt$coding_potential
 out_dir <- opt$out_dir
 
 #------------------------------------------------------------------------------#
+# Preparing TCGA correlation dataframes
+
+
+TMB_all_cor <- data.frame(cancer)
+rownames(TMB_all_cor) <- cancer
+TMB_all_pvals <- data.frame(cancer)
+rownames(TMB_all_pvals) <- cancer
+TMB_all_cor_norm <- data.frame(cancer)
+rownames(TMB_all_cor_norm) <- cancer
+TMB_all_pvals_norm <- data.frame(cancer)
+rownames(TMB_all_pvals_norm) <- cancer
+DA_all_cor <- data.frame(cancer)
+rownames(DA_all_cor) <- cancer
+DA_all_pvals <- data.frame(cancer)
+rownames(DA_all_pvals) <- cancer
+cibersort_all_pvals <- data.frame(cancer)
+rownames(cibersort_all_pvals)<-cancer
+cibersort_all_cor <- data.frame(cancer)
+rownames(cibersort_all_cor)<-cancer
+cibersort_all_pvals_norm <- data.frame(cancer)
+rownames(cibersort_all_pvals_norm)<-cancer
+cibersort_all_cor_norm <- data.frame(cancer)
+rownames(cibersort_all_cor_norm)<-cancer
+dups <- c()
+
+#------------------------------------------------------------------------------#
+# Preparing TCGA cibersort data
+
+TCGA_cibersort_all <- readRDS(tcga_cibersort_file)
+TCGA_cibersort_all$barcode <- str_replace_all(TCGA_cibersort_all$SampleID,"[.]","-")
+TCGA_cibersort_all$sample_ID <- vapply(TCGAbarcode(TCGA_cibersort_all$barcode,sample=T),
+                                       function(val){substr(val,1,nchar(val)-1)},character(1))
+TCGA_cibersort_all$patient_ID <- TCGAbarcode(TCGA_cibersort_all$barcode)
+TCGA_cibersort_all <- TCGA_cibersort_all[as.numeric(TCGA_cibersort_all$P.value)<=0.05,]
+cibersort_cells <- c("SampleID","B.cells.naive","B.cells.memory","Plasma.cells",
+                     "T.cells.CD8","T.cells.CD4.naive","T.cells.CD4.memory.resting",
+                     "T.cells.CD4.memory.activated","T.cells.follicular.helper",
+                     "T.cells.regulatory..Tregs.","T.cells.gamma.delta","NK.cells.resting",
+                     "NK.cells.activated","Monocytes","Macrophages.M0","Macrophages.M1",
+                     "Macrophages.M2","Dendritic.cells.resting","Dendritic.cells.activated",
+                     "Mast.cells.resting","Mast.cells.activated","Eosinophils","Neutrophils","P.value","Correlation","RMSE",
+                     "barcode","sample_ID","patient_ID")
+actual_cibersort_cells <- c("B.cells.naive","B.cells.memory","Plasma.cells",
+                            "T.cells.CD8","T.cells.CD4.naive","T.cells.CD4.memory.resting",
+                            "T.cells.CD4.memory.activated","T.cells.follicular.helper",
+                            "T.cells.regulatory..Tregs.","T.cells.gamma.delta","NK.cells.resting",
+                            "NK.cells.activated","Monocytes","Macrophages.M0","Macrophages.M1",
+                            "Macrophages.M2","Dendritic.cells.resting","Dendritic.cells.activated",
+                            "Mast.cells.resting","Mast.cells.activated","Eosinophils","Neutrophils")
+
+#------------------------------------------------------------------------------#
+# Preparing non-silent mutation load
+
+
+# contains sample id minus the last letter, or rather the vial code
+
+mutation_load <- read.table(mutation_load_file,sep="\t",header=T)
+
+colnames(mutation_load)<-c("cohort","patient_ID","sample_ID","silent_per_mb","non_silent_per_mb")
+
+TMB_vals <- data.frame(median_TMB = vapply(unique(mutation_load$cohort),
+                                           function(cohort){median(mutation_load$non_silent_per_mb[mutation_load$cohort==cohort])},numeric(1)))
+TMB_vals <- TMB_vals[order(TMB_vals$median_TMB),,drop=F]
+mutation_load$cohort <- factor(mutation_load$cohort,levels=rownames(TMB_vals))
+
+# ggplot(mutation_load,aes(x=cohort,y=log10(non_silent_per_mb+1)))+
+#   geom_boxplot()+#geom_violin(alpha=0.2,fill="grey")+
+#   theme(axis.text.x = element_text(angle = 90))+
+#   ylab("log10(Non silent mutations per Mb)")+
+#   geom_hline(yintercept=log10(10))+
+#   xlab("TCGA Cohort")
+
+#------------------------------------------------------------------------------#
+# Preparing Leuokocyte Fraction Data
+
+leukocyte_fraction <- readRDS(leukocyte_fraction_file)
+colnames(leukocyte_fraction)<-c("cohort","barcode","fraction")
+leukocyte_fraction$patient_ID <- TCGAbarcode(leukocyte_fraction$barcode)
+leukocyte_fraction$sample_ID <- vapply(TCGAbarcode(leukocyte_fraction$barcode,sample=T),
+                                       function(val){substr(val,1,nchar(val)-1)},character(1))
+
+leuk_vals <- data.frame(median_LF = vapply(unique(leukocyte_fraction$cohort),
+                                           function(cohort){median(leukocyte_fraction$fraction[leukocyte_fraction$cohort==cohort])},numeric(1)))
+leuk_vals <- leuk_vals[order(leuk_vals$median_LF),,drop=F]
+leukocyte_fraction$cohort <- factor(leukocyte_fraction$cohort,levels=rownames(leuk_vals))
+
+# ggplot(leukocyte_fraction,aes(x=cohort,y=fraction))+
+#   geom_boxplot()+#geom_violin(alpha=0.2,fill="grey")+
+#   theme(axis.text.x = element_text(angle = 90))+
+#   xlab("TCGA Cohort")+
+#   ylab("Leukocyte Fraction")
+
+#------------------------------------------------------------------------------#
+# Preparing Immunogenic SNV Data
+
+binding_snv <- readRDS(binding_snv_file)
+binding_snv$patient_ID <- TCGAbarcode(binding_snv$barcode)
+binding_snv$sample_ID <- vapply(TCGAbarcode(binding_snv$barcode,sample=T),
+                                function(val){substr(val,1,nchar(val)-1)},character(1))
+
+#------------------------------------------------------------------------------#
+# Preparing TCR clonality data
+
+tcr_clonality <-  readRDS(tcr_clonality_file)
+tcr_clonality$sample_ID <- vapply(TCGAbarcode(tcr_clonality$AliquotBarcode,sample=T),
+                                  function(val){substr(val,1,nchar(val)-1)},character(1))
+
+tcr_clonality_vals <- data.frame(median_tcr = vapply(unique(tcr_clonality$Study),
+                                                     function(Study){median(tcr_clonality$numClones[tcr_clonality$Study==Study])},numeric(1)))
+tcr_clonality_vals <- tcr_clonality_vals[order(tcr_clonality_vals$median_tcr),,drop=F]
+tcr_clonality$Study <- factor(tcr_clonality$Study,levels=rownames(tcr_clonality_vals))
+
+# ggplot(tcr_clonality,aes(x=Study,y=log10(numClones+1)))+
+#   geom_boxplot()+#geom_violin(alpha=0.2,fill="grey")+
+#   theme(axis.text.x = element_text(angle = 90))+
+#   xlab("TCGA Cohort")+
+#   ylab("log10(Number of TCR Clones)")
+
+#------------------------------------------------------------------------------#
 # Preparing the tumor purity information
 
 tumor_purity <- readRDS(tumor_purity_file)
 tumor_purity_filt <- tumor_purity %>% dplyr::filter(solution=="new")
+tumor_purity_filt$sample_ID <- vapply(TCGAbarcode(tumor_purity_filt$sample,sample=T),
+                                      function(val){substr(val,1,nchar(val)-1)},character(1))
 
 #------------------------------------------------------------------------------#
 # processing the tumor genotype file
 
-tumor_geno <- read.table(genotypes_file,header=T)
+tumor_geno <- read.table(genotypes_file,header=T) # reading in the tumor genotypes file which contains sample mappings to TCGA barcodes as well as MHC genotype
+tumor_geno$sample_ID <- vapply(TCGAbarcode(tumor_geno$aliquot_id,sample=T),
+                               function(val){substr(val,1,nchar(val)-1)},character(1)) # generating the sample ID based on the entire TCGA aliquot ID
+tumor_geno$patient_ID <- TCGAbarcode(tumor_geno$aliquot_id) # generating the patient ID using the TCGA sample barcode
+normal_samples <- tumor_geno$external_id[tumor_geno$type=="N"] # extracting out the normal samples
+tumor_samples <- tumor_geno$external_id[tumor_geno$type=="T"] # extracting out the tumor samples
 
-normal_geno <- tumor_geno %>% dplyr::filter(type=="N") # subsetting the tumor genotypes file by those samples that are normal samples
+normal_geno <- tumor_geno %>% dplyr::filter(type=="N")
 tumor_geno <- tumor_geno %>% dplyr::filter(type=="T") # subsetting the tumor genotypes file by those samples that are tumor samples
+tumor_geno <- tumor_geno[complete.cases(tumor_geno),] # only keeping those samples that have complete genotype information
 
 #------------------------------------------------------------------------------#
 # combining the tumor splicemutr files batched based off of splice junction expression
@@ -99,11 +246,16 @@ conglomerate_genes <- unique(rownames(combined_gene_metric_tumor),rownames(combi
 #------------------------------------------------------------------------------#
 # normalizing for the tumor purity
 
-sample_IDs <- c(colnames(combined_gene_metric_tumor),colnames(combined_gene_metric_normal))
+all_external_ids <- c(colnames(combined_gene_metric_tumor),colnames(combined_gene_metric_normal))
 all_geno <- rbind(tumor_geno,normal_geno)
-sample_id <- all_geno$sample_id
+external_ids <- all_geno$external_id
+tcga_barcodes <- all_geno$aliquot_id
+external_dict <- as.list(tcga_barcodes)
+names(external_dict)<-external_ids
 
 tcga_barcodes_colnames <- unname(unlist(external_dict[all_external_ids]))
+sample_IDs <- vapply(TCGAbarcode(tcga_barcodes_colnames,sample=T),
+                     function(val){substr(val,1,nchar(val)-1)},character(1))
 
 tumor_purity_estimate <- vapply(unname(sample_IDs),function(samp){
   a<-which(tumor_purity_filt$sample_ID==samp) # searching for the sample location

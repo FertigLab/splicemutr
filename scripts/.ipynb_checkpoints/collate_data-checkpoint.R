@@ -48,6 +48,8 @@ out_dir <- opt$out_dir
 
 tumor_purity <- readRDS(tumor_purity_file)
 tumor_purity_filt <- tumor_purity %>% dplyr::filter(solution=="new")
+tumor_purity_filt$sample_ID <- vapply(TCGAbarcode(tumor_purity_filt$sample,sample=T),
+                                      function(val){substr(val,1,nchar(val)-1)},character(1))
 
 #------------------------------------------------------------------------------#
 # processing the tumor genotype file

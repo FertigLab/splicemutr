@@ -84,6 +84,7 @@ def main(options):
     total = len(gene_kmers_set)
     
     out_file = "%s/%s_pep_overlap.txt"%(out_dir,sample_id)
+    print(out_file)
     
     data = [[sample_id,overlap,total]]
     pd.DataFrame(data, columns=['sample_id','overlap','total']).to_csv(out_file,sep="\t",index=False,header=False)
