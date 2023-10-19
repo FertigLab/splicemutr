@@ -4,17 +4,18 @@ rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
         GTF_URL=config["GTF_URL"],
-        FASTA_URL=config["FASTA_URL"],
-        GTF_FILE_GZ=config["GTF_FILE_GZ"],
-        FASTA_FILE_GZ=config["FASTA_FILE_GZ"]
+        FASTA_URL=config["FASTA_URL"]
+    output:
+        GTF_FILE_GZ=config["REF_DIR"]/config["GTF_FILE_GZ"],
+        FASTA_FILE_GZ=config["REF_DIR"]/config["FASTA_FILE_GZ"]
     shell:
         """
         mkdir {input.REF_DIR}
         cd {input.REF_DIR}
         wget {input.GTF_URL}
-        gunzip {input.GTF_FILE_GZ}
+        gunzip {output.GTF_FILE_GZ}
         wget {input.FASTA_URL}
-        gunzip {input.FASTA_FILE_GZ}
+        gunzip {output.FASTA_FILE_GZ}
         """
 
 rule make_txdb:
