@@ -2,11 +2,11 @@ configfile: "config.yaml"
 
 rule get_reference_data:
     input:
-        REF_DIR=config["get_reference_data"]["REF_DIR"],
-        GTF_URL=config["get_reference_data"]["GTF_URL"],
-        FASTA_URL=config["get_reference_data"]["FASTA_URL"],
-        GTF_FILE_GZ=config["get_reference_data"]["GTF_FILE_GZ"],
-        FASTA_FILE_GZ=config["get_reference_data"]["FASTA_FILE_GZ"]
+        REF_DIR:config["get_reference_data"]["REF_DIR"],
+        GTF_URL:config["get_reference_data"]["GTF_URL"],
+        FASTA_URL:config["get_reference_data"]["FASTA_URL"],
+        GTF_FILE_GZ:config["get_reference_data"]["GTF_FILE_GZ"],
+        FASTA_FILE_GZ:config["get_reference_data"]["FASTA_FILE_GZ"]
     shell:
         "mkdir {input.REF_DIR}
         cd {input.REF_DIR}
@@ -17,11 +17,11 @@ rule get_reference_data:
 
 rule make_txdb:
     input:
-        REF_DIR=config["make_txdb"]["REF_DIR"],
-        SPLICEMUTR_SCRIPTS=config["make_txdb"]["SPLICEMUTR_SCRIPTS"],
-        GTF_FILE=config["make_txdb"]["GTF_FILE"]
+        REF_DIR:config["make_txdb"]["REF_DIR"],
+        SPLICEMUTR_SCRIPTS:config["make_txdb"]["SPLICEMUTR_SCRIPTS"],
+        GTF_FILE:config["make_txdb"]["GTF_FILE"]
     output:
-        OUT_FILE=config["make_txdb"]["OUT_FILE"]
+        OUT_FILE:config["make_txdb"]["OUT_FILE"]
     shell:
         "conda activate miniconda3/envs/splicemutr
 
