@@ -24,7 +24,6 @@ rule get_reference_data:
         """
 '''
 
-
 rule make_txdb:
     input:
         REF_DIR=config["REF_DIR"],
