@@ -32,7 +32,7 @@ rule get_reference_data:
     shell:
         """
         cd {input.REF_DIR}
-        gunzip {input.FASTA_FILE_GZ}
+        gunzip -k {input.FASTA_FILE_GZ}
         """
 
 rule make_txdb:
