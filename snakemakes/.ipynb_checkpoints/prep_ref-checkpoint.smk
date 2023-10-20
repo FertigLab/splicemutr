@@ -36,7 +36,7 @@ rule get_reference_data:
 rule make_txdb:
     input:
         REF_DIR=config["REF_DIR"],
-        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"]
+        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"],
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
     output:
         OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"]
