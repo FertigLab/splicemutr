@@ -57,7 +57,7 @@ rule prepare_leafcutter_references:
 
         cd $(dirname {output.ANNOTATION})
 
-        {input.LEAF_DIR}/leafviz/gtf2leafcutter.pl -o G026 {input.GTF}
+        {input.LEAF_DIR}/leafviz/gtf2leafcutter.pl -o G026 {input.GTF_FILE}
         """
 
 rule convert_fasta_twobit:
