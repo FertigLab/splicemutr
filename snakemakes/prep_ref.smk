@@ -11,17 +11,10 @@ if not os.path.exists(config["REF_DIR"]):
 rule all:
     input:
         REF_DIR=config["REF_DIR"],
-        GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
-        FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"],
         LEAF_DIR=config["LEAF_DIR"],
-        GTF=config["GTF"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
         FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
-        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"],
-        REF_DIR=config["REF_DIR"],
-        SEED_FILE=config["SEED_FILE"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
+        SEED_FILE=config["SEED_FILE"]
         
 rule get_reference_data:
     input:
