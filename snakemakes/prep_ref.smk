@@ -14,11 +14,11 @@ if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
 
 rule all:
     input:
-        FASTA_FILE=config["FASTA_FILE"]
-        GTF_FILE=config["GTF_FILE"]
-        OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"]
-        ANNOTATION=config["ANN_DIR"]+"/"+"G026.exons.txt"
-        TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
+        FASTA_FILE=config["FASTA_FILE"],
+        GTF_FILE=config["GTF_FILE"],
+        OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"],
+        ANNOTATION=config["ANN_DIR"]+"/"+"G026.exons.txt",
+        TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
         BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
 
 rule get_reference_data:
