@@ -10,7 +10,6 @@ if not os.path.isfile(config["GTF_URL"]:
 if not os.path.isfile(config["FASTA_URL"]):
     os.system("wget %s"%config["FASTA_URL"])
 
-'''
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"]
@@ -65,22 +64,22 @@ rule convert_fasta_twobit:
         {input.FA_TO_TWOBIT_EXEC} {input.FASTA_FILE} {output.TWOBIT_FILE}
         """
 
+if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
+    os.system("rm -r %s"%(config["REF_DIR"]+"/"+config["BSGENOME"]))
+
 rule create_bsgenome:
     input:
         REF_DIR=config["REF_DIR"],
         SEED_FILE=config["SEED_FILE"],
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-        BSGENOME=config["BSGENOME"]
+    output:
+        BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
     shell:
         """
-        conda activate splicemutr
-    
         cd {input.REF_DIR}
-    
+
         {input.SPLICEMUTR_SCRIPTS}/forge_bsgenome.R -s {input.SEED_FILE}
-    
-        R CMD BUILD {input.BSGENOME}
-        R CMD check {input.BSGENOME}.tar.gz
-        R CMD INSTALL {input.BSGENOME}.tar.gz
+        R_BUILD_TAR=tar
+        R CMD build $({output.BSGENOME})
+        R CMD INSTALL {output.BSGENOME}_0.1.tar.gz
         """
-'''
