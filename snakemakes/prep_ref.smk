@@ -1,21 +1,17 @@
 import os
 
 configfile: "config.yaml"
-        
+
 if not os.path.exists(config["REF_DIR"]):
     os.mkdir(config["REF_DIR"])
     os.chdir(config["REF_DIR"])
     os.system("wget %s"%config["GTF_URL"])
     os.system("wget %s"%config["FASTA_URL"])
+if not os.path.exists(config["ANN_DIR"]):
+    os.mkdir(config["ANN_DIR"])
+if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
+    os.system("rm -r %s"%(config["REF_DIR"]+"/"+config["BSGENOME"]))
 
-rule all:
-    input:
-        REF_DIR=config["REF_DIR"],
-        LEAF_DIR=config["LEAF_DIR"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-        FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
-        SEED_FILE=config["SEED_FILE"]
-        
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
@@ -24,7 +20,6 @@ rule get_reference_data:
     shell:
         """
         cd {input.REF_DIR}
-        gunzip {input.GTF_FILE_GZ}
         gunzip {input.FASTA_FILE_GZ}
         """
 
@@ -40,9 +35,6 @@ rule make_txdb:
 
         {input.SPLICEMUTR_SCRIPTS}/make_txdb.R -o {output.OUT_FILE} -g {input.GTF_FILE}
         """
-
-if not os.path.exists(config["ANN_DIR"]):
-    os.mkdir(config["ANN_DIR"])
 
 rule prepare_leafcutter_references:
     input:
@@ -69,9 +61,6 @@ rule convert_fasta_twobit:
         """
         {input.FA_TO_TWOBIT_EXEC} {input.FASTA_FILE} {output.TWOBIT_FILE}
         """
-
-if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
-    os.system("rm -r %s"%(config["REF_DIR"]+"/"+config["BSGENOME"]))
 
 rule create_bsgenome:
     input:
