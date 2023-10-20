@@ -74,7 +74,6 @@ rule create_bsgenome:
         cd {input.REF_DIR}
 
         {input.SPLICEMUTR_SCRIPTS}/forge_bsgenome.R -s {input.SEED_FILE}
-        R_BUILD_TAR=tar
-        R CMD build $({output.BSGENOME})
+        R CMD build {output.BSGENOME}
         R CMD INSTALL {output.BSGENOME}_0.1.tar.gz
         """
