@@ -27,7 +27,7 @@ rule get_reference_data:
         GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
         FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
     output:
-        FASTA_FILE=config["FASTA_FILE"]
+        FASTA_FILE=config["FASTA_FILE"],
         GTF_FILE=config["GTF_FILE"]
     shell:
         """
