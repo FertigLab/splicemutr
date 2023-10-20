@@ -4,10 +4,8 @@ configfile: "config.yaml"
 
 if not os.path.exists(config["REF_DIR"]):
     os.mkdir(config["REF_DIR"])
-os.chdir(config["REF_DIR"])
-if not os.path.isfile(config["GTF_URL"]:
+    os.chdir(config["REF_DIR"])
     os.system("wget %s"%config["GTF_URL"])
-if not os.path.isfile(config["FASTA_URL"]):
     os.system("wget %s"%config["FASTA_URL"])
 
 rule get_reference_data:
