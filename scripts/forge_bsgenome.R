@@ -14,6 +14,7 @@
 # loading libraries
 
 library(BSgenome)
+library(optparse)
 
 #------------------------------------------------------------------------------#
 # handling command line input
