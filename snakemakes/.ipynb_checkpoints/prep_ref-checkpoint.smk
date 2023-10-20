@@ -12,11 +12,19 @@ if not os.path.exists(config["ANN_DIR"]):
 if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
     os.system("rm -r %s"%(config["REF_DIR"]+"/"+config["BSGENOME"]))
 
+rule all:
+    input:
+        GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
+        FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
+
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
         GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
         FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
+    output:
+        FASTA_FILE=config["FASTA_FILE"]
+        GTF_FILE=config["GTF_FILE"]
     shell:
         """
         cd {input.REF_DIR}
@@ -26,7 +34,6 @@ rule get_reference_data:
 rule make_txdb:
     input:
         REF_DIR=config["REF_DIR"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
         GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
         OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"]
@@ -39,7 +46,7 @@ rule make_txdb:
 rule prepare_leafcutter_references:
     input:
         LEAF_DIR=config["LEAF_DIR"],
-        GTF=config["GTF"]
+        GTF_FILE=config["GTF"]
     output:
         ANNOTATION=config["ANN_DIR"]+"/"+"G026.exons.txt"
     shell:
