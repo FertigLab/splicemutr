@@ -14,8 +14,7 @@ if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
 
 rule all:
     input:
-        GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
-        FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
+        BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
 
 rule get_reference_data:
     input:
