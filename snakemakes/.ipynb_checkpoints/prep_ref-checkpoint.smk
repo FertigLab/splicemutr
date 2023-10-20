@@ -24,11 +24,9 @@ rule all:
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
-        GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
         FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
     output:
         FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"],
-        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"]
     shell:
         """
         cd {input.REF_DIR}
