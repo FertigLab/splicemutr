@@ -1,13 +1,28 @@
 import os
 
 configfile: "config.yaml"
-
+        
 if not os.path.exists(config["REF_DIR"]):
     os.mkdir(config["REF_DIR"])
     os.chdir(config["REF_DIR"])
     os.system("wget %s"%config["GTF_URL"])
     os.system("wget %s"%config["FASTA_URL"])
 
+rule all:
+    input:
+        REF_DIR=config["REF_DIR"],
+        GTF_FILE_GZ=config["REF_DIR"]+"/"+config["GTF_FILE_GZ"],
+        FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
+        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"],
+        LEAF_DIR=config["LEAF_DIR"],
+        GTF=config["GTF"],
+        FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
+        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"],
+        REF_DIR=config["REF_DIR"],
+        SEED_FILE=config["SEED_FILE"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
+        
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
@@ -69,7 +84,7 @@ rule create_bsgenome:
     input:
         REF_DIR=config["REF_DIR"],
         SEED_FILE=config["SEED_FILE"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
     output:
         BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
     shell:
