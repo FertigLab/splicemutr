@@ -48,12 +48,12 @@ rule make_txdb:
 rule prepare_leafcutter_references:
     input:
         LEAF_DIR=config["LEAF_DIR"],
-        GTF_FILE=config["GTF"]
+        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
         ANNOTATION=config["ANN_DIR"]+"/"+"G026.exons.txt"
     shell:
         """
-        {input.LEAF_DIR}/scripts/gtf_to_exons.R {input.GTF} {output.ANNOTATION}
+        {input.LEAF_DIR}/scripts/gtf_to_exons.R {input.GTF_FILE} {output.ANNOTATION}
 
         cd $(dirname {output.ANNOTATION})
 
