@@ -2,13 +2,13 @@ import os
 
 configfile: "config.yaml"
 
-if os.path.exists(config["LEAFCUTTER_OUTPUT_DIR"]):
+if not os.path.exists(config["LEAFCUTTER_OUTPUT_DIR"]):
     os.mkdir(config["LEAFCUTTER_OUTPUT_DIR"])
-if os.path.exists(config["FILTERED_STAR_DIR"]):
+if not os.path.exists(config["FILTERED_STAR_DIR"]):
     os.mkdir(config["FILTERED_STAR_DIR"])
-if os.path.exists(config["JUNC_DIR"]):
+if not os.path.exists(config["JUNC_DIR"]):
     os.mkdir(config["JUNC_DIR"])
-if os.path.exists(config["INTRONS_OUT"]):
+if not os.path.exists(config["INTRONS_OUT"]):
     os.mkdir(config["INTRONS_OUT"])
 
 rule all:
