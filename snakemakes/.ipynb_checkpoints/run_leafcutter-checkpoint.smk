@@ -31,8 +31,8 @@ rule filter_STAR_files:
         NUM_STARFILES=$(wc -l {input.STAR_FILES})
         for VAR in {{$START..$NUM_STARFILES}}
         do
+            echo $VAR
             STAR_JUNCFILE=$(sed -n ${{VAR}}p {input.STAR_FILES})
-            echo $STAR_JUNCFILE
             {input.SPLICEMUTR_SCRIPTS}/filter_juncs.R -o {input.FILTERED_STAR_DIR} -s $STAR_JUNCFILE
         done
         
