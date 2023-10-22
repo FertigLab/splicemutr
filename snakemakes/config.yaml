@@ -1,29 +1,29 @@
-get_reference_data:
-    REF_DIR : "splicemutr_references"
-    GTF_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
-    GTF_FILE_GZ : "gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
-    FASTA_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz"
-    FASTA_FILE_GZ : "GRCh38.primary_assembly.genome.fa.gz"
-    
-make_txdb:
-    REF_DIR : "splicemutr_references"
-    GTF_FILE : "gencode.v26.chr_patch_hapl_scaff.annotation.gtf"
-    SPLICEMUTR_SCRIPTS : "/splicemute/scripts"
-    OUT_FILE : "G026_txdb.sqlite"
-    
-prepare_leafcutter_references:
-    LEAF_DIR : "leafcutter"
-    GTF : "splicemutr_references/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
-    ANN_DIR : "splicemutr_references/annotations"
-    
-convert_fasta_twobit:
-    REF_DIR : "splicemutr_references"
-    FASTA_FILE : "GRCh38.primary_assembly.genome.fa"
-    TWOBIT_FILE : "GRCh38.primary_assembly.genome.2bit"
-    FA_TO_TWOBIT_EXEC : "faToTwoBit"
-    
-create_bsgenome:
-    REF_DIR : "splicemutr_references"
-    SEED_FILE : "DESCRIPTION"
-    SPLICEMUTR_SCRIPTS : "/splicemute/scripts"
-    BSGENOME : "BSgenome.Hsapiens.GENCODE.GRCh38.p26"
+REF_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references"
+GTF_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+GTF_FILE_GZ : "gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+FASTA_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_26/GRCh38.primary_assembly.genome.fa.gz"
+FASTA_FILE_GZ : "GRCh38.primary_assembly.genome.fa.gz"
+
+GTF_FILE : "gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+SPLICEMUTR_SCRIPTS : "/users/tpalmer/splicemute/scripts"
+OUT_FILE : "G026_txdb.sqlite"
+
+LEAF_DIR : "/users/tpalmer/leafcutter"
+GTF : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz"
+ANN_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/annotations"
+
+FASTA_FILE : "GRCh38.primary_assembly.genome.fa"
+TWOBIT_FILE : "GRCh38.primary_assembly.genome.2bit"
+FA_TO_TWOBIT_EXEC : "/users/tpalmer/packages/ucsc/faToTwoBit"
+
+SEED_FILE : "/users/tpalmer/splicemutr_snakemake_example/prep_ref/DESCRIPTION"
+BSGENOME : "BSgenome.Hsapiens.GENCODE.GRCh38.p10"
+
+LEAFCUTTER_OUTPUT_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/leafcutter_output"
+FILTERED_STAR_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/leafcutter_output/filtered_star_files"
+SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
+JUNC_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/leafcutter_output/juncs"
+JUNCFILE_FILENAMES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/leafcutter_output/juncs/filenames.txt"
+LEAFCUTTER_SCRIPTS : "/users/tpalmer/leafcutter/scripts"
+GROUPS_FILE : "/dcs04/fertig/data/theron/splicemutr_TCGA/CHOL/leafcutter_out/groups_file.txt"
+INTRONS_OUT : "CHOL"
