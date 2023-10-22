@@ -51,7 +51,7 @@ rule convert_STAR_to_leafcutter:
     START=1
     for VAR in {{$START..$NUM_STAR_FILES}}
     do
-      STAR_JUNCFILE=$(sed -n {{$VAR}}p {input.STAR_FILT_FILES})
+      STAR_JUNCFILE=$(sed -n $VARp {input.STAR_FILT_FILES})
       OUT_DIR=$(dirname {output.JUNCFILE_FILENAMES})
       {input.SPLICEMUTR_SCRIPTS}/STAR_to_leaf.R -f {input.SPLICEMUTR_FUNCTIONS} -o $OUT_DIR -s $STAR_JUNCFILE
     done
