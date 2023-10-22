@@ -24,7 +24,7 @@ rule filter_STAR_files:
         FILTERED_STAR_DIR = config["FILTERED_STAR_DIR"],
         SPLICEMUTR_SCRIPTS = config["SPLICEMUTR_SCRIPTS"]
     output:
-        OUT_FILE={config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt"
+        OUT_FILE=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt"
     shell:
         """
         START=1
