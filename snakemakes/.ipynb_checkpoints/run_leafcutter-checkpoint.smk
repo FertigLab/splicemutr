@@ -22,7 +22,7 @@ rule filter_STAR_files:
     input:
         STAR_FILES = config["STAR_FILES"],
         FILTERED_STAR_DIR = config["FILTERED_STAR_DIR"],
-        SPLICEMUTR_SCRIPTS = config["SPLICEMUTR_SCRIPTS"]
+        SPLICEMUTR_SCRIPTS = config["SPLICEMUTR_SCRIPTS"],
         NUM_STARFILES = config["NUM_STARFILES"]
     output:
         OUT_FILE=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt"
@@ -44,7 +44,7 @@ rule convert_STAR_to_leafcutter:
   input:
     STAR_FILT_FILES=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt",
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-    SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"]
+    SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"],
     NUM_STARFILES=config["NUM_STARFILES"]
   output:
     JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"]
