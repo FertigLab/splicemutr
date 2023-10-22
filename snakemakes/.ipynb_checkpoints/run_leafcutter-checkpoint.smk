@@ -40,7 +40,7 @@ rule filter_STAR_files:
 
 rule convert_STAR_to_leafcutter:
   input:
-    STAR_FILT_FILES={input.FILTERED_STAR_DIR}+"/"+filt_files.txt,
+    STAR_FILT_FILES=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt",
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
     SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"]
   output:
