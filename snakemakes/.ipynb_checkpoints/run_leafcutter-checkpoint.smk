@@ -29,6 +29,7 @@ rule filter_STAR_files:
         """
         START=1
         NUM_STARFILES=$(wc -l {input.STAR_FILES})
+        echo $NUM_STAR_FILES
         for ((VAR=$START ; VAR<=$NUM_STARFILES; VAR++));
         do
             echo $VAR
