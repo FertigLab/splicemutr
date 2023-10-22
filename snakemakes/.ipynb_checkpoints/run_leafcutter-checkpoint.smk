@@ -16,7 +16,7 @@ rule all:
         OUT_FILE={input.FILTERED_STAR_DIR}+"/"+filt_files.txt,
         JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
-        OUT_FILE=config["INTRONS_OUT"]+"/CHOL_introns.rds"
+        OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
 
 rule filter_STAR_files:
     input:
@@ -89,7 +89,7 @@ rule save_introns:
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]  
   output:
     OUT_DIR=config["INTRONS_OUT"],
-    OUT_FILE=config["INTRONS_OUT"]+"/CHOL_introns.rds"
+    OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
   shell:
     """
     {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o {output.OUT_DIR}
