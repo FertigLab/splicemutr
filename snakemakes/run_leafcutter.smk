@@ -38,7 +38,7 @@ rule filter_STAR_files:
         ls {input.FILTERED_STAR_DIR}/*.filt > {output.OUT_FILE}
         """
 
-rule convert_STAR_sj.out.tab_to_leafcutter_.junc:
+rule convert_STAR_to_leafcutter:
   input:
     STAR_FILT_FILES={input.FILTERED_STAR_DIR}+"/"+filt_files.txt,
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
