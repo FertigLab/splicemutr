@@ -19,6 +19,7 @@ FA_TO_TWOBIT_EXEC : "/users/tpalmer/packages/ucsc/faToTwoBit"
 SEED_FILE : "/users/tpalmer/splicemutr_snakemake_example/prep_ref/DESCRIPTION"
 BSGENOME : "BSgenome.Hsapiens.GENCODE.GRCh38.p10"
 
+STAR_FILES : "/dcs04/fertig/data/theron/share/bams/SJ_OUT/SJ_files.txt"
 LEAFCUTTER_OUTPUT_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/leafcutter_output"
 FILTERED_STAR_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/leafcutter_output/filtered_star_files"
 SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
