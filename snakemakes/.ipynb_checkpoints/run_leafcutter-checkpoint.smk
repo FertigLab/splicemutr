@@ -13,7 +13,7 @@ if os.path.exists(config["INTRONS_OUT"]):
 
 rule all:
     input:
-        OUT_FILE={input.FILTERED_STAR_DIR}+"/"+filt_files.txt,
+        OUT_FILE=config["FILTERED_STAR_DIR"]+"/"+filt_files.txt,
         JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
         OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
