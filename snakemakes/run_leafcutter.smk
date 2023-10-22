@@ -31,9 +31,7 @@ rule filter_STAR_files:
         END=117
         for ((VAR=$START ; VAR<=$END; VAR++));
         do
-            echo $VAR
             STAR_JUNCFILE=$(sed -n ${{VAR}}p {input.STAR_FILES})
-            echo $STAR_JUNCFILE
             {input.SPLICEMUTR_SCRIPTS}/filter_juncs.R -o {input.FILTERED_STAR_DIR} -s $STAR_JUNCFILE
         done
         
@@ -50,7 +48,7 @@ rule convert_STAR_to_leafcutter:
   shell:
     """
     START=1
-    END=117
+    END=114
     for ((VAR=$START ; VAR<=$END; VAR++));
     do
       STAR_JUNCFILE=$(sed -n ${{VAR}}p {input.STAR_FILT_FILES})
