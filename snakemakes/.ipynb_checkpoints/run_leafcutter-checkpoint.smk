@@ -23,14 +23,13 @@ rule filter_STAR_files:
         STAR_FILES = config["STAR_FILES"],
         FILTERED_STAR_DIR = config["FILTERED_STAR_DIR"],
         SPLICEMUTR_SCRIPTS = config["SPLICEMUTR_SCRIPTS"]
+        NUM_STARFILES = config["NUM_STARFILES"]
     output:
         OUT_FILE=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt"
     shell:
         """
         START=1
-        NUM_STARFILES=$(wc -l {input.STAR_FILES} | awk '{{print $1}}')
-        echo $NUM_STAR_FILES
-        for ((VAR=$START ; VAR<=$NUM_STARFILES; VAR++));
+        for ((VAR=$START ; VAR<={input.NUM_STARFILES}; VAR++));
         do
             echo $VAR
             STAR_JUNCFILE=$(sed -n ${{VAR}}p {input.STAR_FILES})
@@ -46,13 +45,13 @@ rule convert_STAR_to_leafcutter:
     STAR_FILT_FILES=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt",
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
     SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"]
+    NUM_STARFILES=config["NUM_STARFILES"]
   output:
     JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"]
   shell:
     """
-    NUM_SJ_FILES=$(wc -l {input.STAR_FILT_FILES} | awk '{{print $1}}')
     START=1
-    for ((VAR=$START ; VAR<=$NUM_SJ_FILES; VAR++));
+    for ((VAR=$START ; VAR<=input.NUM_STARFILES; VAR++));
     do
       STAR_JUNCFILE=$(sed -n ${{VAR}}p {input.STAR_FILT_FILES})
       OUT_DIR=$(dirname {output.JUNCFILE_FILENAMES})
