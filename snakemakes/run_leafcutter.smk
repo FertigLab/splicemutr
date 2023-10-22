@@ -74,7 +74,7 @@ rule running_leafcutter:
   shell:
     """
     echo "leafcutter_cluster_regtools"
-    python2 {input.LEAFCUTTER_SCRIPTS}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
+    python {input.LEAFCUTTER_SCRIPTS}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
 
     echo "leafcutter_ds"
     {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R --num_threads 1 --exon_file={input.REF_DIR}/G026.exons.txt.gz -o {input.JUNC_DIR}/leafcutter_ds {input.JUNC_DIR}/data_perind_numers.counts.gz {input.GROUPS_FILE}
