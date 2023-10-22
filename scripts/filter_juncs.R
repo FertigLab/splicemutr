@@ -27,17 +27,19 @@ sj_file<-opt$sj_file
 #------------------------------------------------------------------------------#
 # reading in the SJ.out.tab file
 
-splice_juncs <- read.table(sj_file)
-splice_juncs <- splice_juncs %>% dplyr::filter(V5 != 0)
-splice_juncs <- splice_juncs %>% dplyr::filter(V7 >= 10)
+if (file.size(sj_file) != 0L){
+  splice_juncs <- read.table(sj_file)
+  splice_juncs <- splice_juncs %>% dplyr::filter(V5 != 0)
+  splice_juncs <- splice_juncs %>% dplyr::filter(V7 >= 10)
 
-#------------------------------------------------------------------------------#
-# saving the biologically relevant splice junctions
+  #------------------------------------------------------------------------------#
+  # saving the biologically relevant splice junctions
 
-out <- sprintf("%s/%s.filt",out_dir,basename(sj_file))
-write.table(splice_juncs,
-            file=out,
-            col.names=F,
-            quote = F,
-            row.names = F,
-            sep="\t")
+  out <- sprintf("%s/%s.filt",out_dir,basename(sj_file))
+  write.table(splice_juncs,
+              file=out,
+              col.names=F,
+              quote = F,
+              row.names = F,
+              sep="\t")
+}
