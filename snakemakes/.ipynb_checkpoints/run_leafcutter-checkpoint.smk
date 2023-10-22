@@ -13,9 +13,9 @@ if os.path.exists(config["INTRONS_OUT"])
 
 rule all:
     input:
-        OUT_FILE={input.FILTERED_STAR_DIR}+"/"+filt_files.txt
-        JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"]
-        RDATA=config["JUNC_DIR"]+"/data.Rdata"
+        OUT_FILE={input.FILTERED_STAR_DIR}+"/"+filt_files.txt,
+        JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
+        RDATA=config["JUNC_DIR"]+"/data.Rdata",
         OUT_FILE=config["INTRONS_OUT"]+"/CHOL_introns.rds"
 
 rule filter_STAR_files:
@@ -40,8 +40,8 @@ rule filter_STAR_files:
 
 rule convert_STAR_sj.out.tab_to_leafcutter_.junc:
   input:
-    STAR_FILT_FILES={input.FILTERED_STAR_DIR}+"/"+filt_files.txt
-    SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
+    STAR_FILT_FILES={input.FILTERED_STAR_DIR}+"/"+filt_files.txt,
+    SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
     SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"]
   output:
     JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"]
@@ -62,12 +62,12 @@ rule convert_STAR_sj.out.tab_to_leafcutter_.junc:
 
 rule running_leafcutter:
   input:
-      JUNC_DIR=config["JUNC_DIR"]
-      JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"]
-      SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
-      LEAFCUTTER_SCRIPTS=config["LEAFCUTTER_SCRIPTS"]
-      REF_DIR=config["ANN_DIR"]
-      LEAFVIZ_DIR=config["LEAFCUTTER_SCRIPTS"]+"/leafviz"
+      JUNC_DIR=config["JUNC_DIR"],
+      JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
+      SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
+      LEAFCUTTER_SCRIPTS=config["LEAFCUTTER_SCRIPTS"],
+      REF_DIR=config["ANN_DIR"],
+      LEAFVIZ_DIR=config["LEAFCUTTER_SCRIPTS"]+"/leafviz",
       GROUPS_FILE=config["GROUPS_FILE"]
   output:
       RDATA=config["JUNC_DIR"]+"/data.Rdata"
@@ -85,10 +85,10 @@ rule running_leafcutter:
     
 rule save_introns:
   input:
-    RDATA=config["JUNC_DIR"]+"/data.Rdata"
+    RDATA=config["JUNC_DIR"]+"/data.Rdata",
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]  
   output:
-    OUT_DIR=config["INTRONS_OUT"]
+    OUT_DIR=config["INTRONS_OUT"],
     OUT_FILE=config["INTRONS_OUT"]+"/CHOL_introns.rds"
   shell:
     """
