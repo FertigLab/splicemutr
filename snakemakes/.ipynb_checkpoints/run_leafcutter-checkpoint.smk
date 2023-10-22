@@ -20,7 +20,7 @@ rule all:
 
 rule filter_STAR_files:
     input:
-        STAR_FILES = confif["STAR_FILES"],
+        STAR_FILES = config["STAR_FILES"],
         FILTERED_STAR_DIR = config["FILTERED_STAR_DIR"],
         SPLICEMUTR_SCRIPTS = config["SPLICEMUTR_SCRIPTS"]
     output:
