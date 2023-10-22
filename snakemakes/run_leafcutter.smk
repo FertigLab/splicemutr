@@ -28,7 +28,7 @@ rule filter_STAR_files:
     shell:
         """
         START=1
-        NUM_STARFILES=$(wc -l {input.STAR_FILES} | awk '{print $1}')
+        NUM_STARFILES=$(wc -l {input.STAR_FILES} | awk '{{print $1}}')
         echo $NUM_STAR_FILES
         for ((VAR=$START ; VAR<=$NUM_STARFILES; VAR++));
         do
@@ -50,7 +50,7 @@ rule convert_STAR_to_leafcutter:
     JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"]
   shell:
     """
-    NUM_SJ_FILES=$(wc -l {input.STAR_FILT_FILES} | awk '{print $1}')
+    NUM_SJ_FILES=$(wc -l {input.STAR_FILT_FILES} | awk '{{print $1}}')
     START=1
     for ((VAR=$START ; VAR<=$NUM_SJ_FILES; VAR++));
     do
