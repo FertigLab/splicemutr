@@ -11,6 +11,13 @@ if os.path.exists(config["JUNC_DIR"]):
 if os.path.exists(config["INTRONS_OUT"])
     os.mkdir(config["INTRONS_OUT"])
 
+rule all:
+    input:
+        OUT_FILE={input.FILTERED_STAR_DIR}+"/"+filt_files.txt
+        JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"]
+        RDATA=config["JUNC_DIR"]+"/data.Rdata"
+        OUT_FILE=config["INTRONS_OUT"]+"/CHOL_introns.rds"
+
 rule filter_STAR_files:
     input:
         STAR_FILES = confif["STAR_FILES"],
