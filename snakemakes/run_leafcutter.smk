@@ -8,7 +8,7 @@ if os.path.exists(config["FILTERED_STAR_DIR"]):
     os.mkdir(config["FILTERED_STAR_DIR"])
 if os.path.exists(config["JUNC_DIR"]):
     os.mkdir(config["JUNC_DIR"])
-if os.path.exists(config["INTRONS_OUT"])
+if os.path.exists(config["INTRONS_OUT"]):
     os.mkdir(config["INTRONS_OUT"])
 
 rule all:
