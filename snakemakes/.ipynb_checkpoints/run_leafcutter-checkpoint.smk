@@ -68,7 +68,7 @@ rule running_leafcutter:
       LEAFCUTTER_SCRIPTS=config["LEAFCUTTER_SCRIPTS"],
       REF_DIR=config["ANN_DIR"],
       LEAFVIZ_DIR=config["LEAFVIZ_DIR"],
-      GROUPS_FILE=config["GROUPS_FILE"]
+      GROUPS_FILE=config["GROUPS_FILE"],
       LEAFCUTTER_PYTHON=config["LEAFCUTTER_PYTHON"]
   output:
       RDATA=config["JUNC_DIR"]+"/data.Rdata"
