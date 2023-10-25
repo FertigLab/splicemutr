@@ -8,15 +8,13 @@ if not os.path.exists(config["FILTERED_STAR_DIR"]):
     os.mkdir(config["FILTERED_STAR_DIR"])
 if not os.path.exists(config["JUNC_DIR"]):
     os.mkdir(config["JUNC_DIR"])
-if not os.path.exists(config["INTRONS_OUT"]):
-    os.mkdir(config["INTRONS_OUT"])
 
 rule all:
     input:
         #OUT_FILE=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt",
         #JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
-        OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
+        OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds"
 '''
 rule filter_STAR_files:
     input:
@@ -83,13 +81,13 @@ rule running_leafcutter:
     echo "prepare_results"
     {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G026
     """
-  '''
+'''
 rule save_introns:
   input:
     RDATA=config["JUNC_DIR"]+"/data.Rdata",
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]  
   output:
-    OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
+    OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds"
   shell:
     """
     {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o CHOL
