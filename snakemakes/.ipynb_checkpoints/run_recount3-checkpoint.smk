@@ -9,9 +9,9 @@ if not os.path.exists(config["JUNC_OUTPUT_DIR"]):
 
 rule run_recount3:
     input:
-        TCGA_CANCER=config["TCGA_CANCER"]
-        JUNC_OUTPUT_DIR=config["JUNC_OUTPUT_DIR"]
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
+        TCGA_CANCER=config["TCGA_CANCER"],
+        JUNC_OUTPUT_DIR=config["JUNC_OUTPUT_DIR"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
         SAMPLES=config["samples"]
     output:
         OUTPUT_FILE=config["JUNC_OUTPUT_DIR"]+"/filenames.txt"
