@@ -8,6 +8,8 @@ if not os.path.exists(config["FORMED_TRANSCRIPTS_DIR"]):
 rule all:
     input:
         #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds"
+        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
+
 
 '''   
 rule form_transcripts:
@@ -31,11 +33,11 @@ rule form_transcripts:
 rule calcualte_coding_potential:
     input:
         SPLICE_FILE=config["SPLICEMUTR_FILE"],
-        SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"]
+        SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"],
         SCRIPT_DIR=CONFIG["SPLICEMUTR_SCRIPTS"]
     output:
         FORMED_TRANSCRIPTS_DIR=config["FORMED_TRANSCRIPTS_DIR"],
-        FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
+        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
     shell:
         """
         TRANSCRIPT_FILE=$(echo {input.SPLICE_FILE} | sed s/'_data_splicemutr.rds'/'_sequences.fa'/g)
