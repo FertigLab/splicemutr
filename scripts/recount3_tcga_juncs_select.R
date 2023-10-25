@@ -31,7 +31,7 @@ opt=arguments
 
 study <- opt$study
 tcga_junc_dir <- opt$output_directory
-if (samples!="all"){
+if (opt$samples!="all"){
   samples <- unlist(read.table(opt$samples,sep="\t"))
 }
 
