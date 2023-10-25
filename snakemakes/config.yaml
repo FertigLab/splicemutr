@@ -38,3 +38,5 @@ FORMED_TRANSCRIPTS_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example
 INTRON_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds"
 TXDB : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite"
 SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
+
+SPLICEMUTR_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds"
