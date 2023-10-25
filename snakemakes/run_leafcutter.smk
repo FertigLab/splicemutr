@@ -59,7 +59,6 @@ rule convert_STAR_to_leafcutter:
     cd $OUT_DIR
     ls $PWD/*.junc > filenames.txt
     """
-'''
 
 rule running_leafcutter:
   input:
@@ -94,5 +93,5 @@ rule save_introns:
     OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
   shell:
     """
-    {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o {output.OUT_DIR}/CHOL
+    {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o {output.OUT_DIR}
     """
