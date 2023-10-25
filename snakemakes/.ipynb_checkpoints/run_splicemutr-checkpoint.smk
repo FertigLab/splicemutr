@@ -34,7 +34,7 @@ rule calcualte_coding_potential:
     input:
         SPLICE_FILE=config["SPLICEMUTR_FILE"],
         SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"],
-        SCRIPT_DIR=CONFIG["SPLICEMUTR_SCRIPTS"]
+        SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"]
     output:
         FORMED_TRANSCRIPTS_DIR=config["FORMED_TRANSCRIPTS_DIR"],
         FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
