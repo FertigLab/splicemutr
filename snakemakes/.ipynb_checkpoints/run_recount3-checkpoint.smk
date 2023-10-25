@@ -1,5 +1,7 @@
 import os
 
+configfile: "config.yaml"
+
 rule all:
     output:
         OUTPUT_FILE=config["JUNC_OUTPUT_DIR"]+"/filenames.txt"
