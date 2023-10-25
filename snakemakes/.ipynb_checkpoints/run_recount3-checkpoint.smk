@@ -7,7 +7,7 @@ rule all:
         OUTPUT_FILE=config["JUNC_OUTPUT_DIR"]+"/filenames.txt"
         
 if not os.path.exists(config["JUNC_OUTPUT_DIR"]):
-    os.path.mkdir(config["JUNC_OUTPUT_DIR"])
+    os.mkdir(config["JUNC_OUTPUT_DIR"])
 
 rule run_recount3:
     input:
