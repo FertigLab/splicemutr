@@ -70,15 +70,16 @@ rule running_leafcutter:
       LEAFVIZ_DIR=config["LEAFVIZ_DIR"],
       GROUPS_FILE=config["GROUPS_FILE"],
       LEAFCUTTER_PYTHON=config["LEAFCUTTER_PYTHON"]
+      DATA_PERDIND_COUNTS=config["DATA_PERDIND_COUNTS"]
   output:
       RDATA=config["JUNC_DIR"]+"/data.Rdata"
   shell:
     """
     echo "leafcutter_cluster_regtools"
-    python2 {input.LEAFCUTTER_PYTHON}/splicemutr_leafcutter_cluster.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
+    python {input.LEAFCUTTER_PYTHON}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
 
     echo "leafcutter_ds"
-    {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R --num_threads 1 --exon_file={input.REF_DIR}/G026.exons.txt.gz -o {input.JUNC_DIR}/leafcutter_ds {input.JUNC_DIR}/data_perind_numers.counts.gz {input.GROUPS_FILE}
+    {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R --num_threads 1 --exon_file={input.REF_DIR}/G026.exons.txt.gz -o {input.JUNC_DIR}/leafcutter_ds {input.DATA_PERDIND_COUNTS} {input.GROUPS_FILE}
 
     echo "prepare_results"
     {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G026

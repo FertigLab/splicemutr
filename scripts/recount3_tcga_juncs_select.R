@@ -24,14 +24,16 @@ arguments <- parse_args(OptionParser(usage = "%prog [options] counts_file groups
                                default = sprintf("%s",getwd()),
                                help="The output directory for the tcga directory"),
                    make_option(c("-s","--samples"),
-                               default = sprintf("%s",getwd()),
+                               default = "all",
                                help="The samples to create files for"))))
 
 opt=arguments
 
 study <- opt$study
 tcga_junc_dir <- opt$output_directory
-samples <- unlist(read.table(opt$samples,sep="\t"))
+if (samples!="all"){
+  samples <- unlist(read.table(opt$samples,sep="\t"))
+}
 
 #------------------------------------------------------------------------------#
 # internal functions
@@ -82,12 +84,21 @@ all_juncs <- rownames(junc_dat)
 pre_junc_file <- create_junc_file(all_juncs)
 
 for (i in seq(1,length(tcga_barcode))){
-  if (tcga_barcode[i] %in% samples){
+  if (length(samples)==1){
     file <- tcga_barcode[i]
     print(sprintf("%s",file))
     junc_file <- pre_junc_file
     junc_file$counts <- junc_dat[,file]
     tcga_file <- sprintf("%s/%s.junc",tcga_junc_dir,file)
     write.table(junc_file,tcga_file,quote = F,sep="\t",col.names = F,row.names=F)
+  } else {
+    if (tcga_barcode[i] %in% samples){
+      file <- tcga_barcode[i]
+      print(sprintf("%s",file))
+      junc_file <- pre_junc_file
+      junc_file$counts <- junc_dat[,file]
+      tcga_file <- sprintf("%s/%s.junc",tcga_junc_dir,file)
+      write.table(junc_file,tcga_file,quote = F,sep="\t",col.names = F,row.names=F)
+    }
   }
 }
