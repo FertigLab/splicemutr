@@ -90,9 +90,8 @@ rule save_introns:
     RDATA=config["JUNC_DIR"]+"/data.Rdata",
     SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]  
   output:
-    OUT_DIR=config["INTRONS_OUT"],
-    OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
+    OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL"
   shell:
     """
-    {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o {output.OUT_DIR}
+    {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o {output.OUT_FILE_FINAL}
     """
