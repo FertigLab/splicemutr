@@ -2,10 +2,6 @@ import os
 
 configfile: "config.yaml"
 
-if not os.path.exists(config["LEAFCUTTER_OUTPUT_DIR"]):
-    os.mkdir(config["LEAFCUTTER_OUTPUT_DIR"])
-if not os.path.exists(config["FILTERED_STAR_DIR"]):
-    os.mkdir(config["FILTERED_STAR_DIR"])
 if not os.path.exists(config["JUNC_DIR"]):
     os.mkdir(config["JUNC_DIR"])
 
@@ -16,6 +12,12 @@ rule all:
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
         OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds"
 '''
+
+if not os.path.exists(config["LEAFCUTTER_OUTPUT_DIR"]):
+    os.mkdir(config["LEAFCUTTER_OUTPUT_DIR"])
+if not os.path.exists(config["FILTERED_STAR_DIR"]):
+    os.mkdir(config["FILTERED_STAR_DIR"])
+    
 rule filter_STAR_files:
     input:
         STAR_FILES = config["STAR_FILES"],
@@ -57,6 +59,7 @@ rule convert_STAR_to_leafcutter:
     cd $OUT_DIR
     ls $PWD/*.junc > filenames.txt
     """
+'''
 
 rule running_leafcutter:
   input:
@@ -81,7 +84,7 @@ rule running_leafcutter:
     echo "prepare_results"
     {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G026
     """
-'''
+
 rule save_introns:
   input:
     RDATA=config["JUNC_DIR"]+"/data.Rdata",

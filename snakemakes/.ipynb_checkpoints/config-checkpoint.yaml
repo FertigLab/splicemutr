@@ -33,3 +33,8 @@ LEAFCUTTER_SCRIPTS : "/users/tpalmer/packages/leafcutter/scripts"
 LEAFVIZ_DIR : "/users/tpalmer/packages/leafcutter/leafviz"
 GROUPS_FILE : "/dcs04/fertig/data/theron/splicemutr_paper/CHOL_groups_file.txt"
 LEAFCUTTER_PYTHON : "/users/tpalmer/packages/leafcutter/clustering"
+
+FORMED_TRANSCRIPTS_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts"
+INTRON_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds"
+TXDB : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite"
+SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
