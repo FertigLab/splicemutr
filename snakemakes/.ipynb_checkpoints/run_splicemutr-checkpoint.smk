@@ -1,9 +1,9 @@
 import os
 
+configfile: "config.yaml"
+
 if not os.path.exists(config["FORMED_TRANSCRIPTS_DIR"]):
     os.mkdir(config["FORMED_TRANSCRIPTS_DIR"])
-
-configfile: "config.yaml"
 
 rule all:
     input:
