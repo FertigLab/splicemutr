@@ -17,7 +17,7 @@ rule all:
         #JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
         OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
-
+'''
 rule filter_STAR_files:
     input:
         STAR_FILES = config["STAR_FILES"],
@@ -59,6 +59,7 @@ rule convert_STAR_to_leafcutter:
     cd $OUT_DIR
     ls $PWD/*.junc > filenames.txt
     """
+'''
 
 rule running_leafcutter:
   input:
