@@ -13,8 +13,8 @@ if not os.path.exists(config["INTRONS_OUT"]):
 
 rule all:
     input:
-        OUT_FILE=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt",
-        JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
+        #OUT_FILE=config["FILTERED_STAR_DIR"]+"/"+"filt_files.txt",
+        #JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
         OUT_FILE_FINAL=config["INTRONS_OUT"]+"/CHOL_introns.rds"
 
@@ -79,7 +79,7 @@ rule running_leafcutter:
     python {input.LEAFCUTTER_PYTHON}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
 
     echo "leafcutter_ds"
-    {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R --num_threads 1 --exon_file={input.REF_DIR}/G026.exons.txt.gz -o {input.JUNC_DIR}/leafcutter_ds {input.DATA_PERDIND_COUNTS} {input.GROUPS_FILE}
+    {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R --num_threads 1 --exon_file={input.REF_DIR}/G026.exons.txt.gz -o {input.JUNC_DIR}/leafcutter_ds {input.JUNC_DIR}/data_perind_numers.counts.gz {input.GROUPS_FILE}
 
     echo "prepare_results"
     {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G026
