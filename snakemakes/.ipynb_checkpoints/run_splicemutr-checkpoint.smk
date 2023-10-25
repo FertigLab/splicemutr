@@ -17,6 +17,7 @@ rule form_transcripts:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
         SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"]
     output:
+        FORMED_TRANSCRIPTS_DIR=config["FORMED_TRANSCRIPTS_DIR"],
         FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds"
     shell:
         """
