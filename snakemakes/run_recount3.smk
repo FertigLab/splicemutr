@@ -14,7 +14,7 @@ rule run_recount3:
         TCGA_CANCER=config["TCGA_CANCER"],
         JUNC_OUTPUT_DIR=config["JUNC_OUTPUT_DIR"],
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-        SAMPLES=config["samples"]
+        SAMPLES=config["SAMPLES"]
     output:
         OUTPUT_FILE=config["JUNC_OUTPUT_DIR"]+"/filenames.txt"
     shell:
