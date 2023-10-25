@@ -83,7 +83,7 @@ rule running_leafcutter:
     echo "prepare_results"
     {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G026
     """
-    
+  '''
 rule save_introns:
   input:
     RDATA=config["JUNC_DIR"]+"/data.Rdata",
