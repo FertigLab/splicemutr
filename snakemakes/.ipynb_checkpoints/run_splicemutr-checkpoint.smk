@@ -7,7 +7,8 @@ if not os.path.exists(config["FORMED_TRANSCRIPTS_DIR"]):
 
 rule all:
     input:
-        
+        FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds"
+
     
 rule form_transcripts:
     input:
