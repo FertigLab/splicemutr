@@ -3,7 +3,7 @@ import os
 configfile: "config.yaml"
 
 rule all:
-    output:
+    input:
         OUTPUT_FILE=config["JUNC_OUTPUT_DIR"]+"/filenames.txt"
         
 if not os.path.exists(config["JUNC_OUTPUT_DIR"]):
