@@ -4,11 +4,13 @@ configfile: "config.yaml"
 
 if not os.path.exists(config["FORMED_TRANSCRIPTS_DIR"]):
     os.mkdir(config["FORMED_TRANSCRIPTS_DIR"])
+if not os.path.exists(config["COMBINE_SPLICEMUTR_OUT"]):
+    os.mkdir(config["COMBINE_SPLICEMUTR_OUT"])
 
 rule all:
     input:
         #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds"
-        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
+        #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
 
 
 '''   
@@ -28,7 +30,6 @@ rule form_transcripts:
 
         {input.SCRIPT_DIR}/form_transcripts.R -o $OUT_PREFIX -t {input.TXDB} -j {input.INTRON_FILE} -b $BSGENOME -f {input.SPLICEMUTR_FUNCTIONS}
         """
-'''
 
 rule calcualte_coding_potential:
     input:
@@ -47,4 +48,18 @@ rule calcualte_coding_potential:
         cd {output.FORMED_TRANSCRIPTS_DIR}
         ls $PWD/*_cp_corrected.rds > filenames_cp.txt
     
+        """
+
+'''
+
+rule combine_splicemutr:
+    input:
+        SPLICE_FILES=config["SPLICEMUTR_FILES"],
+        SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"]
+    output:
+        OUTPUT_DIR=config["COMBINE_SPLICEMUTR_OUT"]
+        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt"
+    shell:
+        """
+        {input.SCRIPT_DIR}/combine_splicemutr.R -o {output.OUTPUT_FILE} -s {input.SPLICE_FILES}
         """
