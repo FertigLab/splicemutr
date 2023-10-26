@@ -39,5 +39,5 @@ INTRON_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL
 TXDB : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite"
 SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
 
-SPLICEMUTR_FILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/filenames_cp.txt"
+SPLICEMUTR_FILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/filenames_cp.txt"
 COMBINE_SPLICEMUTR_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out"
