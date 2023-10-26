@@ -62,5 +62,5 @@ rule combine_splicemutr:
         OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt"
     shell:
         """
-        {input.SCRIPT_DIR}/combine_splicemutr.R -o {output.OUTPUT_FILE} -s {input.SPLICE_FILES}
+        {input.SCRIPT_DIR}/combine_splicemutr.R -o {output.OUTPUT_DIR} -s {input.SPLICE_FILES}
         """
