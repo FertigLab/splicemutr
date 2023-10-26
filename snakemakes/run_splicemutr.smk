@@ -70,7 +70,7 @@ rule combine_splicemutr:
 
 rule process_peptides:
     input:
-        SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
         PEPTIDES=config["PROTEINS"]
     output:
         OUT_DIR=config["PROCESS_PEPTIDES_OUT"],
@@ -80,6 +80,4 @@ rule process_peptides:
         KMER_LENGTH=9
 
         {input.SCRIPT_DIR}/process_peptides.py -p {input.PEPTIDES} -o {output.OUT_DIR} -k $KMER_LENGTH
-
-        conda deactivate
         """
