@@ -44,4 +44,4 @@ COMBINE_SPLICEMUTR_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example
 
 PROTEINS : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out/proteins.txt"
 PROCESS_PEPTIDES_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out"
-SPLICMUTR_PYTHON : "/users/tpalmer/splicemute/inst"
+SPLICEMUTR_PYTHON : "/users/tpalmer/splicemute/inst"
