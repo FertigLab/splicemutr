@@ -41,3 +41,6 @@ SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
 
 SPLICEMUTR_FILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/filenames_cp.txt"
 COMBINE_SPLICEMUTR_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out"
+
+PROTEINS : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out/proteins.txt"
+PROCESS_PEPTIDES_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out"

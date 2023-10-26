@@ -6,6 +6,8 @@ if not os.path.exists(config["FORMED_TRANSCRIPTS_DIR"]):
     os.mkdir(config["FORMED_TRANSCRIPTS_DIR"])
 if not os.path.exists(config["COMBINE_SPLICEMUTR_OUT"]):
     os.mkdir(config["COMBINE_SPLICEMUTR_OUT"])
+if not os.path.exists(config["PROCESS_PEPTIDES_OUT"]):
+    os.mkdir(config["PROCESS_PEPTIDES_OUT"])
 
 rule all:
     input:
@@ -51,7 +53,6 @@ rule calcualte_coding_potential:
     
         """
 
-'''
 
 rule combine_splicemutr:
     input:
@@ -63,4 +64,22 @@ rule combine_splicemutr:
     shell:
         """
         {input.SCRIPT_DIR}/combine_splicemutr.R -o {output.OUTPUT_DIR} -s {input.SPLICE_FILES}
+        """
+        
+'''
+
+rule process_peptides:
+    input:
+        SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
+        PEPTIDES=config["PROTEINS"]
+    output:
+        OUT_DIR=config["PROCESS_PEPTIDES_OUT"],
+        OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
+    shell:
+        """
+        KMER_LENGTH=9
+
+        {input.SCRIPT_DIR}/process_peptides.py -p {input.PEPTIDES} -o {output.OUT_DIR} -k $KMER_LENGTH
+
+        conda deactivate
         """
