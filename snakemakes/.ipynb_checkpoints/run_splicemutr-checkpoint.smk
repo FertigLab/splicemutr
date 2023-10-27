@@ -14,7 +14,7 @@ rule all:
         #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds"
         #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
         #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt"
-        OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
+        #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
 
 '''   
 rule form_transcripts:
@@ -65,8 +65,6 @@ rule combine_splicemutr:
         """
         {input.SCRIPT_DIR}/combine_splicemutr.R -o {output.OUTPUT_DIR} -s {input.SPLICE_FILES}
         """
-        
-'''
 
 rule process_peptides:
     input:
@@ -81,3 +79,32 @@ rule process_peptides:
 
         {input.SCRIPT_DIR}/process_peptides.py -p {input.PEPTIDES} -o {output.OUT_DIR} -k $KMER_LENGTH
         """
+'''
+
+rule run_arcasHLA:
+  input:
+    GENOTYPES_DIR=config["GENOTYPES_DIR"]
+    FILENAMES_FILE=config["BAMFILES"]
+    NUM_BAM_FILES=2
+  output:
+  shell:
+    "conda activate miniconda3/envs/arcashla
+    START=1
+    for VAR in {$START..{input.NUM_BAM_FILES}}
+    do
+      FILE=$(sed -n ${VAR}p {input.FILENAMES_FILE})
+      FILE_BASE=$(basename {input.FILE})
+      FILE_DIR={input.GENOTYPES_DIR}/${FILE_BASE}_dir
+      mkdir $FILE_DIR
+
+      # sort bam file
+      samtools sort -o ${FILE}.sorted $FILE
+
+      arcasHLA extract ${FILE} -o $FILE_DIR -v
+
+      cd $FILE_DIR
+
+      FASTQ1=$(ls *.extracted.1*)
+      FASTQ2=$(ls *.extracted.2*)
+      arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
+    done"

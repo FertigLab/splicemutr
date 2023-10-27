@@ -136,13 +136,13 @@ rule run_arcasHLA:
       # sort bam file
       samtools sort -o ${FILE}.sorted $FILE
 
-      extract ${FILE} -o $FILE_DIR -v
+      arcasHLA extract ${FILE} -o $FILE_DIR -v
 
       cd $FILE_DIR
 
       FASTQ1=$(ls *.extracted.1*)
       FASTQ2=$(ls *.extracted.2*)
-      genotype $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
+      arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
     done"
 
 rule run_MHCnuggets:
