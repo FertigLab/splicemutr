@@ -91,7 +91,6 @@ rule run_arcasHLA:
     
   shell:
     """
-    conda activate miniconda3/envs/arcashla
     START=1
     END=2
     for VAR in {{$START..$END}}
