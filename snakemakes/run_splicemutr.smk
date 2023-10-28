@@ -19,7 +19,7 @@ rule all:
         #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
         #OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
         GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt"
-'''   
+'''
 rule form_transcripts:
     input:
         INTRON_FILE=config["INTRON_FILE"],
@@ -127,7 +127,7 @@ rule create_create_genotypes_file:
         for (( VAR=$START; VAR<=$END; VAR++ ))
         do
             JSON_FILE = $(sed -n ${{VAR}}p input.GENOTYPES_FILES)
-            echo $(echo $JSON_FILE | sed "s/Aligned.genotype.json//g") $(jq '.[] | .[]'/Aligned.genotype.json//g") $(
+            echo $(echo $JSON_FILE | sed "s/Aligned.genotype.json//g") $(jq '.[] | .[]'
             $JSON_FILE | paste -s -d "," | sed 's/"//g') >> {output.GENOTYPES_FILE}
         done
         """
