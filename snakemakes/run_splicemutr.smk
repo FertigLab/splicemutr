@@ -11,13 +11,14 @@ if not os.path.exists(config["PROCESS_PEPTIDES_OUT"]):
 if not os.path.exists(config["GENOTYPES_DIR"]):
     os.mkdir(config["GENOTYPES_DIR"])
 
-#rule all:
-#    input:
+rule all:
+    input:
         #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds"
         #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds"
         #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt"
         #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
-
+        #OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
+        GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt"
 '''   
 rule form_transcripts:
     input:
@@ -81,14 +82,13 @@ rule process_peptides:
 
         {input.SCRIPT_DIR}/process_peptides.py -p {input.PEPTIDES} -o {output.OUT_DIR} -k $KMER_LENGTH
         """
-'''
 
 rule run_arcasHLA:
   input:
     GENOTYPES_DIR=config["GENOTYPES_DIR"],
     FILENAMES_FILE=config["BAMFILES"],
   output:
-    
+    OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
   shell:
     """
     START=1
@@ -111,4 +111,23 @@ rule run_arcasHLA:
       FASTQ2=$(ls *.extracted.2*)
       arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
     done
+    cd {input.GENOTYPES_DIR}
+    find $PWD -type f -name *genotype.json > genotype_files.txt
     """
+'''
+rule create_create_genotypes_file:
+    input:
+        GENOTYPES_FILES=config["GENOTYPES_DIR"]+"/genotype_files.txt"
+    output:
+        GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt"
+    shell:
+        """
+        START=1
+        END=2
+        for (( VAR=$START; VAR<=$END; VAR++ ))
+        do
+            JSON_FILE = $(sed -n ${{VAR}}p input.GENOTYPES_FILES)
+            echo $(echo $JSON_FILE | sed "s/Aligned.genotype.json//g") $(jq '.[] | .[]'/Aligned.genotype.json//g") $(
+            $JSON_FILE | paste -s -d "," | sed 's/"//g') >> {output.GENOTYPES_FILE}
+        done
+        """
