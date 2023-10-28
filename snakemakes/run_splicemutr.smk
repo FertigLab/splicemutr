@@ -88,7 +88,8 @@ rule run_arcasHLA:
   output:
     
   shell:
-    "conda activate miniconda3/envs/arcashla
+    """
+    conda activate miniconda3/envs/arcashla
     START=1
     END=2
     for VAR in {$START..$END}
@@ -108,4 +109,5 @@ rule run_arcasHLA:
       FASTQ1=$(ls *.extracted.1*)
       FASTQ2=$(ls *.extracted.2*)
       arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
-    done"
+    done
+    """
