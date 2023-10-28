@@ -47,5 +47,5 @@ PROCESS_PEPTIDES_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/p
 SPLICEMUTR_PYTHON : "/users/tpalmer/splicemute/inst"
 
 GENOTYPES_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/genotypes"
-BAMFILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/bamfiles.txt"
+BAMFILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/bamfiles/bamfiles.txt"
 
