@@ -103,7 +103,7 @@ rule run_arcasHLA:
       # sort bam file
       samtools sort -o ${{FILE}}.sorted $FILE
 
-      arcasHLA extract ${{FILE}} -o $FILE_DIR -v
+      arcasHLA extract ${{FILE}}.sorted -o $FILE_DIR -v
 
       cd $FILE_DIR
 
