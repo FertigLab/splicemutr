@@ -96,13 +96,13 @@ rule run_arcasHLA:
     END=2
     for VAR in {{$START..$END}}
     do
-      FILE=$(sed -n ${VAR}p {input.FILENAMES_FILE})
+      FILE=$(sed -n ${{VAR}}p {input.FILENAMES_FILE})
       FILE_BASE=$(basename {input.FILE})
-      FILE_DIR={input.GENOTYPES_DIR}/${FILE_BASE}_dir
+      FILE_DIR={input.GENOTYPES_DIR}/${{FILE_BASE}}_dir
       mkdir $FILE_DIR
 
       # sort bam file
-      samtools sort -o ${FILE}.sorted $FILE
+      samtools sort -o ${{FILE}}.sorted $FILE
 
       arcasHLA extract ${FILE} -o $FILE_DIR -v
 
