@@ -97,7 +97,7 @@ rule run_arcasHLA:
     for VAR in {{$START..$END}}
     do
       FILE=$(sed -n ${{VAR}}p {input.FILENAMES_FILE})
-      FILE_BASE=$(basename {input.FILE})
+      FILE_BASE=$(basename $FILE)
       FILE_DIR={input.GENOTYPES_DIR}/${{FILE_BASE}}_dir
       mkdir $FILE_DIR
 
