@@ -124,6 +124,7 @@ rule create_genotypes_file:
         """
         START=1
         END=2
+        echo "here"
         for (( VAR=$START; VAR<=$END; VAR++ ))
         do
             echo $VAR
