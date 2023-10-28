@@ -94,7 +94,7 @@ rule run_arcasHLA:
     conda activate miniconda3/envs/arcashla
     START=1
     END=2
-    for VAR in {$START..$END}
+    for VAR in {{$START..$END}}
     do
       FILE=$(sed -n ${VAR}p {input.FILENAMES_FILE})
       FILE_BASE=$(basename {input.FILE})
