@@ -83,15 +83,15 @@ rule process_peptides:
 
 rule run_arcasHLA:
   input:
-    GENOTYPES_DIR=config["GENOTYPES_DIR"]
-    FILENAMES_FILE=config["BAMFILES"]
-    NUM_BAM_FILES=1
+    GENOTYPES_DIR=config["GENOTYPES_DIR"],
+    FILENAMES_FILE=config["BAMFILES"],
   output:
     
   shell:
     "conda activate miniconda3/envs/arcashla
     START=1
-    for VAR in {$START..{input.NUM_BAM_FILES}}
+    END=2
+    for VAR in {$START..$END}
     do
       FILE=$(sed -n ${VAR}p {input.FILENAMES_FILE})
       FILE_BASE=$(basename {input.FILE})
