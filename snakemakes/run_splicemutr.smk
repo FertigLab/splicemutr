@@ -115,7 +115,7 @@ rule run_arcasHLA:
     find $PWD -type f -name *genotype.json > genotype_files.txt
     """
 '''
-rule create_create_genotypes_file:
+rule create_genotypes_file:
     input:
         GENOTYPES_FILES=config["GENOTYPES_DIR"]+"/genotype_files.txt"
     output:
@@ -125,7 +125,8 @@ rule create_create_genotypes_file:
         START=1
         END=2
         for (( VAR=$START; VAR<=$END; VAR++ ))
-        do
+        
+            echo $VAR
             JSON_FILE=$(sed -n ${{VAR}}p {input.GENOTYPES_FILES})
             echo $(echo $JSON_FILE | sed "s/Aligned.genotype.json//g") $(jq '.[] | .[]'
             $JSON_FILE | paste -s -d "," | sed 's/"//g') >> {output.GENOTYPES_FILE}
