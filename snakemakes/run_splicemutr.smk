@@ -8,6 +8,8 @@ if not os.path.exists(config["COMBINE_SPLICEMUTR_OUT"]):
     os.mkdir(config["COMBINE_SPLICEMUTR_OUT"])
 if not os.path.exists(config["PROCESS_PEPTIDES_OUT"]):
     os.mkdir(config["PROCESS_PEPTIDES_OUT"])
+if not os.path.exists(config["GENOTYPES_DIR"]):
+    os.mkdir(config["GENOTYPES_DIR"])
 
 #rule all:
 #    input:
