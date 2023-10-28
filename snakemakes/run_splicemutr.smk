@@ -93,7 +93,7 @@ rule run_arcasHLA:
     """
     START=1
     END=2
-    for VAR in {{$START..$END}}
+    for (( VAR=$START; VAR<=$END; VAR++ ))
     do
       FILE=$(sed -n ${{VAR}}p {input.FILENAMES_FILE})
       FILE_BASE=$(basename $FILE)
