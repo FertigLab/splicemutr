@@ -125,7 +125,7 @@ rule create_genotypes_file:
         START=1
         END=2
         for (( VAR=$START; VAR<=$END; VAR++ ))
-        
+        do
             echo $VAR
             JSON_FILE=$(sed -n ${{VAR}}p {input.GENOTYPES_FILES})
             echo $(echo $JSON_FILE | sed "s/Aligned.genotype.json//g") $(jq '.[] | .[]'
