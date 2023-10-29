@@ -12,6 +12,8 @@ if not os.path.exists(config["GENOTYPES_DIR"]):
     os.mkdir(config["GENOTYPES_DIR"])
 if not os.path.exists(config["MHCNUGGETS_OUT"]):
     os.mkdir(config["MHCNUGGETS_OUT"])
+if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
+    os.mkdir(config["PROCESS_BINDAFF_OUT"])
 
 rule all:
     input:
@@ -184,9 +186,9 @@ rule process_bindaffinity:
         NUM_ALLELE_FILES=cofig["NUM_ALLELE_FILES"],
         KMER_LENGTH=config["KMER_LENGTH"]
     input:
-        ALLELE_FILES=config["MHCNUGGETS_OUT"]+"/allele_files.txt"
+        ALLELE_FILES=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
-        PICKLE_DIR=config["PICKLE_DIR"],
+        PICKLE_DIR=config["PICKLE_DIR"]
     output:
         PROCESS_BINDAFF_OUT=config["PROCESS_BINDAFF_OUT"]
     shell:
