@@ -154,7 +154,7 @@ rule format_genotypes_file:
                     HLAS_reformatted = ",".join(HLAS_reformatted)
                     line_reformatted=line_split[0]+"\t"+HLAS_reformatted+"\n"
                     outfile.write(line_reformatted)
-        with open(output.UNIQUE_MHC_FILE) as outfile:
+        with open(output.UNIQUE_MHC_FILE,"w") as outfile:
             class_1_HLAs_list = list(class_1_HLAs)
             class_1_HLAs_string = "\n".join(class_1_HLAs_list)
             outfile.write(class_1_HLAs_string)
