@@ -20,6 +20,7 @@ rule all:
         #OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
         GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt",
         GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt"
+        UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt"
 
 '''
 rule form_transcripts:
@@ -137,8 +138,10 @@ rule format_genotypes_file:
     input:
         GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt"
     output:
-        GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt"
+        GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
+        UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt"
     run:
+        class_1_HLAs = set()
         with open(output.GENOTYPES_FILE_FORMATTED,"w") as outfile:
             with open(input.GENOTYPES_FILE) as infile:
                 all_lines = infile.readlines()
@@ -147,6 +150,11 @@ rule format_genotypes_file:
                     HLAs = line_split[1].split(",")
                     HLAS_shortened = [":".join(HLA.split(":")[0:2]) for HLA in HLAs]
                     HLAS_reformatted = ["HLA-"+(HLA.replace("*","")).replace(":","-") for HLA in HLAS_shortened]
+                    class_1_HLAs.update(set([HLA for HLA in HLAS_reformatted if "HLA-A" in HLA or "HLA-B" in HLA or "HLA-C" in HLA]))
                     HLAS_reformatted = ",".join(HLAS_reformatted)
                     line_reformatted=line_split[0]+"\t"+HLAS_reformatted+"\n"
                     outfile.write(line_reformatted)
+        with open(output.UNIQUE_MHC_FILE) as outfile:
+            class_1_HLAs_list = list(class_1_HLAs)
+            class_1_HLAs_string = "\n".join(class_1_HLAs_list)
+            outfile.write(class_1_HLAs_string)
