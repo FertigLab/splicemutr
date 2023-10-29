@@ -148,5 +148,5 @@ rule format_genotypes_file:
                     HLAS_shortened = [":".join(HLA.split(":")[0:2]) for HLA in HLAs]
                     HLAS_reformatted = ["HLA-"+(HLA.replace("*","")).replace(":","-") for HLA in HLAS_shortened]
                     HLAS_reformatted = ",".join(HLAS_reformatted)
-                    line_reformatted=line_split[0]+"\t"+HLAS_reformatted
+                    line_reformatted=line_split[0]+"\t"+HLAS_reformatted+"\n"
                     outfile.write(line_reformatted)
