@@ -145,7 +145,7 @@ rule format_genotypes_file:
                 for line in all_lines:
                     line_split = line.split("\t")
                     HLAs = line_split[1].split(",")
-                    HLAS_reformatted = ["HLA-"+(i.replace("*","-")).replace(":","-") for HLA in HLAs]
+                    HLAS_reformatted = ["HLA-"+(HLA.replace("*","-")).replace(":","-") for HLA in HLAs]
                     HLAS_reformatted = ",".join(HLAS_reformatted)
                     line_reformatted="\t".join([line_split[0]]+HLAS_reformatted)
                     outfile.write(line_reformatted)
