@@ -19,7 +19,7 @@ rule all:
         #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
         #OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
         GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt",
-        GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt"
+        GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
         UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt"
 
 '''
