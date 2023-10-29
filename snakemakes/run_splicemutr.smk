@@ -178,3 +178,28 @@ rule run_mhcnuggets:
         cd {output.OUT_DIR_MHCNUGGETS}
         ls $PWD/*_peps_9.txt > {output.OUT_FILE_MHCNUGGETS}
         """
+
+rule process_bindaffinity:
+    params:
+        NUM_ALLELE_FILES=cofig["NUM_ALLELE_FILES"],
+        KMER_LENGTH=config["KMER_LENGTH"]
+    input:
+        ALLELE_FILES=config["MHCNUGGETS_OUT"]+"/allele_files.txt"
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
+        PICKLE_DIR=config["PICKLE_DIR"],
+    output:
+        PROCESS_BINDAFF_OUT=config["PROCESS_BINDAFF_OUT"]
+    shell:
+        """
+        conda activate miniconda3/envs/splicemutr
+
+        START=1
+        for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
+        do
+            ALLELE=$(sed -n ${{VAR}}p $ALLELE_FILES)
+            BINDERS={output.PROCESS_BINDAFF_OUT}/$(echo $(basename $ALLELE) | sed 's/.txt/_filt.txt/g')
+            awk -F "," '{{ if ($2 <= 500) {{ print }} }}' $ALLELE > $BINDERS
+
+            {input.SCRIPT_DIR}/process_bindaff.py -b $BINDERS -p {input.PICKLE_DIR} -o {output.PROCESS_BINDAFF_OUT} -k {params.KMER_LENGTH}
+        done
+        """
