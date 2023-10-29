@@ -23,7 +23,7 @@ rule all:
         #GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt",
         #GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
         #UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt"
-
+        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]/allele_files.txt
 '''
 rule form_transcripts:
     input:
@@ -169,8 +169,8 @@ rule run_mhcnuggets:
         MHC_ALLELE_FILE=config["MHC_ALLELE_FILE"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
     output:
-        OUT_DIR=config["MHCNUGGETS_OUT"],
-        OUT_FILE=config["MHCNUGGETS_OUT"]/allele_files.txt
+        OUT_DIR_MHCNUGGETS=config["MHCNUGGETS_OUT"],
+        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]/allele_files.txt
     shell:
         """
         {input.SCRIPT_DIR}/runMHCnuggets.py -t {params.TYPE} -k {input.INPUT_KMERS} -m input.{MHC_ALLELE_FILE} -o {output.OUT_DIR}
