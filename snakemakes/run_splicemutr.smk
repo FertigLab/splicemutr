@@ -173,7 +173,7 @@ rule run_mhcnuggets:
         OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt"
     shell:
         """
-        {input.SCRIPT_DIR}/runMHCnuggets.py -t {params.TYPE} -k {input.INPUT_KMERS} -m input.{MHC_ALLELE_FILE} -o {output.OUT_DIR}
+        {input.SCRIPT_DIR}/runMHCnuggets.py -t {params.TYPE} -k {input.INPUT_KMERS} -m {input.MHC_ALLELE_FILE} -o {output.OUT_DIR}
 
         cd {output.OUT_DIR}
         ls $PWD/*_peps_9.txt > {output.OUT_FILE}
