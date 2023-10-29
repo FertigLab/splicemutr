@@ -10,6 +10,8 @@ if not os.path.exists(config["PROCESS_PEPTIDES_OUT"]):
     os.mkdir(config["PROCESS_PEPTIDES_OUT"])
 if not os.path.exists(config["GENOTYPES_DIR"]):
     os.mkdir(config["GENOTYPES_DIR"])
+if not os.path.exists(config["MHCNUGGETS_OUT"]):
+    os.mkdir(config["MHCNUGGETS_OUT"])
 
 rule all:
     input:
@@ -18,9 +20,9 @@ rule all:
         #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt"
         #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
         #OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
-        GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt",
-        GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
-        UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt"
+        #GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt",
+        #GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
+        #UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt"
 
 '''
 rule form_transcripts:
@@ -158,3 +160,21 @@ rule format_genotypes_file:
             class_1_HLAs_list = list(class_1_HLAs)
             class_1_HLAs_string = "\n".join(class_1_HLAs_list)
             outfile.write(class_1_HLAs_string)
+
+rule run_mhcnuggets:
+    params:
+        TYPE=config["TYPE"]
+    input:
+        INPUT_KMERS=config["INPUT_KMERS"],
+        MHC_ALLELE_FILE=config["MHC_ALLELE_FILE"],
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
+    output:
+        OUT_DIR=config["MHCNUGGETS_OUT"],
+        OUT_FILE=config["MHCNUGGETS_OUT"]/allele_files.txt
+    shell:
+        """
+        {input.SCRIPT_DIR}/runMHCnuggets.py -t {params.TYPE} -k {input.INPUT_KMERS} -m input.{MHC_ALLELE_FILE} -o {output.OUT_DIR}
+
+        cd {output.OUT_DIR}
+        ls $PWD/*_peps_9.txt > {output.OUT_FILE}
+        """

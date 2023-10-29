@@ -49,3 +49,7 @@ SPLICEMUTR_PYTHON : "/users/tpalmer/splicemute/inst"
 GENOTYPES_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/genotypes"
 BAMFILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/bamfiles/bamfiles.txt"
 
+TYPE : "I"
+INPUT_KMERS : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out/peps_9.txt"
+MHC_ALLELE_FILE : "/dcs04/fertig/data/theron/splicemutr_TCGA/CHOL/CHOL_class1_alleles.txt"
+MHCNUGGETS_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/mhcnuggets_out"
