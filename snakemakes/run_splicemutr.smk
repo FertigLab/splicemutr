@@ -19,6 +19,8 @@ rule all:
         #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
         #OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
         GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt"
+        GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt"
+
 '''
 rule form_transcripts:
     input:
@@ -130,3 +132,20 @@ rule create_genotypes_file:
             echo $(echo $(basename $JSON_FILE) | sed "s/Aligned.genotype.json//g")"\t"$(jq '.[] | .[]' $JSON_FILE | paste -s -d "," | sed 's/"//g') >> {output.GENOTYPES_FILE}
         done
         """
+
+rule format_genotypes_file:
+    input:
+        GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt"
+    output:
+        GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt"
+    run:
+        with open(input.GENOTYPES_FILE_FORMATTED) as outfile:
+            with open(input.GENOTYPES_FILE) as infile:
+                all_lines = infile.readlines()
+                for line in all_lines:
+                    line_split = line.split("\t")
+                    HLAs = line_split[1].split(",")
+                    HLAS_reformatted = ["HLA-"+(i.replace("*","-")).replace(":","-") for HLA in HLAs]
+                    HLAS_reformatted = ",".join(HLAS_reformatted)
+                    line_reformatted="\t".join([line_split[0]]+HLAS_reformatted)
+                    outfile.write(line_reformatted)
