@@ -139,7 +139,7 @@ rule format_genotypes_file:
     output:
         GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt"
     run:
-        with open(input.GENOTYPES_FILE_FORMATTED) as outfile:
+        with open(output.GENOTYPES_FILE_FORMATTED) as outfile:
             with open(input.GENOTYPES_FILE) as infile:
                 all_lines = infile.readlines()
                 for line in all_lines:
