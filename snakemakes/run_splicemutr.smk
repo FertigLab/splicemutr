@@ -193,7 +193,7 @@ rule process_bindaffinity:
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
         PICKLE_DIR=config["PICKLE_DIR"]
     output:
-        PROCESS_BINDAFF_OUT=config["PROCESS_BINDAFF_OUT"]
+        PROCESS_BINDAFF_OUT=config["PROCESS_BINDAFF_OUT"],
         PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt"
     shell:
         """
