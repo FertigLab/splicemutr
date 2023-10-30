@@ -25,7 +25,7 @@ rule all:
         #GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt",
         #GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
         #UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
-        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt"
+        #OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt"
 '''
 rule form_transcripts:
     input:
@@ -121,7 +121,7 @@ rule run_arcasHLA:
     cd {input.GENOTYPES_DIR}
     find $PWD -type f -name *genotype.json > genotype_files.txt
     """
-'''
+
 rule create_genotypes_file:
     input:
         GENOTYPES_FILES=config["GENOTYPES_DIR"]+"/genotype_files.txt"
@@ -180,10 +180,11 @@ rule run_mhcnuggets:
         cd {output.OUT_DIR_MHCNUGGETS}
         ls $PWD/*_peps_9.txt > {output.OUT_FILE_MHCNUGGETS}
         """
+'''
 
 rule process_bindaffinity:
     params:
-        NUM_ALLELE_FILES=cofig["NUM_ALLELE_FILES"],
+        NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_LENGTH=config["KMER_LENGTH"]
     input:
         ALLELE_FILES=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
@@ -191,6 +192,7 @@ rule process_bindaffinity:
         PICKLE_DIR=config["PICKLE_DIR"]
     output:
         PROCESS_BINDAFF_OUT=config["PROCESS_BINDAFF_OUT"]
+        PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt"
     shell:
         """
         conda activate miniconda3/envs/splicemutr
@@ -204,4 +206,8 @@ rule process_bindaffinity:
 
             {input.SCRIPT_DIR}/process_bindaff.py -b $BINDERS -p {input.PICKLE_DIR} -o {output.PROCESS_BINDAFF_OUT} -k {params.KMER_LENGTH}
         done
+
+        cd {output.PROCESS_BINDAFF_OUT}
+        ls $PWD/*filt.txt > filenames.txt
+
         """
