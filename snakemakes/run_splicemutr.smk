@@ -220,7 +220,6 @@ rule extract_data:
         KMERS_SIZE_MAX=config["KMER_SIZE_MAX"]
     input:
         ALLELE_FILES=config["MHC_ALLELE_FILE"],
-        NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
         PICKLE_DIR=config["PROCESS_BINDAFF_OUT"]
     output:
