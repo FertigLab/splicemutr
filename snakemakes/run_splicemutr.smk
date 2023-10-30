@@ -197,8 +197,6 @@ rule process_bindaffinity:
         PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt"
     shell:
         """
-        conda activate miniconda3/envs/splicemutr
-
         START=1
         for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
         do
