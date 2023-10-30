@@ -227,16 +227,16 @@ rule extract_data:
         EXTRACT_DATA_DIR=config["PROCESS_BINDAFF_OUT"],
         EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
     shell:
-    """
-        START=1
-        for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
-        do
-            ALLELE=$(sed -n ${VAR}p {input.ALLELE_FILES})
+        """
+            START=1
+            for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
+            do
+                ALLELE=$(sed -n ${VAR}p {input.ALLELE_FILES})
 
-            {input.SCRIPT_DIR}/extract_data.py -a $ALLELE -p {input.PICKLE_DIR} -b {params.KMER_SIZE_MIN} -e {params.KMER_SIZE_MAX}
+                {input.SCRIPT_DIR}/extract_data.py -a $ALLELE -p {input.PICKLE_DIR} -b {params.KMER_SIZE_MIN} -e {params.KMER_SIZE_MAX}
 
-        done
+            done
 
-        cd {output.EXTRACT_DATA_DIR}
-        ls $PWD/*summary.txt > summaries.txt
-    """
+            cd {output.EXTRACT_DATA_DIR}
+            ls $PWD/*summary.txt > summaries.txt
+        """
