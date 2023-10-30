@@ -54,7 +54,7 @@ INPUT_KMERS : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_pe
 MHC_ALLELE_FILE : "/dcs04/fertig/data/theron/splicemutr_TCGA/CHOL/CHOL_class1_alleles.txt"
 MHCNUGGETS_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/mhcnuggets_out"
 
-NUM_ALLELE_FILES : 64
+NUM_ALLELE_FILES : 63
 KMER_LENGTH : 9
 PROCESS_BINDAFF_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_bindaff_out"
 PICKLE_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out"
