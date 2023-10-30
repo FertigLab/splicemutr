@@ -231,7 +231,7 @@ rule extract_data:
             START=1
             for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
             do
-                ALLELE=$(sed -n ${VAR}p {input.ALLELE_FILES})
+                ALLELE=$(sed -n ${{VAR}}p {input.ALLELE_FILES})
 
                 {input.SCRIPT_DIR}/extract_data.py -a $ALLELE -p {input.PICKLE_DIR} -b {params.KMER_SIZE_MIN} -e {params.KMER_SIZE_MAX}
 
