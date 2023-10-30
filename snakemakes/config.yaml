@@ -58,3 +58,5 @@ NUM_ALLELE_FILES : 63
 KMER_LENGTH : 9
 PROCESS_BINDAFF_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_bindaff_out"
 PICKLE_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out"
+KMER_SIZE_MIN : 9
+KMER_SIZE_MAX : 10
