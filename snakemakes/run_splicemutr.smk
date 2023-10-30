@@ -200,7 +200,7 @@ rule process_bindaffinity:
         START=1
         for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
         do
-            ALLELE=$(sed -n ${{VAR}}p $ALLELE_FILES)
+            ALLELE=$(sed -n ${{VAR}}p {input.ALLELE_FILES})
             BINDERS={output.PROCESS_BINDAFF_OUT}/$(echo $(basename $ALLELE) | sed 's/.txt/_filt.txt/g')
             awk -F "," '{{ if ($2 <= 500) {{ print }} }}' $ALLELE > $BINDERS
 
