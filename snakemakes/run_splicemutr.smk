@@ -218,7 +218,7 @@ rule extract_data:
     params:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_SIZE_MIN=config["KMER_SIZE_MIN"],
-        KMERS_SIZE_MAX=config["KMER_SIZE_MAX"]
+        KMER_SIZE_MAX=config["KMER_SIZE_MAX"]
     input:
         ALLELE_FILES=config["MHC_ALLELE_FILE"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
