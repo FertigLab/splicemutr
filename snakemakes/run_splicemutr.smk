@@ -124,7 +124,7 @@ rule run_arcasHLA:
 
       FASTQ1=$(ls *.extracted.1*)
       FASTQ2=$(ls *.extracted.2*)
-      arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C,DPA1,DPB1,DQA1,DQB1,DRA,DRB1 -o $FILE_DIR -v
+      arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C -o $FILE_DIR -v
     done
     cd {input.GENOTYPES_DIR}
     find $PWD -type f -name *genotype.json > genotype_files.txt
