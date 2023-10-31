@@ -31,6 +31,7 @@ rule all:
         #PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt"
         #EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
+
 '''
 rule form_transcripts:
     input:
