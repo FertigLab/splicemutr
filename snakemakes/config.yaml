@@ -60,3 +60,6 @@ PROCESS_BINDAFF_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/pr
 PICKLE_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out"
 KMER_SIZE_MIN : 9
 KMER_SIZE_MAX : 10
+
+SPLICE_DAT_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out/data_splicemutr_all_pep.txt"
+SUMMARY_TYPE : "IC50"

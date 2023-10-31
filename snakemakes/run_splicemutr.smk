@@ -14,6 +14,8 @@ if not os.path.exists(config["MHCNUGGETS_OUT"]):
     os.mkdir(config["MHCNUGGETS_OUT"])
 if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
     os.mkdir(config["PROCESS_BINDAFF_OUT"])
+if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
+    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
 
 rule all:
     input:
@@ -212,8 +214,6 @@ rule process_bindaffinity:
 
         """
 
-'''
-
 rule extract_data:
     params:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
@@ -239,4 +239,32 @@ rule extract_data:
 
             cd {output.EXTRACT_DATA_DIR}
             ls $PWD/*summary.txt > summaries.txt
+        """
+
+```
+
+rule analyze_splicemutr(python):
+    params:
+        SUMMARY_TYPE='IC50',
+        NUM_SAMPLES=config["NUM_ALLLELE_FILES"]
+    input:
+        GENOTYPES=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
+        SUMMARY_DIR=config["PROCESS_BINDAFF_OUT"],
+        SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
+    output:
+        ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"],
+        ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
+    shell:
+        """
+        conda activate miniconda3/envs/splicemutr
+        START=1
+        for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
+        do
+            $SCRIPT_DIR/analyze_splicemutr.py -g {input.GENOTYPES} -s {input.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {output.OUT_DIR} -t {input.SUMMARY_TYPE} -n $VAR
+        done
+
+        cd {output.ANALYZE_SPLICEMUTR_OUT}
+        ls $PWD/*_splicemutr_kmers.txt > filenames.txt
+
         """
