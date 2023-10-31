@@ -14,8 +14,8 @@ if not os.path.exists(config["MHCNUGGETS_OUT"]):
     os.mkdir(config["MHCNUGGETS_OUT"])
 if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
     os.mkdir(config["PROCESS_BINDAFF_OUT"])
-if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
-    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
+#if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
+#    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
 
 rule all:
     input:
@@ -243,7 +243,7 @@ rule extract_data:
             ls $PWD/*summary.txt > summaries.txt
         """
 
-
+```
 rule analyze_splicemutr(python):
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
@@ -267,3 +267,4 @@ rule analyze_splicemutr(python):
             cd {output.ANALYZE_SPLICEMUTR_OUT}
             ls $PWD/*_splicemutr_kmers.txt > filenames.txt
         """
+```
