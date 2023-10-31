@@ -244,7 +244,7 @@ rule extract_data:
             ls $PWD/*summary.txt > summaries.txt
         """
 
-rule analyze_splicemutr(python):
+rule analyze_splicemutr:
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
         NUM_SAMPLES=config["NUM_ALLLELE_FILES"]
