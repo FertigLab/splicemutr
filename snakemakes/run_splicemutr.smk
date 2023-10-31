@@ -258,13 +258,12 @@ rule analyze_splicemutr(python):
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
         """
-        START=1
-        for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
-        do
-            $SCRIPT_DIR/analyze_splicemutr.py -g {input.GENOTYPES} -s {input.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {output.OUT_DIR} -t {input.SUMMARY_TYPE} -n $VAR
-        done
+            START=1
+            for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
+            do
+                $SCRIPT_DIR/analyze_splicemutr.py -g {input.GENOTYPES} -s {input.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {output.OUT_DIR} -t {input.SUMMARY_TYPE} -n $VAR
+            done
 
-        cd {output.ANALYZE_SPLICEMUTR_OUT}
-        ls $PWD/*_splicemutr_kmers.txt > filenames.txt
-
+            cd {output.ANALYZE_SPLICEMUTR_OUT}
+            ls $PWD/*_splicemutr_kmers.txt > filenames.txt
         """
