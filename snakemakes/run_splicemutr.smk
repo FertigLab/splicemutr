@@ -29,8 +29,8 @@ rule all:
         #UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
         #OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt"
         #PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt"
-        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
-
+        #EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
+        ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
 '''
 rule form_transcripts:
     input:
@@ -240,7 +240,6 @@ rule extract_data:
             cd {output.EXTRACT_DATA_DIR}
             ls $PWD/*summary.txt > summaries.txt
         """
-
 ```
 
 rule analyze_splicemutr(python):
