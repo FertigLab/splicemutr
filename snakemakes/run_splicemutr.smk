@@ -247,7 +247,7 @@ rule extract_data:
 rule analyze_splicemutr:
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
-        NUM_SAMPLES=config["NUM_ALLLELE_FILES"]
+        NUM_SAMPLES=config["NUM_ALLELE_FILES"]
     input:
         GENOTYPES=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
         SUMMARY_DIR=config["PROCESS_BINDAFF_OUT"],
