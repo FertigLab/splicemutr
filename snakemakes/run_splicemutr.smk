@@ -54,7 +54,7 @@ rule form_transcripts:
 
 rule calcualte_coding_potential:
     input:
-        SPLICE_FILE=config["SPLICEMUTR_FILE"],
+        SPLICE_FILE=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
         SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"],
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"]
     output:
