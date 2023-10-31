@@ -245,7 +245,7 @@ rule extract_data:
 
 rule analyze_splicemutr(python):
     params:
-        SUMMARY_TYPE='IC50',
+        SUMMARY_TYPE=config["SUMMARY_TYPE"],
         NUM_SAMPLES=config["NUM_ALLLELE_FILES"]
     input:
         GENOTYPES=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
@@ -257,7 +257,6 @@ rule analyze_splicemutr(python):
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
         """
-        conda activate miniconda3/envs/splicemutr
         START=1
         for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
         do
