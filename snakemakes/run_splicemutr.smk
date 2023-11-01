@@ -203,3 +203,15 @@ rule compile_kmer_counts:
 
         {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMER_COUNTS_FILES} -o {output.KMER_COUNTS_OUT}
         """
+
+rule create_junction_expression:
+    input:
+        SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
+        JUNC_FILES=config["JUNCFILES"],
+    output:
+        CREATE_JUNC_EXPRESSION_OUT=config["CREATE_JUNC_EXPRESSION_OUT"]
+        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
+    shell:
+        """
+        {input.SCRIPT_DIR}/create_junc_expr.R -f {input.JUNC_FILES} -o {output.CREATE_JUNC_EXPRESSION_OUT}
+        """

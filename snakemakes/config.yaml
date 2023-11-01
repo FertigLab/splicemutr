@@ -69,3 +69,6 @@ SUMMARY_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_bi
 
 KMER_COUNTS_FILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/analyze_splicemutr_out/filenames.txt"
 KMER_COUNTS_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/kmer_counts_out"
+
+JUNCFILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/filenames.txt"
+CREATE_JUNC_EXPRESSION_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/create_junc_expression_out"

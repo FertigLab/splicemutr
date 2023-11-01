@@ -11,17 +11,13 @@ library(DESeq2)
 arguments <- parse_args(OptionParser(usage = "",
                                      description="",
                                      option_list=list(
-                                       make_option(c("-j","--junc_dir"),
-                                                   default = "",
-                                                   help="junction_dir"),
-                                       make_option(c("-f","--junc_files"),
+                                      make_option(c("-f","--junc_files"),
                                                    default = "",
                                                    help="junction_files"),
                                        make_option(c("-o","--out_dir"),
                                                    default = "",
                                                    help="output directory"))))
 opt=arguments
-junc_dir <- opt$junc_dir
 junc_files <- opt$junc_files
 out_dir <- opt$out_dir
 
@@ -29,7 +25,6 @@ out_dir <- opt$out_dir
 # creating junction expression file
 
 junc_expr <- list()
-junc_expr_file <- sprintf("%s/junc_expr.rds",junc_dir)
 juncs_all<-c()
 
 junc_files <- read.table(junc_files,header=F)
