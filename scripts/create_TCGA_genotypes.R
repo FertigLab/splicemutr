@@ -66,13 +66,18 @@ HLAs_reformatted <- vapply(seq(nrow(HLAS)),function(row_val){
   paste(vapply(HLA_values,function(HLA){str_replace(str_replace(sprintf("HLA-%s",HLA),"[*]",""),":","-")},character(1)),collapse=",")
 },character(1))
 
-genotypes_reformatted <- data.frame(sample=genotypes_specific$aliquot_id,HLAS=HLAs_reformatted)
+genotypes_reformatted <- data.frame(HLAS=HLAs_reformatted,sample=genotypes_specific$aliquot_id)
 genotypes_reformatted[genotypes_reformatted == "HLA-NA,HLA-NA,HLA-NA,HLA-NA,HLA-NA,HLA-NA"]<-paste(rep(NA,6),collapse=",")
 
 #------------------------------------------------------------------------------#
 # saving genotypes_specific
 
-write.table(genotypes_reformatted,file=sprintf("%s/%s_genotypes_specfic.txt"))
+write.table(genotypes_reformatted,
+            file=sprintf("%s/%s_genotypes_specfic.txt",output_dir,cancer),
+            sep="\t",
+            col.names = F,
+            row.names = F,
+            quote=F)
 
 
 
