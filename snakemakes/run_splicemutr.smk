@@ -33,7 +33,7 @@ rule all:
         #EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
 
-```
+
 rule form_transcripts:
     input:
         INTRON_FILE=config["INTRON_FILE"],
@@ -51,7 +51,7 @@ rule form_transcripts:
         {input.SCRIPT_DIR}/form_transcripts.R -o $OUT_PREFIX -t {input.TXDB} -j {input.INTRON_FILE} -b $BSGENOME -f {input.SPLICEMUTR_FUNCTIONS}
         """
 
-
+```
 rule calcualte_coding_potential:
     input:
         SPLICE_FILE=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
