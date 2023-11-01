@@ -14,8 +14,8 @@ if not os.path.exists(config["MHCNUGGETS_OUT"]):
     os.mkdir(config["MHCNUGGETS_OUT"])
 if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
     os.mkdir(config["PROCESS_BINDAFF_OUT"])
-if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
-    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
+#if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
+#    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
 
 ```
 rule all:
