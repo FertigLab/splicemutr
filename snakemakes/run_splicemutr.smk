@@ -124,7 +124,8 @@ rule run_arcasHLA:
 
       FASTQ1=$(ls *.extracted.1*)
       FASTQ2=$(ls *.extracted.2*)
-      arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C -o $FILE_DIR -v
+      arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C
+     -o $FILE_DIR -v
     done
     cd {input.GENOTYPES_DIR}
     find $PWD -type f -name *genotype.json > genotype_files.txt
@@ -259,7 +260,7 @@ rule analyze_splicemutr:
     shell:
         """
             START=1
-            for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
+            for ((VAR=$START; VAR<={params.NUM_SAMPLES}; VAR++))
             do
                 $SCRIPT_DIR/analyze_splicemutr.py -g {input.GENOTYPES} -s {input.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {output.OUT_DIR} -t {input.SUMMARY_TYPE} -n $VAR
             done
