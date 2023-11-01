@@ -20,7 +20,7 @@ rule all:
     input:
         #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
         #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds",
-        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
+        #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
         OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
         UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
         OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
@@ -201,5 +201,5 @@ rule compile_kmer_counts:
         """
         mkdir -p {output.KMER_COUNTS_OUT}
 
-        {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMERS_COUNTS_FILES} -o {output.KMER_COUNTS_OUT}
+        {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMERs_COUNTS_FILES} -o {output.KMER_COUNTS_OUT}
         """
