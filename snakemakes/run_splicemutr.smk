@@ -18,15 +18,16 @@ if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
 
 rule all:
     input:
-        #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
-        #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds",
-        #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
-        #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
-        #UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
-        #OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
-        #PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
-        #EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
+        FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
+        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds",
+        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
+        OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
+        UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
+        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
+        PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
+        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
+        KMER_COUNTS_FILE=config["KMER_COUNTS_FILE"]+"/all_kmers_counts.txt"
 
 
 rule form_transcripts:
@@ -188,3 +189,16 @@ rule analyze_splicemutr:
             cd {output.ANALYZE_SPLICEMUTR_OUT}
             ls $PWD/*_splicemutr_kmers.txt > filenames.txt
         """
+
+rule compile_kmer_counts:
+  input:
+    KMERS_FILES=config["KMERS_FILES"],
+    SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
+  output:
+    KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"]
+    KMER_COUNTS_FILE=config["KMER_COUNTS_FILE"]+"/all_kmers_counts.txt"
+  shell:
+
+    mkdir -p {output.KMER_COUNTS_OUT}
+
+    {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMERS_FILES} -o {output.KMER_COUNTS_OUT}
