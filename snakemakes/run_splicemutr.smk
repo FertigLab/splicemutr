@@ -182,7 +182,7 @@ rule analyze_splicemutr:
             START=1
             for ((VAR=$START; VAR<={params.NUM_SAMPLES}; VAR++))
             do
-                $SCRIPT_DIR/analyze_splicemutr.py -g {input.GENOTYPES} -s {input.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {output.OUT_DIR} -t {input.SUMMARY_TYPE} -n $VAR
+                $SCRIPT_DIR/analyze_splicemutr.py -g {input.GENOTYPES} -s {input.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {output.ANALYZE_SPLICEMUTR_OUT} -t {input.SUMMARY_TYPE} -n $VAR
             done
 
             cd {output.ANALYZE_SPLICEMUTR_OUT}
