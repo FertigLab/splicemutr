@@ -27,7 +27,7 @@ rule all:
         PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
         EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
-        KMERS_COUNTS_FILE=config["KMERS_COUNTS_FILES"]+"/all_kmers_counts.txt"
+        KMERS_COUNTS_FILE=config["KMERS_COUNTS_OUT"]+"/all_kmers_counts.txt"
 
 
 rule form_transcripts:
@@ -192,7 +192,7 @@ rule analyze_splicemutr:
 
 rule compile_kmer_counts:
     input:
-        KMERS_COUNTS_FILES=config["KMERS_COUNTS_FILES"],
+        KMER_COUNTS_FILES=config["KMER_COUNTS_FILES"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
     output:
         KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"],
