@@ -191,14 +191,15 @@ rule analyze_splicemutr:
         """
 
 rule compile_kmer_counts:
-  input:
-    KMERS_FILES=config["KMERS_FILES"],
-    SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
-  output:
-    KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"]
-    KMER_COUNTS_FILE=config["KMER_COUNTS_FILE"]+"/all_kmers_counts.txt"
-  shell:
+    input:
+        KMERS_FILES=config["KMERS_FILES"],
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
+    output:
+        KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"]
+        KMER_COUNTS_FILE=config["KMER_COUNTS_FILE"]+"/all_kmers_counts.txt"
+    shell:
+        """
+        mkdir -p {output.KMER_COUNTS_OUT}
 
-    mkdir -p {output.KMER_COUNTS_OUT}
-
-    {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMERS_FILES} -o {output.KMER_COUNTS_OUT}
+        {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMERS_FILES} -o {output.KMER_COUNTS_OUT}
+        """
