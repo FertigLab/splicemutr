@@ -207,9 +207,9 @@ rule compile_kmer_counts:
 rule create_junction_expression:
     input:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
-        JUNC_FILES=config["JUNCFILES"],
+        JUNC_FILES=config["JUNCFILES"]
     output:
-        CREATE_JUNC_EXPRESSION_OUT=config["CREATE_JUNC_EXPRESSION_OUT"]
+        CREATE_JUNC_EXPRESSION_OUT=config["CREATE_JUNC_EXPRESSION_OUT"],
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
     shell:
         """
