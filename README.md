@@ -160,9 +160,9 @@ kmer_length - the kmer length to use for the kmerization of the peptides in peti
 12) This step runs arcasHLA on the STAR generated .bam files. arcasHLA performs HLA genotyping on bulk RNA-seq data. The output of arcasHLA will need to be formatted using the genotype.txt format. The rule, run_arcasHLA in the snakemake within this directory covers running arcasHLA. The genotype.txt format is a tab delimited file and follows the following format:
 
 ```
-sample_1  HLA-A01-01,HLA-B02-01,HLA-C03-01
-sample_2  HLA-A01-01,HLA-B02-01,HLA-C03-01
-sample_3  HLA-A01-01,HLA-B02-01,HLA-C03-01
+HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_1
+HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_2
+HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_3
 ```
 
 13) This step runs MHCnuggets on the HLA genotypes, or superalleles associated with the HLA genotypes, output from arcasHLA and formatted as a file with one allele per line using the genotypes.txt HLA format and the peps_kmer_length.txt file generated from combine_splicemutr.R.
