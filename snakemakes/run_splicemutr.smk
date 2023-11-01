@@ -14,8 +14,8 @@ if not os.path.exists(config["MHCNUGGETS_OUT"]):
     os.mkdir(config["MHCNUGGETS_OUT"])
 if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
     os.mkdir(config["PROCESS_BINDAFF_OUT"])
-#if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
-#    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
+if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
+    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
 
 ```
 rule all:
@@ -99,37 +99,37 @@ rule process_peptides:
         """
 
 rule run_arcasHLA:
-  input:
-    GENOTYPES_DIR=config["GENOTYPES_DIR"],
-    FILENAMES_FILE=config["BAMFILES"],
-  output:
-    OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
-  shell:
-    """
-    START=1
-    END=2
-    for (( VAR=$START; VAR<=$END; VAR++ ))
-    do
-      FILE=$(sed -n ${{VAR}}p {input.FILENAMES_FILE})
-      FILE_BASE=$(basename $FILE)
-      FILE_DIR={input.GENOTYPES_DIR}/${{FILE_BASE}}_dir
-      mkdir -p $FILE_DIR
+    input:
+        GENOTYPES_DIR=config["GENOTYPES_DIR"],
+        FILENAMES_FILE=config["BAMFILES"],
+    output:
+        OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt"
+    shell:
+        """
+        START=1
+        END=2
+        for (( VAR=$START; VAR<=$END; VAR++ ))
+        do
+        FILE=$(sed -n ${{VAR}}p {input.FILENAMES_FILE})
+        FILE_BASE=$(basename $FILE)
+        FILE_DIR={input.GENOTYPES_DIR}/${{FILE_BASE}}_dir
+        mkdir -p $FILE_DIR
 
-      # sort bam file
-      samtools sort -o ${{FILE}}.sorted $FILE
+        # sort bam file
+        samtools sort -o ${{FILE}}.sorted $FILE
 
-      arcasHLA extract ${{FILE}}.sorted -o $FILE_DIR -v
+        arcasHLA extract ${{FILE}}.sorted -o $FILE_DIR -v
 
-      cd $FILE_DIR
+        cd $FILE_DIR
 
-      FASTQ1=$(ls *.extracted.1*)
-      FASTQ2=$(ls *.extracted.2*)
-      arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C
-     -o $FILE_DIR -v
-    done
-    cd {input.GENOTYPES_DIR}
-    find $PWD -type f -name *genotype.json > genotype_files.txt
-    """
+        FASTQ1=$(ls *.extracted.1*)
+        FASTQ2=$(ls *.extracted.2*)
+        arcasHLA genotype $FASTQ1 $FASTQ2 -g A,B,C
+        -o $FILE_DIR -v
+        done
+        cd {input.GENOTYPES_DIR}
+        find $PWD -type f -name *genotype.json > genotype_files.txt
+        """
 
 rule create_genotypes_file:
     input:
@@ -245,7 +245,6 @@ rule extract_data:
             ls $PWD/*summary.txt > summaries.txt
         """
 ```
-
 rule analyze_splicemutr:
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
