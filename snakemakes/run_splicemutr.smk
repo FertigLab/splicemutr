@@ -201,5 +201,5 @@ rule compile_kmer_counts:
         """
         mkdir -p {output.KMER_COUNTS_OUT}
 
-        {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMERs_COUNTS_FILES} -o {output.KMER_COUNTS_OUT}
+        {input.SCRIPT_DIR}/compile_kmer_counts.py -k {input.KMER_COUNTS_FILES} -o {output.KMER_COUNTS_OUT}
         """
