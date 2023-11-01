@@ -21,13 +21,13 @@ rule all:
         #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
         #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds",
         #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
-        OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
-        UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
-        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
-        PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
-        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
-        ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
-        KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
+        #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
+        #UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
+        #OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
+        #PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
+        #EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
+        #ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
+        #KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
 
 
