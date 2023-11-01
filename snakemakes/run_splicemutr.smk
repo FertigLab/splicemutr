@@ -8,8 +8,6 @@ if not os.path.exists(config["COMBINE_SPLICEMUTR_OUT"]):
     os.mkdir(config["COMBINE_SPLICEMUTR_OUT"])
 if not os.path.exists(config["PROCESS_PEPTIDES_OUT"]):
     os.mkdir(config["PROCESS_PEPTIDES_OUT"])
-if not os.path.exists(config["GENOTYPES_DIR"]):
-    os.mkdir(config["GENOTYPES_DIR"])
 if not os.path.exists(config["MHCNUGGETS_OUT"]):
     os.mkdir(config["MHCNUGGETS_OUT"])
 if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
@@ -24,9 +22,6 @@ rule all:
         #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds",
         #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
         #OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
-        #OUT_FILE_GENOTYPES_JSON=config["GENOTYPES_DIR"]+"/genotype_files.txt",
-        #GENOTYPES_FILE=config["GENOTYPES_DIR"]+"/genotypes.txt",
-        #GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
         #UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
         #OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
         #PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
