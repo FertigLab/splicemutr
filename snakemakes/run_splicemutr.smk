@@ -195,7 +195,7 @@ rule compile_kmer_counts:
         KMERS_COUNTS_FILES=config["KMERS_COUNTS_FILES"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
     output:
-        KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"]
+        KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"],
         KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt"
     shell:
         """
