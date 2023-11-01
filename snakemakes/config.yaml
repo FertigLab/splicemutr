@@ -64,5 +64,5 @@ KMER_SIZE_MAX : 10
 SPLICE_DAT_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out/data_splicemutr_all_pep.txt"
 SUMMARY_TYPE : "IC50"
 ANALYZE_SPLICEMUTR_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/analyze_splicemutr_out"
-GENOTYPES_REFORMATTED : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/genotypes/CHOL_genotypes_specific.txt"
+GENOTYPES_REFORMATTED : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/CHOL_genotypes_specific.txt"
 SUMMARY_DIR : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/process_bindaff_out"
