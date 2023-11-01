@@ -31,7 +31,7 @@ def main(options, args):
         try:
             splice_kmers,sample_name = sp.assign_kmers(genotypes_file_small,rows,hla_dir,hla_file)
         except:
-            sys.exit("Error: no genotypes for current sample")
+            sys.exit(1)
 
     if "cluster" in splice_dat.columns.values: # determining whether the groups are leafcutter cluster or not
         groups=splice_dat.cluster.tolist()
