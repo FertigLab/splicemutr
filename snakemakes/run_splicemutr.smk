@@ -14,8 +14,8 @@ if not os.path.exists(config["MHCNUGGETS_OUT"]):
     os.mkdir(config["MHCNUGGETS_OUT"])
 if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
     os.mkdir(config["PROCESS_BINDAFF_OUT"])
-#if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
-#    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
+if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
+    os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
 
 rule all:
     input:
@@ -31,7 +31,6 @@ rule all:
         PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
         EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
-
 
 ```
 rule form_transcripts:
