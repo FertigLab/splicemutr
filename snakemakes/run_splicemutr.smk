@@ -28,6 +28,7 @@ rule all:
         EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
         KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt"
+        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
 
 
 rule form_transcripts:
