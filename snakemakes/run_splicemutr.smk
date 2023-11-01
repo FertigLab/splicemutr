@@ -33,7 +33,7 @@ rule all:
         #EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
 
-
+```
 rule form_transcripts:
     input:
         INTRON_FILE=config["INTRON_FILE"],
@@ -243,7 +243,7 @@ rule extract_data:
             cd {output.EXTRACT_DATA_DIR}
             ls $PWD/*summary.txt > summaries.txt
         """
-
+```
 rule analyze_splicemutr:
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
