@@ -28,7 +28,8 @@ rule all:
         #EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         #ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
         #KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
-        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
+        #CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
+        SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
 
 
 rule form_transcripts:
@@ -215,4 +216,22 @@ rule create_junction_expression:
     shell:
         """
         {input.SCRIPT_DIR}/create_junc_expr.R -f {input.JUNC_FILES} -o {output.CREATE_JUNC_EXPRESSION_OUT}
+        """
+
+rule calculate_gene_metric:
+    input:
+        SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
+        SPLICE_DAT_FILE=cconfig["SPLICE_DAT_FILE"],
+        KMER_COUNTS_FILE=config["KMER_COUNTS_FILE"],
+        JUNC_EXPR_FILE=config["JUNC_EXPRESSSION_FILE"]
+    output:
+        CREATE_SPLICING_ANTIGENICITY_OUT=config["CREATE_SPLICING_ANTIGENICITY_OUT"]
+        SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
+    shell:
+        """
+        mkdir {output.OUT_PREFIX}
+
+        {input.SCRIPT_DIR}/calc_gene_metric_len_norm.R  -s {input.SPLICE_DAT_FILE} -k {input.KMER_COUNTS_FILE} -j {input.JUNC_EXPR_FILE} -o {output.CREATE_SPLICING_ANTIGENICITY_OUT}/CHOL
+        cd {output.CREATE_SPLICING_ANTIGENICITY_OUT}
+        ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm_tumor.rds > filenames.txt
         """

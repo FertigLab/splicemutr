@@ -72,3 +72,7 @@ KMER_COUNTS_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/kmer_c
 
 JUNCFILES : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/filenames.txt"
 CREATE_JUNC_EXPRESSION_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/create_junc_expression_out"
+KMER_COUNTS_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/kmer_counts_out/all_kmers_counts.txt"
+JUNC_EXPRESSSION_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/create_junc_expression_out/junc_expr_combined_vst.rds"
+CREATE_SPLICING_ANTIGENICITY_OUT : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/create_splicing_antigenicity_out/CHOL"
+
