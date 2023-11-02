@@ -20,6 +20,8 @@ if not os.path.exists(config["JUNC_OUTPUT_DIR"]):
     os.mkdir(config["JUNC_OUTPUT_DIR"])
 if not os.path.exists(config["JUNC_DIR"]):
     os.mkdir(config["JUNC_DIR"])
+if not os.path.exists(config["CREATE_JUNC_EXPRESSION_OUT"]):
+    os.mkdir(config["CREATE_JUNC_EXPRESSION_OUT"])
 
 rule all:
     input:
