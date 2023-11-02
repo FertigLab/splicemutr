@@ -14,7 +14,8 @@ if not os.path.exists(config["PROCESS_BINDAFF_OUT"]):
     os.mkdir(config["PROCESS_BINDAFF_OUT"])
 if not os.path.exists(config["ANALYZE_SPLICEMUTR_OUT"]):
     os.mkdir(config["ANALYZE_SPLICEMUTR_OUT"])
-
+if not os.path.exists(config["CREATE_SPLICING_ANTIGENICITY_OUT"]):
+    os.mkdir(config["CREATE_SPLICING_ANTIGENICITY_OUT"])
 
 rule all:
     input:
