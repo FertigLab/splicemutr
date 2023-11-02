@@ -235,8 +235,8 @@ rule analyze_splicemutr:
         GENOTYPES=config["GENOTYPES_REFORMATTED"],
         SUMMARY_DIR=config["SUMMARY_DIR"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
-        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
-        ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"],
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
+        ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"]
     output:
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
