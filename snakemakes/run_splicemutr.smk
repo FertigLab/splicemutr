@@ -27,7 +27,7 @@ rule all:
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
         OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds",
         FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
-        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt"
+        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
         OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
         OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
         UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
