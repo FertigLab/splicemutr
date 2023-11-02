@@ -22,6 +22,8 @@ if not os.path.exists(config["JUNC_DIR"]):
     os.mkdir(config["JUNC_DIR"])
 if not os.path.exists(config["CREATE_JUNC_EXPRESSION_OUT"]):
     os.mkdir(config["CREATE_JUNC_EXPRESSION_OUT"])
+if not os.path.exists(config["KMER_COUNTS_OUT"]):
+    os.mkdir(config["KMER_COUNTS_OUT"])
 
 rule all:
     input:
