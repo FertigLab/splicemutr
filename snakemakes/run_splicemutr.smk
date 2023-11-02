@@ -221,7 +221,7 @@ rule create_junction_expression:
 rule calculate_gene_metric:
     input:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
-        SPLICE_DAT_FILE=cconfig["SPLICE_DAT_FILE"],
+        SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
         KMER_COUNTS_FILE=config["KMER_COUNTS_FILE"],
         JUNC_EXPR_FILE=config["JUNC_EXPRESSSION_FILE"]
     output:
