@@ -254,8 +254,8 @@ rule analyze_splicemutr:
 rule compile_kmer_counts:
     input:
         KMER_COUNTS_FILES=config["KMER_COUNTS_FILES"],
-        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
-        KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"],
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
+        KMER_COUNTS_OUT=config["KMER_COUNTS_OUT"]
     output:
         KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt"
     shell:
@@ -268,8 +268,8 @@ rule compile_kmer_counts:
 rule create_junction_expression:
     input:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
-        JUNC_FILES=config["JUNCFILES"]
-        CREATE_JUNC_EXPRESSION_OUT=config["CREATE_JUNC_EXPRESSION_OUT"],
+        JUNC_FILES=config["JUNCFILES"],
+        CREATE_JUNC_EXPRESSION_OUT=config["CREATE_JUNC_EXPRESSION_OUT"]
     output:
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
     shell:
@@ -282,8 +282,8 @@ rule calculate_gene_metric:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
         KMER_COUNTS_FILE=config["KMER_COUNTS_FILE"],
-        JUNC_EXPR_FILE=config["JUNC_EXPRESSSION_FILE"]
-        CREATE_SPLICING_ANTIGENICITY_OUT=config["CREATE_SPLICING_ANTIGENICITY_OUT"],
+        JUNC_EXPR_FILE=config["JUNC_EXPRESSSION_FILE"],
+        CREATE_SPLICING_ANTIGENICITY_OUT=config["CREATE_SPLICING_ANTIGENICITY_OUT"]
     output:
         SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
     shell:
