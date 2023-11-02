@@ -139,7 +139,7 @@ rule combine_splicemutr:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
         OUTPUT_DIR=config["COMBINE_SPLICEMUTR_OUT"]
     output:
-        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt"
+        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"]
     shell:
         """
