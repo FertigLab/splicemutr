@@ -25,7 +25,7 @@ rule all:
     input:
         OUTPUT_FILE_RECOUNT3=config["JUNC_OUTPUT_DIR"]+"/filenames.txt",
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
-        OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds"
+        OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds",
         FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
         FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr_cp_corrected.rds",
         OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/data_splicemutr_all_pep.txt",
