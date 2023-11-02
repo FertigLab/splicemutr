@@ -131,7 +131,7 @@ def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
             continue
         else:
             with open(hla_file%(hla_dir,hla)) as geno_file:
-                print(hla_file%(hla_dir,hla))
+                #print(hla_file%(hla_dir,hla))
                 geno_list = geno_file.read().splitlines()
                 geno_rows = [i.split('\t')[0] for i in geno_list]
                 geno_kmers = [i.split('\t')[1] for i in geno_list]

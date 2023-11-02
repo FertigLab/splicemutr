@@ -230,8 +230,7 @@ rule calculate_gene_metric:
         SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
     shell:
         """
-        mkdir {output.OUT_PREFIX}
-
+        mkdir -p {output.CREATE_SPLICING_ANTIGENICITY_OUT}
         {input.SCRIPT_DIR}/calc_gene_metric_len_norm.R  -s {input.SPLICE_DAT_FILE} -k {input.KMER_COUNTS_FILE} -j {input.JUNC_EXPR_FILE} -o {output.CREATE_SPLICING_ANTIGENICITY_OUT}/CHOL
         cd {output.CREATE_SPLICING_ANTIGENICITY_OUT}
         ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm_tumor.rds > filenames.txt
