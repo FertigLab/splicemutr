@@ -12,7 +12,6 @@ rule all:
         GENOTYPES_FILE_FORMATTED=config["GENOTYPES_DIR"]+"/genotypes_reformatted.txt",
         UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt"
 
-
 rule run_arcasHLA:
     input:
         GENOTYPES_DIR=config["GENOTYPES_DIR"],
