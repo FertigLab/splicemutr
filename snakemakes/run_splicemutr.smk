@@ -126,7 +126,7 @@ rule calcualte_coding_potential:
         """
         TRANSCRIPT_FILE=$(echo {input.SPLICE_FILE} | sed s/'_data_splicemutr.rds'/'_sequences.fa'/g)
 
-        {input.SCRIPT_DIR}/calc_coding_potential.R -o {output.FORMED_TRANSCRIPTS_DIR} -s {input.SPLICE_FILE} -t $TRANSCRIPT_FILE -f {input.SPLICEMUTR_FUNCTIONS}
+        {input.SCRIPT_DIR}/calc_coding_potential.R -o {input.FORMED_TRANSCRIPTS_DIR} -s {input.SPLICE_FILE} -t $TRANSCRIPT_FILE -f {input.SPLICEMUTR_FUNCTIONS}
 
         cd {input.FORMED_TRANSCRIPTS_DIR}
         ls $PWD/*_cp_corrected.rds > filenames_cp.txt
