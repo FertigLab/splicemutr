@@ -240,6 +240,8 @@ rule analyze_splicemutr:
         SUMMARY_DIR=config["SUMMARY_DIR"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
     input:
+        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
+        PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
         EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         GENOTYPES=config["GENOTYPES_REFORMATTED"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
