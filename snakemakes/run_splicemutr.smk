@@ -46,6 +46,7 @@ rule all:
 
 
 rule run_recount3:
+    priority: 1
     input:
         JUNC_OUTPUT_DIR=config["JUNC_OUTPUT_DIR"],
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
@@ -64,41 +65,44 @@ rule run_recount3:
         """
 
 rule running_leafcutter:
-  input:
-      JUNC_DIR=config["JUNC_DIR"],
-      JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
-      SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-      LEAFCUTTER_SCRIPTS=config["LEAFCUTTER_SCRIPTS"],
-      REF_DIR=config["ANN_DIR"],
-      LEAFVIZ_DIR=config["LEAFVIZ_DIR"],
-      GROUPS_FILE=config["GROUPS_FILE"],
-      LEAFCUTTER_PYTHON=config["LEAFCUTTER_PYTHON"],
-  output:
-      RDATA=config["JUNC_DIR"]+"/data.Rdata"
-  shell:
-    """
-    echo "leafcutter_cluster_regtools"
-    python {input.LEAFCUTTER_PYTHON}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
+    priority: 2
+    input:
+        JUNC_DIR=config["JUNC_DIR"],
+        JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
+        LEAFCUTTER_SCRIPTS=config["LEAFCUTTER_SCRIPTS"],
+        REF_DIR=config["ANN_DIR"],
+        LEAFVIZ_DIR=config["LEAFVIZ_DIR"],
+        GROUPS_FILE=config["GROUPS_FILE"],
+        LEAFCUTTER_PYTHON=config["LEAFCUTTER_PYTHON"],
+    output:
+        RDATA=config["JUNC_DIR"]+"/data.Rdata"
+    shell:
+        """
+        echo "leafcutter_cluster_regtools"
+        python {input.LEAFCUTTER_PYTHON}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
 
-    echo "leafcutter_ds"
-    {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R --num_threads 1 --exon_file={input.REF_DIR}/G026.exons.txt.gz -o {input.JUNC_DIR}/leafcutter_ds {input.JUNC_DIR}/data_perind_numers.counts.gz {input.GROUPS_FILE}
+        echo "leafcutter_ds"
+        {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R --num_threads 1 --exon_file={input.REF_DIR}/G026.exons.txt.gz -o {input.JUNC_DIR}/leafcutter_ds {input.JUNC_DIR}/data_perind_numers.counts.gz {input.GROUPS_FILE}
 
-    echo "prepare_results"
-    {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G026
-    """
+        echo "prepare_results"
+        {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G026
+        """
 
 rule save_introns:
-  input:
-    RDATA=config["JUNC_DIR"]+"/data.Rdata",
-    SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]  
-  output:
-    OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds"
-  shell:
-    """
-    {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o CHOL
-    """
+    priority: 3
+    input:
+        RDATA=config["JUNC_DIR"]+"/data.Rdata",
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]  
+    output:
+        OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds"
+    shell:
+        """
+        {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o CHOL
+        """
 
 rule form_transcripts:
+    priority: 4
     input:
         INTRON_FILE=config["INTRON_FILE"],
         TXDB=config["TXDB"],
@@ -116,6 +120,7 @@ rule form_transcripts:
         """
 
 rule calcualte_coding_potential:
+    priority: 5
     input:
         SPLICE_FILE=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
         SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"],
@@ -135,6 +140,7 @@ rule calcualte_coding_potential:
         """
 
 rule combine_splicemutr:
+    priority: 6
     input:
         SPLICE_FILES=config["SPLICEMUTR_FILES"],
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
@@ -148,6 +154,7 @@ rule combine_splicemutr:
         """
 
 rule process_peptides:
+    priority: 6
     input:
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
         PEPTIDES=config["PROTEINS"],
@@ -162,6 +169,7 @@ rule process_peptides:
         """
 
 rule run_mhcnuggets:
+    priority: 7
     params:
         TYPE=config["TYPE"]
     input:
@@ -180,6 +188,7 @@ rule run_mhcnuggets:
         """
 
 rule process_bindaffinity:
+    priority: 8
     params:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_LENGTH=config["KMER_LENGTH"]
@@ -208,6 +217,7 @@ rule process_bindaffinity:
         """
 
 rule extract_data:
+    priority: 9
     params:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_SIZE_MIN=config["KMER_SIZE_MIN"],
@@ -235,6 +245,7 @@ rule extract_data:
         """
 
 rule analyze_splicemutr:
+    priority: 10
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
         NUM_SAMPLES=config["NUM_ALLELE_FILES"]
@@ -260,6 +271,7 @@ rule analyze_splicemutr:
         """
 
 rule compile_kmer_counts:
+    priority: 11
     input:
         KMER_COUNTS_FILES=config["KMER_COUNTS_FILES"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
@@ -274,6 +286,7 @@ rule compile_kmer_counts:
         """
 
 rule create_junction_expression:
+    priority: 12
     input:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
         JUNC_FILES=config["JUNCFILES"],
@@ -286,6 +299,7 @@ rule create_junction_expression:
         """
 
 rule calculate_gene_metric:
+    priority: 13
     input:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
