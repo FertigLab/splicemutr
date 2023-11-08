@@ -202,7 +202,7 @@ rule process_bindaffinity:
             {input.SCRIPT_DIR}/process_bindaff.py -b $BINDERS -p {input.PICKLE_DIR} -o {input.PROCESS_BINDAFF_OUT} -k {params.KMER_LENGTH}
         done
 
-        cd {output.PROCESS_BINDAFF_OUT}
+        cd {input.PROCESS_BINDAFF_OUT}
         ls $PWD/*filt.txt > filenames.txt
 
         """
