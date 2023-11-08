@@ -236,13 +236,13 @@ rule extract_data:
 rule analyze_splicemutr:
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
-        NUM_SAMPLES=config["NUM_ALLELE_FILES"]
+        NUM_SAMPLES=config["NUM_ALLELE_FILES"],
+        SUMMARY_DIR=config["SUMMARY_DIR"],
+        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"]
     input:
         EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         GENOTYPES=config["GENOTYPES_REFORMATTED"],
-        SUMMARY_DIR=config["SUMMARY_DIR"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
-        SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
         ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"]
     output:
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
@@ -251,7 +251,7 @@ rule analyze_splicemutr:
             START=1
             for ((VAR=$START; VAR<={params.NUM_SAMPLES}; VAR++))
             do
-                {input.SCRIPT_DIR}/analyze_splicemutr.py -g {input.GENOTYPES} -s {input.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {input.ANALYZE_SPLICEMUTR_OUT} -t {params.SUMMARY_TYPE} -n $VAR
+                {params.SCRIPT_DIR}/analyze_splicemutr.py -g {input.GENOTYPES} -s {params.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {input.ANALYZE_SPLICEMUTR_OUT} -t {params.SUMMARY_TYPE} -n $VAR
             done
 
             cd {input.ANALYZE_SPLICEMUTR_OUT}
