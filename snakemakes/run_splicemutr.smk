@@ -238,12 +238,12 @@ rule analyze_splicemutr:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
         NUM_SAMPLES=config["NUM_ALLELE_FILES"]
     input:
+        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         GENOTYPES=config["GENOTYPES_REFORMATTED"],
         SUMMARY_DIR=config["SUMMARY_DIR"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
-        ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"],
-        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
+        ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"]
     output:
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
