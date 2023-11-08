@@ -213,11 +213,11 @@ rule extract_data:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_SIZE_MIN=config["KMER_SIZE_MIN"],
         KMER_SIZE_MAX=config["KMER_SIZE_MAX"],
-        EXTRACT_DATA_DIR=config["PROCESS_BINDAFF_OUT"]
     input:
         ALLELE_FILES=config["MHC_ALLELE_FILE"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
-        PICKLE_DIR=config["PROCESS_BINDAFF_OUT"]
+        PICKLE_DIR=config["PROCESS_BINDAFF_OUT"],
+        EXTRACT_DATA_DIR=config["PROCESS_BINDAFF_OUT"]
     output:
         EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
     shell:
@@ -244,7 +244,8 @@ rule analyze_splicemutr:
         SUMMARY_DIR=config["SUMMARY_DIR"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
-        ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"]
+        ANALYZE_SPLICEMUTR_OUT=config["ANALYZE_SPLICEMUTR_OUT"],
+        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
     output:
         ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
