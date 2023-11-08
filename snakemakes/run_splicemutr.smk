@@ -27,13 +27,13 @@ if not os.path.exists(config["KMER_COUNTS_OUT"]):
 
 rule all:
     input:
-        #OUTPUT_FILE_RECOUNT3=config["JUNC_OUTPUT_DIR"]+"/filenames.txt",
-        #RDATA=config["JUNC_DIR"]+"/data.Rdata",
-        #OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds",
-        #FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
-        #FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
-        #OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
-        #SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
+        OUTPUT_FILE_RECOUNT3=config["JUNC_OUTPUT_DIR"]+"/filenames.txt",
+        RDATA=config["JUNC_DIR"]+"/data.Rdata",
+        OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds",
+        FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
+        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
+        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
+        SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
         OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
         UNIQUE_MHC_FILE=config["GENOTYPES_DIR"]+"/class_1_HLAS.txt",
         OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
@@ -44,7 +44,7 @@ rule all:
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
 
-'''
+
 rule run_recount3:
     input:
         JUNC_OUTPUT_DIR=config["JUNC_OUTPUT_DIR"],
@@ -146,7 +146,6 @@ rule combine_splicemutr:
         """
         {input.SCRIPT_DIR}/combine_splicemutr.R -o {input.OUTPUT_DIR} -s {input.SPLICE_FILES}
         """
-'''
 
 rule process_peptides:
     input:
