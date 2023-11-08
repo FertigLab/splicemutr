@@ -46,7 +46,6 @@ rule all:
 
 
 rule run_recount3:
-    priority: 1
     input:
         JUNC_OUTPUT_DIR=config["JUNC_OUTPUT_DIR"],
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
@@ -65,7 +64,6 @@ rule run_recount3:
         """
 
 rule running_leafcutter:
-    priority: 2
     input:
         JUNC_DIR=config["JUNC_DIR"],
         JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
@@ -90,7 +88,6 @@ rule running_leafcutter:
         """
 
 rule save_introns:
-    priority: 3
     input:
         RDATA=config["JUNC_DIR"]+"/data.Rdata",
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]  
@@ -102,7 +99,6 @@ rule save_introns:
         """
 
 rule form_transcripts:
-    priority: 4
     input:
         INTRON_FILE=config["INTRON_FILE"],
         TXDB=config["TXDB"],
@@ -120,7 +116,6 @@ rule form_transcripts:
         """
 
 rule calcualte_coding_potential:
-    priority: 5
     input:
         SPLICE_FILE=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
         SPLICEMUTR_FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"],
@@ -140,7 +135,6 @@ rule calcualte_coding_potential:
         """
 
 rule combine_splicemutr:
-    priority: 6
     input:
         SPLICE_FILES=config["SPLICEMUTR_FILES"],
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
@@ -154,7 +148,6 @@ rule combine_splicemutr:
         """
 
 rule process_peptides:
-    priority: 6
     input:
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
         PEPTIDES=config["PROTEINS"],
@@ -169,7 +162,6 @@ rule process_peptides:
         """
 
 rule run_mhcnuggets:
-    priority: 7
     params:
         TYPE=config["TYPE"]
     input:
@@ -188,7 +180,6 @@ rule run_mhcnuggets:
         """
 
 rule process_bindaffinity:
-    priority: 8
     params:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_LENGTH=config["KMER_LENGTH"]
@@ -217,7 +208,6 @@ rule process_bindaffinity:
         """
 
 rule extract_data:
-    priority: 9
     params:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_SIZE_MIN=config["KMER_SIZE_MIN"],
@@ -245,7 +235,6 @@ rule extract_data:
         """
 
 rule analyze_splicemutr:
-    priority: 10
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
         NUM_SAMPLES=config["NUM_ALLELE_FILES"]
@@ -271,7 +260,6 @@ rule analyze_splicemutr:
         """
 
 rule compile_kmer_counts:
-    priority: 11
     input:
         KMER_COUNTS_FILES=config["KMER_COUNTS_FILES"],
         SCRIPT_DIR=config["SPLICEMUTR_PYTHON"],
@@ -286,7 +274,6 @@ rule compile_kmer_counts:
         """
 
 rule create_junction_expression:
-    priority: 12
     input:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
         JUNC_FILES=config["JUNCFILES"],
@@ -299,7 +286,6 @@ rule create_junction_expression:
         """
 
 rule calculate_gene_metric:
-    priority: 13
     input:
         SCRIPT_DIR=config["SPLICEMUTR_SCRIPTS"],
         SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
