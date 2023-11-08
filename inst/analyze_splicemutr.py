@@ -28,19 +28,19 @@ def main(options, args):
         print("sample_num > number of samples")
     else:
         genotypes_file_small = genotypes_file[sample_num:sample_num+1]
-        #try:
-        splice_kmers,sample_name = sp.assign_kmers(genotypes_file_small,rows,hla_dir,hla_file)
-        if "cluster" in splice_dat.columns.values: # determining whether the groups are leafcutter cluster or not
-            groups=splice_dat.cluster.tolist()
-        else:
-            groups=splice_dat.groups.tolist()
-        deltapsi=[float(i) for i in splice_dat.deltapsi.tolist()]
-        groups_deltapsi_rows=pd.DataFrame({'groups':groups,'deltapsi':deltapsi,'rows':rows})
-        splice_kmers_filt = sp.filter_kmers(splice_kmers,groups_deltapsi_rows) # filtering by tumor and normal kmers
-        splice_dat_frame = pd.DataFrame({"rows":rows,"kmers":splice_kmers_filt})
-        splice_dat_frame.to_csv("%s/%s_splicemutr_kmers.txt"%(output_dir,sample_name),sep='\t',index=False)
-        #except:
-        #    print("Error: no genotypes for current sample")
+        try:
+            splice_kmers,sample_name = sp.assign_kmers(genotypes_file_small,rows,hla_dir,hla_file)
+            if "cluster" in splice_dat.columns.values: # determining whether the groups are leafcutter cluster or not
+                groups=splice_dat.cluster.tolist()
+            else:
+                groups=splice_dat.groups.tolist()
+            deltapsi=[float(i) for i in splice_dat.deltapsi.tolist()]
+            groups_deltapsi_rows=pd.DataFrame({'groups':groups,'deltapsi':deltapsi,'rows':rows})
+            splice_kmers_filt = sp.filter_kmers(splice_kmers,groups_deltapsi_rows) # filtering by tumor and normal kmers
+            splice_dat_frame = pd.DataFrame({"rows":rows,"kmers":splice_kmers_filt})
+            splice_dat_frame.to_csv("%s/%s_splicemutr_kmers.txt"%(output_dir,sample_name),sep='\t',index=False)
+        except:
+            print("Error: no genotypes for current sample")
 
 if __name__ == "__main__":
 
