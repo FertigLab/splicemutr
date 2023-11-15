@@ -14,8 +14,8 @@ Requirements
 [arcasHLA](https://anaconda.org/bioconda/arcas-hla)\
 [MHCnuggets](https://karchinlab.org/apps/appMHCnuggets.html) or [NetMHCpan](https://github.com/tzina97/netMHCpan/tree/main)\
 [LeafCutter](https://davidaknowles.github.io/leafcutter/)\
-R \>= 4.0.2\
-python \>= 3.6.10\
+R >= 4.0.2
+python >= 3.6.10
 
 To build the SpliceMutr environment used in the SpliceMutr paper, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr.yml
 
