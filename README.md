@@ -17,12 +17,6 @@ Requirements
 R \>= 4.0.2\
 python \>= 3.6.10\
 
-To complete installation install the splicemutr package within your installation of R. This will install the packages necessary and prompt you to install the associated bioconductor packages.
-
-``` r
-install_github("FertigLab/splicemute")
-```
-
 To build the SpliceMutr environment used in the SpliceMutr paper, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr.yml
 
 ``` bash
