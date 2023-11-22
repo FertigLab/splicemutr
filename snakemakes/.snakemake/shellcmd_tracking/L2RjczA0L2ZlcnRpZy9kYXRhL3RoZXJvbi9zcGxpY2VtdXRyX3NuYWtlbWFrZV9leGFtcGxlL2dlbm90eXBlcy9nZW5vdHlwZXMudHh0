@@ -1,9 +1,0 @@
-
-        START=1
-        END=2
-        for (( VAR=$START; VAR<=$END; VAR++ ))
-        do
-            JSON_FILE=$(sed -n ${VAR}p /dcs04/fertig/data/theron/splicemutr_snakemake_example/genotypes/genotype_files.txt)
-            echo $(echo $(basename $JSON_FILE) | sed "s/Aligned.genotype.json//g")"	"$(jq '.[] | .[]' $JSON_FILE | paste -s -d "," | sed 's/"//g') >> /dcs04/fertig/data/theron/splicemutr_snakemake_example/genotypes/genotypes.txt
-        done
-        

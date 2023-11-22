@@ -1,6 +1,0 @@
-
-        mkdir -p /dcs04/fertig/data/theron/splicemutr_snakemake_example/create_splicing_antigenicity_out
-        /users/tpalmer/splicemute/scripts/calc_gene_metric_len_norm.R  -s /dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out/data_splicemutr_all_pep.txt -k /dcs04/fertig/data/theron/splicemutr_snakemake_example/kmer_counts_out/all_kmers_counts.txt -j /dcs04/fertig/data/theron/splicemutr_snakemake_example/create_junc_expression_out/junc_expr_combined_vst.rds -o /dcs04/fertig/data/theron/splicemutr_snakemake_example/create_splicing_antigenicity_out/CHOL
-        cd /dcs04/fertig/data/theron/splicemutr_snakemake_example/create_splicing_antigenicity_out
-        ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm_tumor.rds > filenames.txt
-        

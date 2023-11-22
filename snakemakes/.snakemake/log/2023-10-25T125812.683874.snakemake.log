@@ -1,3 +1,0 @@
-KeyError in file /users/tpalmer/splicemute/snakemakes/run_leafcutter.smk, line 73:
-'DATA_PERDIND_COUNTS'
-  File "/users/tpalmer/splicemute/snakemakes/run_leafcutter.smk", line 73, in <module>

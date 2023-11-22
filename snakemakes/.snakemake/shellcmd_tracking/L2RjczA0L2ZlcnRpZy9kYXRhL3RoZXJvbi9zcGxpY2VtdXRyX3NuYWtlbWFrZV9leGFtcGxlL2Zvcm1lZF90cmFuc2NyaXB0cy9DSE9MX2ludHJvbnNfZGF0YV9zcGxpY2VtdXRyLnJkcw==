@@ -1,6 +1,0 @@
-
-        BSGENOME="BSgenome.Hsapiens.GENCODE.GRCh38.p10"
-        OUT_PREFIX=/dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/$(echo $(basename /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds) | sed s/'.rds'/''/g)
-
-        /users/tpalmer/splicemute/scripts/form_transcripts.R -o $OUT_PREFIX -t /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite -j /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds -b $BSGENOME -f /users/tpalmer/splicemute/R/functions.R
-        

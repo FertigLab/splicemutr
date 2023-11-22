@@ -1,3 +1,0 @@
-
-        /users/tpalmer/splicemute/scripts/create_junc_expr.R -f /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/filenames.txt -o /dcs04/fertig/data/theron/splicemutr_snakemake_example/create_junc_expression_out
-        

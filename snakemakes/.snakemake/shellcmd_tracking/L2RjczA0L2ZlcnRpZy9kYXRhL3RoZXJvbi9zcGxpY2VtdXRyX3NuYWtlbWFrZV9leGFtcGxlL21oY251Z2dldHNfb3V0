@@ -1,6 +1,0 @@
-
-        /users/tpalmer/splicemute/inst/runMHCnuggets.py -t I -k /dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out/peps_9.txt -m /dcs04/fertig/data/theron/splicemutr_TCGA/CHOL/CHOL_class1_alleles.txt -o /dcs04/fertig/data/theron/splicemutr_snakemake_example/mhcnuggets_out
-
-        cd /dcs04/fertig/data/theron/splicemutr_snakemake_example/mhcnuggets_out
-        ls $PWD/*_peps_9.txt > /dcs04/fertig/data/theron/splicemutr_snakemake_example/mhcnuggets_out/allele_files.txt
-        
