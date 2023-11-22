@@ -16,7 +16,7 @@ FASTA_FILE : "GRCh38.primary_assembly.genome.fa"
 TWOBIT_FILE : "GRCh38.primary_assembly.genome.2bit"
 FA_TO_TWOBIT_EXEC : "/users/tpalmer/packages/ucsc/faToTwoBit"
 
-SEED_FILE : "DESCRIPTION"
+SEED_FILE : "/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/DESCRIPTION"
 BSGENOME : "BSgenome.Hsapiens.GENCODE.GRCh38.p10"
 
 TCGA_CANCER : "CHOL"
