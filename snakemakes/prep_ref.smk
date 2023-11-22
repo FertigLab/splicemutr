@@ -79,7 +79,7 @@ rule create_bsgenome:
         SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
         TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
     output:
-        BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
+        BSGENOME=directory(config["REF_DIR"]+"/"+config["BSGENOME"])
     shell:
         """
         cd {input.REF_DIR}
