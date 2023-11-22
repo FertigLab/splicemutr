@@ -25,25 +25,6 @@ if not os.path.exists(config["CREATE_JUNC_EXPRESSION_OUT"]):
 if not os.path.exists(config["KMER_COUNTS_OUT"]):
     os.mkdir(config["KMER_COUNTS_OUT"])
 
-rule all:
-    input:
-        OUTPUT_FILE_RECOUNT3=config["JUNC_OUTPUT_DIR"]+"/filenames.txt",
-        RDATA=config["JUNC_DIR"]+"/data.Rdata",
-        OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds",
-        FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
-        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
-        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
-        SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
-        OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
-        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
-        PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
-        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
-        ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
-        KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
-        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
-        SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
-
-
 rule run_recount3:
     input:
         JUNC_OUTPUT_DIR=config["JUNC_OUTPUT_DIR"],
@@ -302,3 +283,21 @@ rule calculate_gene_metric:
         cd {input.CREATE_SPLICING_ANTIGENICITY_OUT}
         ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm_tumor.rds > filenames.txt
         """
+
+rule all:
+    input:
+        OUTPUT_FILE_RECOUNT3=config["JUNC_OUTPUT_DIR"]+"/filenames.txt",
+        RDATA=config["JUNC_DIR"]+"/data.Rdata",
+        OUT_FILE_FINAL=config["JUNC_DIR"]+"/CHOL_introns.rds",
+        FORMED_TRANSCRIPTS=config["FORMED_TRANSCRIPTS_DIR"]+"/CHOL_introns_data_splicemutr.rds",
+        FORMED_TRANSCRIPTS_CP=config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
+        OUTPUT_FILE=config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
+        SPLICE_DAT_FILE=config["SPLICE_DAT_FILE"],
+        OUT_FILE=config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
+        OUT_FILE_MHCNUGGETS=config["MHCNUGGETS_OUT"]+"/allele_files.txt",
+        PROCESS_BINDAFF_FILES=config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
+        EXTRACT_DATA_FILE=config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
+        ANALYZE_SPLICEMUTR_OUT_FILE=config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
+        KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
+        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
+        SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
