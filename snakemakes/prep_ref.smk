@@ -76,7 +76,8 @@ rule create_bsgenome:
     input:
         REF_DIR=config["REF_DIR"],
         SEED_FILE=config["SEED_FILE"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
+        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
+        TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
     output:
         BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
     shell:
