@@ -3,7 +3,7 @@ import os
 configfile: "config.yaml"
 
 if not os.path.exists(config["REF_DIR"]):
-    os.makedirs(config["REF_DIR"])
+    os.mkdir(config["REF_DIR"])
     os.chdir(config["REF_DIR"])
     os.system("wget %s"%config["GTF_URL"])
     os.system("wget %s"%config["FASTA_URL"])
