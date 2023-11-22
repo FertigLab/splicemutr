@@ -1,0 +1,29 @@
+Building DAG of jobs...
+candidate job all
+    wildcards: 
+candidate job running_leafcutter
+    wildcards: 
+selected job running_leafcutter
+    wildcards: 
+file /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata:
+    Producer found, hence exceptions are ignored.
+
+candidate job save_introns
+    wildcards: 
+candidate job running_leafcutter
+    wildcards: 
+selected job running_leafcutter
+    wildcards: 
+file /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata:
+    Producer found, hence exceptions are ignored.
+
+selected job save_introns
+    wildcards: 
+file /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds:
+    Producer found, hence exceptions are ignored.
+
+selected job all
+    wildcards: 
+file None:
+    Producer found, hence exceptions are ignored.
+
