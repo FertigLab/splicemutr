@@ -1,0 +1,13 @@
+
+            START=1
+            for ((VAR=$START; VAR<=63; VAR++))
+            do
+                ALLELE=$(sed -n ${VAR}p /dcs04/fertig/data/theron/splicemutr_TCGA/CHOL/CHOL_class1_alleles.txt)
+
+                /users/tpalmer/splicemute/inst/extract_data.py -a $ALLELE -p /dcs04/fertig/data/theron/splicemutr_snakemake_example/process_bindaff_out -b 9 -e 10
+
+            done
+
+            cd /dcs04/fertig/data/theron/splicemutr_snakemake_example/process_bindaff_out
+            ls $PWD/*summary.txt > summaries.txt
+        

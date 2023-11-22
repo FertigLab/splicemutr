@@ -1,0 +1,51 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+all                       1
+running_leafcutter        1
+save_introns              1
+total                     3
+
+Select jobs to execute...
+
+[Wed Oct 25 14:15:13 2023]
+rule running_leafcutter:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs, /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/filenames.txt, /users/tpalmer/splicemute/scripts, /users/tpalmer/packages/leafcutter/scripts, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/annotations, /users/tpalmer/packages/leafcutter/leafviz, /dcs04/fertig/data/theron/splicemutr_paper/CHOL_groups_file.txt, /users/tpalmer/packages/leafcutter/clustering
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata
+    jobid: 1
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata
+    resources: tmpdir=/tmp
+
+[Wed Oct 25 14:46:27 2023]
+Finished job 1.
+1 of 3 steps (33%) done
+Select jobs to execute...
+
+[Wed Oct 25 14:46:27 2023]
+rule save_introns:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata, /users/tpalmer/splicemute/scripts
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/introns, /dcs04/fertig/data/theron/splicemutr_snakemake_example/introns/CHOL_introns.rds
+    jobid: 2
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/introns/CHOL_introns.rds; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata
+    resources: tmpdir=/tmp
+
+[Wed Oct 25 14:46:32 2023]
+Error in rule save_introns:
+    jobid: 2
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata, /users/tpalmer/splicemute/scripts
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/introns, /dcs04/fertig/data/theron/splicemutr_snakemake_example/introns/CHOL_introns.rds
+    shell:
+        
+    /users/tpalmer/splicemute/scripts/save_introns.R -i /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata -o /dcs04/fertig/data/theron/splicemutr_snakemake_example/introns
+    
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Removing output files of failed job save_introns since they might be corrupted:
+/dcs04/fertig/data/theron/splicemutr_snakemake_example/introns
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2023-10-25T141448.546458.snakemake.log

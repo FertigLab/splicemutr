@@ -1,0 +1,5 @@
+
+        KMER_LENGTH=9
+
+        /users/tpalmer/splicemute/inst/process_peptides.py -p /dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out/proteins.txt -o /dcs04/fertig/data/theron/splicemutr_snakemake_example/process_peptides_out -k $KMER_LENGTH
+        

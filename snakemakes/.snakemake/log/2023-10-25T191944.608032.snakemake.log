@@ -1,0 +1,29 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                 count
+----------------  -------
+all                     1
+form_transcripts        1
+total                   2
+
+Select jobs to execute...
+
+[Wed Oct 25 19:19:49 2023]
+rule form_transcripts:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite, /users/tpalmer/splicemute/scripts, /users/tpalmer/splicemute/R/functions.R
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds
+    jobid: 1
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds
+    resources: tmpdir=/tmp
+
+RuleException in rule form_transcripts in file /users/tpalmer/splicemute/snakemakes/run_splicemutr.smk, line 13:
+AttributeError: 'OutputFiles' object has no attribute 'FORMED_TRANSCRIPTS_DIR', when formatting the following:
+
+        BSGENOME="BSgenome.Hsapiens.GENCODE.GRCh38.p10"
+        OUT_PREFIX={output.FORMED_TRANSCRIPTS_DIR}/$(echo $(basename {input.INTRON_FILE}) | sed s/'.rds'/''/g)
+
+        {input.SCRIPT_DIR}/form_transcripts.R -o $OUT_PREFIX -t {input.TXDB} -j {input.INTRON_FILE} -b $BSGENOME
+        

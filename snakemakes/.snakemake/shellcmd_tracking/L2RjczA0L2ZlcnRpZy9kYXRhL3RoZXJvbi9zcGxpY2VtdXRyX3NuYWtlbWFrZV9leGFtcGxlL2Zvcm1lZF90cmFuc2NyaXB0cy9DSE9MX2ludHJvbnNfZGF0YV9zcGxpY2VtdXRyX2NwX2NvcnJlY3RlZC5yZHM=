@@ -1,0 +1,9 @@
+
+        TRANSCRIPT_FILE=$(echo /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds | sed s/'_data_splicemutr.rds'/'_sequences.fa'/g)
+
+        /users/tpalmer/splicemute/scripts/calc_coding_potential.R -o /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts -s /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds -t $TRANSCRIPT_FILE -f /users/tpalmer/splicemute/R/functions.R
+
+        cd /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts
+        ls $PWD/*_cp_corrected.rds > filenames_cp.txt
+    
+        

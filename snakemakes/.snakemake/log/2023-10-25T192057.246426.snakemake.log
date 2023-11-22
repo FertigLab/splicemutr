@@ -1,0 +1,40 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                 count
+----------------  -------
+all                     1
+form_transcripts        1
+total                   2
+
+Select jobs to execute...
+
+[Wed Oct 25 19:21:03 2023]
+rule form_transcripts:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite, /users/tpalmer/splicemute/scripts, /users/tpalmer/splicemute/R/functions.R
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts, /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds
+    jobid: 1
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds
+    resources: tmpdir=/tmp
+
+[Wed Oct 25 19:21:10 2023]
+Error in rule form_transcripts:
+    jobid: 1
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite, /users/tpalmer/splicemute/scripts, /users/tpalmer/splicemute/R/functions.R
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts, /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/CHOL_introns_data_splicemutr.rds
+    shell:
+        
+        BSGENOME="BSgenome.Hsapiens.GENCODE.GRCh38.p10"
+        OUT_PREFIX=/dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/$(echo $(basename /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds) | sed s/'.rds'/''/g)
+
+        /users/tpalmer/splicemute/scripts/form_transcripts.R -o $OUT_PREFIX -t /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite -j /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/CHOL_introns.rds -b $BSGENOME
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Removing output files of failed job form_transcripts since they might be corrupted:
+/dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2023-10-25T192057.246426.snakemake.log

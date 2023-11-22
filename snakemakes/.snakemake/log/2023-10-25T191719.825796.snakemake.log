@@ -1,0 +1,3 @@
+KeyError in file /users/tpalmer/splicemute/snakemakes/run_splicemutr.smk, line 3:
+'FORMED_TRANSCRIPTS_DIR'
+  File "/users/tpalmer/splicemute/snakemakes/run_splicemutr.smk", line 3, in <module>

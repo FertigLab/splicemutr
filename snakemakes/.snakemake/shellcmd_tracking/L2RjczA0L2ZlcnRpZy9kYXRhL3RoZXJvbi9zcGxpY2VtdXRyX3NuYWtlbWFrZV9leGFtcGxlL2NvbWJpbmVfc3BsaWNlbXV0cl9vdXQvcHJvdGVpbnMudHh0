@@ -1,0 +1,3 @@
+
+        /users/tpalmer/splicemute/scripts/combine_splicemutr.R -o /dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out -s /dcs04/fertig/data/theron/splicemutr_snakemake_example/formed_transcripts/filenames_cp.txt
+        

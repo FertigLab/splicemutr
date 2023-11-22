@@ -1,0 +1,10 @@
+
+        OUT_DIR=/dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs
+        STUDY="CHOL"
+        SAMPLES="all"
+        SCRIPT_DIR=/users/tpalmer/splicemute/scripts
+        $SCRIPT_DIR/recount3_tcga_juncs_select.R -t $STUDY -o $OUT_DIR -s $SAMPLES
+
+        cd /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs
+        ls $PWD/*.junc > /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/filenames.txt
+        

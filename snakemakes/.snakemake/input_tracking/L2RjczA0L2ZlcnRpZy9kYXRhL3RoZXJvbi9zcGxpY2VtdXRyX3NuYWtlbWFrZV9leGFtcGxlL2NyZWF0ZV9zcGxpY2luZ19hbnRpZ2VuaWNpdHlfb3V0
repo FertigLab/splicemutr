@@ -1,0 +1,4 @@
+/dcs04/fertig/data/theron/splicemutr_snakemake_example/combine_splicemutr_out/data_splicemutr_all_pep.txt
+/dcs04/fertig/data/theron/splicemutr_snakemake_example/create_junc_expression_out/junc_expr_combined_vst.rds
+/dcs04/fertig/data/theron/splicemutr_snakemake_example/kmer_counts_out/all_kmers_counts.txt
+/users/tpalmer/splicemute/scripts

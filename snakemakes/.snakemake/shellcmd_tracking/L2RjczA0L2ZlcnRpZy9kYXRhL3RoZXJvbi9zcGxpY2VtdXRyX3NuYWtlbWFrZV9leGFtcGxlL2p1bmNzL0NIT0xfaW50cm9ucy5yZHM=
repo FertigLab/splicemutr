@@ -1,0 +1,3 @@
+
+        /users/tpalmer/splicemute/scripts/save_introns.R -i /dcs04/fertig/data/theron/splicemutr_snakemake_example/juncs/data.Rdata -o CHOL
+        
