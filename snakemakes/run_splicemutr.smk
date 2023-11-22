@@ -25,7 +25,6 @@ if not os.path.exists(config["CREATE_JUNC_EXPRESSION_OUT"]):
 if not os.path.exists(config["KMER_COUNTS_OUT"]):
     os.mkdir(config["KMER_COUNTS_OUT"])
 
-'''
 rule all:
     input:
         OUTPUT_FILE_RECOUNT3=config["JUNC_OUTPUT_DIR"]+"/filenames.txt",
@@ -43,7 +42,6 @@ rule all:
         KMER_COUNTS_FILE=config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         SPLICING_ANTIGENICITY_FILE=config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
-'''
 
 rule run_recount3:
     input:
