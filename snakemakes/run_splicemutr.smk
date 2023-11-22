@@ -2,8 +2,6 @@ import os
 
 configfile: "config.yaml"
 
-if not os.path.exists(config["ANN_DIR"]):
-    os.mkdir(config["ANN_DIR"])
 if not os.path.exists(config["FORMED_TRANSCRIPTS_DIR"]):
     os.mkdir(config["FORMED_TRANSCRIPTS_DIR"])
 if not os.path.exists(config["COMBINE_SPLICEMUTR_OUT"]):
