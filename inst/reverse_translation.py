@@ -63,13 +63,13 @@ def reverse_translation(peptide,out_file):
 	return count_to_return, peptide
 
 def reverse_translation_peptides(peptide_file,output_file):
-    peptides=list()
-    with open(peptide_file,"r") as file:
-        for line in file.readlines():
-            peptides.append(line.strip())
-    with open(output_file,"w") as out_file:
-        for peptide in peptides:
-            reverse_translation(peptide,out_file)
+	peptides=list()
+	with open(peptide_file,"r") as file:
+		for line in file.readlines():
+			peptides.append(line.strip())
+	with open(output_file,"w") as out_file:
+		for peptide in peptides:
+			reverse_translation(peptide,out_file)
 	return(True)
 
 
