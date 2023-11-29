@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+2
 # creator: Theron Palmer
 # Reverse translating input peptide files and saving them to fasta files for use later
 
@@ -70,11 +70,13 @@ def reverse_translation_peptides(peptide_file,output_file):
     with open(output_file,"w") as out_file:
         for peptide in peptides:
             reverse_translation(peptide,out_file)
+	return(True)
 
 
 def main(options, args):
-    peptides_file = options.peptides_file
-    output_file = options.output_file
+	peptides_file = options.peptides_file
+	output_file = options.output_file
+	reverse_translation_peptides(peptides_file,output_file)
     
 
 if __name__ == "__main__":
