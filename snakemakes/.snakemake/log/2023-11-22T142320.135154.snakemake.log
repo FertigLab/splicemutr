@@ -1,0 +1,45 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                     count
+--------------------  -------
+all                         1
+convert_fasta_twobit        1
+create_bsgenome             1
+get_reference_data          1
+make_txdb                   1
+total                       5
+
+Select jobs to execute...
+
+[Wed Nov 22 14:23:23 2023]
+rule create_bsgenome:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/DESCRIPTION, /users/tpalmer/splicemute/scripts
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+    jobid: 5
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+    resources: tmpdir=/tmp
+
+[Wed Nov 22 14:24:09 2023]
+Error in rule create_bsgenome:
+    jobid: 5
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/DESCRIPTION, /users/tpalmer/splicemute/scripts
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+    shell:
+        
+        cd /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references
+
+        /users/tpalmer/splicemute/scripts/forge_bsgenome.R -s /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/DESCRIPTION
+        R CMD build /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+        R CMD INSTALL /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10_0.1.tar.gz
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Removing output files of failed job create_bsgenome since they might be corrupted:
+/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+Skipped removing non-empty directory /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2023-11-22T142320.135154.snakemake.log

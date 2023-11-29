@@ -1,0 +1,74 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                     count
+--------------------  -------
+all                         1
+convert_fasta_twobit        1
+create_bsgenome             1
+get_reference_data          1
+make_txdb                   1
+total                       5
+
+Select jobs to execute...
+
+[Wed Nov 22 15:30:10 2023]
+rule make_txdb:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz, /users/tpalmer/splicemute/scripts
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/G026_txdb.sqlite
+    jobid: 2
+    reason: Updated input files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references
+    resources: tmpdir=/tmp
+
+[Wed Nov 22 15:33:18 2023]
+Finished job 2.
+1 of 5 steps (20%) done
+Select jobs to execute...
+
+[Wed Nov 22 15:33:18 2023]
+rule get_reference_data:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/GRCh38.primary_assembly.genome.fa.gz
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/GRCh38.primary_assembly.genome.fa
+    jobid: 1
+    reason: Updated input files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references
+    resources: tmpdir=/tmp
+
+[Wed Nov 22 15:33:53 2023]
+Finished job 1.
+2 of 5 steps (40%) done
+Select jobs to execute...
+
+[Wed Nov 22 15:33:53 2023]
+rule convert_fasta_twobit:
+    input: /users/tpalmer/packages/ucsc/faToTwoBit, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/GRCh38.primary_assembly.genome.fa
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/GRCh38.primary_assembly.genome.2bit
+    jobid: 4
+    reason: Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/GRCh38.primary_assembly.genome.fa
+    resources: tmpdir=/tmp
+
+[Wed Nov 22 15:34:39 2023]
+Finished job 4.
+3 of 5 steps (60%) done
+Select jobs to execute...
+
+[Wed Nov 22 15:34:39 2023]
+rule create_bsgenome:
+    input: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/DESCRIPTION, /users/tpalmer/splicemute/scripts, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/GRCh38.primary_assembly.genome.2bit
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+    jobid: 5
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/GRCh38.primary_assembly.genome.2bit
+    resources: tmpdir=/tmp
+
+ImproperOutputException in rule create_bsgenome in file /users/tpalmer/splicemute/snakemakes/prep_ref.smk, line 75:
+Outputs of incorrect type (directories when expecting files or vice versa). Output directories must be flagged with directory(). for rule create_bsgenome:
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+    affected files:
+        /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+Removing output files of failed job create_bsgenome since they might be corrupted:
+/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+Skipped removing non-empty directory /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2023-11-22T153007.399619.snakemake.log

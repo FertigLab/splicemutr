@@ -1,0 +1,27 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                              count
+-----------------------------  -------
+all                                  1
+convert_fasta_twobit                 1
+create_bsgenome                      1
+get_reference_data                   1
+make_txdb                            1
+prepare_leafcutter_references        1
+total                                6
+
+Select jobs to execute...
+
+[Wed Nov 22 13:58:25 2023]
+rule prepare_leafcutter_references:
+    input: /users/tpalmer/leafcutter, /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/gencode.v26.chr_patch_hapl_scaff.annotation.gtf.gz
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/annotations/G026.exons.txt
+    jobid: 3
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/annotations/G026.exons.txt
+    resources: tmpdir=/tmp
+
+Terminating processes on user request, this might take some time.
+Cancelling snakemake on user request.

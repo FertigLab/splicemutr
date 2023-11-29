@@ -3,4 +3,4 @@ MissingInputException in rule create_bsgenome in file /users/tpalmer/splicemute/
 Missing input files for rule create_bsgenome:
     output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
     affected files:
-        /users/tpalmer/splicemutr_snakemake_example/prep_ref/DESCRIPTION
+        DESCRIPTION

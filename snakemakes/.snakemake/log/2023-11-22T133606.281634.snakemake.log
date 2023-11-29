@@ -1,0 +1,6 @@
+Building DAG of jobs...
+MissingInputException in rule create_bsgenome in file /users/tpalmer/splicemute/snakemakes/prep_ref.smk, line 75:
+Missing input files for rule create_bsgenome:
+    output: /dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p10
+    affected files:
+        DESCRIPTION
