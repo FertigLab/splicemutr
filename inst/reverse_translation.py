@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # creator: Theron Palmer
 # Reverse translating input peptide files and saving them to fasta files for use later
 
