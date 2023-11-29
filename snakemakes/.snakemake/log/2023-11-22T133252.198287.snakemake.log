@@ -1,7 +1,0 @@
-PermissionError in file /users/tpalmer/splicemute/snakemakes/prep_ref.smk, line 6:
-[Errno 13] Permission denied: '/dcs04/fertig/data'
-  File "/users/tpalmer/splicemute/snakemakes/prep_ref.smk", line 6, in <module>
-  File "<frozen os>", line 215, in makedirs
-  File "<frozen os>", line 215, in makedirs
-  File "<frozen os>", line 215, in makedirs
-  File "<frozen os>", line 225, in makedirs

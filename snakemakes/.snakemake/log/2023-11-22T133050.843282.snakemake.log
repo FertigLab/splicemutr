@@ -1,3 +1,0 @@
-FileNotFoundError in file /users/tpalmer/splicemute/snakemakes/prep_ref.smk, line 6:
-[Errno 2] No such file or directory: '/dcs04/fertig/data/theron/splicemutr_snakemake_example/splicemutr_references'
-  File "/users/tpalmer/splicemute/snakemakes/prep_ref.smk", line 6, in <module>
