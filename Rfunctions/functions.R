@@ -1,4 +1,4 @@
-
+# Functions for splicemutr in R
 
 #' @name find_genes
 #' @title find_genes
