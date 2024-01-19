@@ -1,14 +1,10 @@
-# build star index using grid node
-
-# job submission params
-#!/bin/sh
-#$ -N buildSTARindex
-#$ -S /bin/sh
-#$ -l mem_free=45G,h_vmem=50G,h_fsize=50G
-#$ -o /index_star_human.o
-#$ -e /index_star_human.e
-#$ -M tpalme15@jhmi.edu
-#$ -m ea
+#!/bin/bash
+#SBATCH --mail-user=tpalme15@jhmi.edu
+#SBATCH --mail-type=end,fail
+#SBATCH --job-name=index_STAR
+#SBATCH --mem=50G
+#SBATCH --output index_star.o
+#SBATCH --error index_star.e
 
 echo $(date)
 
