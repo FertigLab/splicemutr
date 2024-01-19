@@ -1,4 +1,5 @@
-# SpliceMutr: Calculating splicing-derived neoantigen burden from splice-junctions affecting protein-coding transcripts in RNA-seq data.
+#
+SpliceMutr: Calculating splicing-derived neoantigen burden from splice-junctions affecting protein-coding transcripts in RNA-seq data.
 
 ------------------------------------------------------------------------
 
@@ -17,10 +18,11 @@ Requirements
 R >= 4.0.2\
 python >= 3.6.10
 
-To build the SpliceMutr environment used in the SpliceMutr paper, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr.yml
+To build the SpliceMutr environment, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr_packages.yml. Additionally, you will need to build the conda environment contained within leafcutter_package.yml in order to run the LeafCutter components of the SpliceMutr pipeline. 
 
 ``` bash
-conda env create -f environment.yml
+conda env create -f leafcutter_package.yml
+conda env create -r splicemutr_packages.yml
 ```
 
 ------------------------------------------------------------------------
@@ -30,14 +32,12 @@ SpliceMutr is licensed under the [GNU General Public License v3](http://www.gnu.
 If you find SpliceMutr useful, please cite as follows:
 
 Palmer, Theron, et al. "SpliceMutr Enables Pan-Cancer Analysis of Splicing-Derived Neoantigen Burden in Tumors." bioRxiv, 2023, <https://doi.org/10.1101/2023.05.26.542165>.
-
-Examples of how the SpliceMutr pipeline scripts have been used for the analysis associated with the manuscript "SpliceMutr enables pan-cancer analysis of splicing-derived neoantigen burden in tumors" can be found in the folder "analysis" under the TCGA and CM038 headings and within the pipeline section. There is a jupyter notebook explaining usage of the appropriate scripts.
-
 ------------------------------------------------------------------------
+
+To learn how to use SpliceMutr and to test SpliceMutr usage, please refer to the simulation directory where a working example including snakemakes for all critical components of the pipeline has been formed.  
 
 # Usage
 
-\*\*\* the snakemake file contained within this directory is for reference. It will not run a sample without modification and this pipeline will not run to completion without your input primarily through formatting of intermediate files and necessary files for varying pipeline components.
 
 1)  This step takes in a GTF file and creates the sqlite database necessary for transcript formation in form_transcripts.R. This is covered under rule make_txdb in the snakemake file within this directory.
 
