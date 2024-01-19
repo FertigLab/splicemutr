@@ -1,0 +1,85 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                           count
+--------------------------  -------
+all                               1
+analyze_splicemutr                1
+calcualte_coding_potential        1
+calculate_gene_metric             1
+combine_splicemutr                1
+compile_kmer_counts               1
+extract_data                      1
+process_bindaffinity              1
+process_peptides                  1
+run_mhcnuggets                    1
+total                            10
+
+Select jobs to execute...
+
+[Thu Dec 21 11:38:47 2023]
+rule calcualte_coding_potential:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts/splicemutr_introns_data_splicemutr.rds, /users/tpalmer/splicemute/R/functions.R, /users/tpalmer/splicemute/scripts, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts/filenames_cp.txt
+    jobid: 3
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts/filenames_cp.txt
+    resources: tmpdir=/tmp
+
+[Thu Dec 21 11:38:52 2023]
+Finished job 3.
+1 of 10 steps (10%) done
+Select jobs to execute...
+
+[Thu Dec 21 11:38:52 2023]
+rule combine_splicemutr:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts/filenames_cp.txt, /users/tpalmer/splicemute/scripts, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/proteins.txt, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/data_splicemutr_all_pep.txt
+    jobid: 2
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/proteins.txt, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/data_splicemutr_all_pep.txt; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts/filenames_cp.txt
+    resources: tmpdir=/tmp
+
+[Thu Dec 21 11:38:54 2023]
+Finished job 2.
+2 of 10 steps (20%) done
+Select jobs to execute...
+
+[Thu Dec 21 11:38:54 2023]
+rule process_peptides:
+    input: /users/tpalmer/splicemute/inst, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/proteins.txt, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out/peps_9.txt
+    jobid: 8
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out/peps_9.txt; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/proteins.txt
+    resources: tmpdir=/tmp
+
+[Thu Dec 21 11:38:56 2023]
+Finished job 8.
+3 of 10 steps (30%) done
+Select jobs to execute...
+
+[Thu Dec 21 11:38:56 2023]
+rule run_mhcnuggets:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out/peps_9.txt, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/class1_alleles.txt, /users/tpalmer/splicemute/inst, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out/allele_files.txt
+    jobid: 7
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out/allele_files.txt; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out/peps_9.txt
+    resources: tmpdir=/tmp
+
+[Thu Dec 21 11:38:56 2023]
+Error in rule run_mhcnuggets:
+    jobid: 7
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out/peps_9.txt, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/class1_alleles.txt, /users/tpalmer/splicemute/inst, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out/allele_files.txt
+    shell:
+        
+        /users/tpalmer/splicemute/inst/runMHCnuggets.py -t I -k /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out/peps_9.txt -m /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/class1_alleles.txt -o /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out
+
+        cd /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out
+        ls $PWD/*_peps_9.txt > /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out/allele_files.txt
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2023-12-21T113844.306741.snakemake.log

@@ -1,0 +1,6 @@
+Building DAG of jobs...
+MissingInputException in rule run_mhcnuggets in file /users/tpalmer/splicemutr_example/running_splicemutr/run_splicemutr.smk, line 102:
+Missing input files for rule run_mhcnuggets:
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out/allele_files.txt
+    affected files:
+        /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/class1_alleles.txt

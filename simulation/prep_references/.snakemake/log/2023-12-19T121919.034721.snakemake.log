@@ -1,0 +1,95 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                              count
+-----------------------------  -------
+all                                  1
+convert_fasta_twobit                 1
+create_bsgenome                      1
+get_reference_data                   1
+make_txdb                            1
+prepare_leafcutter_references        1
+total                                6
+
+Select jobs to execute...
+
+[Tue Dec 19 12:40:46 2023]
+rule make_txdb:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/gencode.v39.primary_assembly.annotation.gtf.gz, /users/tpalmer/splicemute/scripts
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/G039_txdb.sqlite
+    jobid: 2
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/G039_txdb.sqlite
+    resources: tmpdir=/tmp
+
+[Tue Dec 19 12:42:52 2023]
+Finished job 2.
+1 of 6 steps (17%) done
+Select jobs to execute...
+
+[Tue Dec 19 12:42:52 2023]
+rule get_reference_data:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.fa.gz
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.fa
+    jobid: 1
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.fa
+    resources: tmpdir=/tmp
+
+[Tue Dec 19 12:43:29 2023]
+Finished job 1.
+2 of 6 steps (33%) done
+Select jobs to execute...
+
+[Tue Dec 19 12:43:30 2023]
+rule prepare_leafcutter_references:
+    input: /users/tpalmer/leafcutter, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/gencode.v39.primary_assembly.annotation.gtf.gz
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/annotations/G026.exons.txt
+    jobid: 3
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/annotations/G026.exons.txt
+    resources: tmpdir=/tmp
+
+[Tue Dec 19 12:48:50 2023]
+Finished job 3.
+3 of 6 steps (50%) done
+Select jobs to execute...
+
+[Tue Dec 19 12:48:50 2023]
+rule convert_fasta_twobit:
+    input: /users/tpalmer/packages/ucsc/faToTwoBit, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.fa
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.2bit
+    jobid: 4
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.2bit; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.fa
+    resources: tmpdir=/tmp
+
+[Tue Dec 19 12:49:41 2023]
+Finished job 4.
+4 of 6 steps (67%) done
+Select jobs to execute...
+
+[Tue Dec 19 12:49:41 2023]
+rule create_bsgenome:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references, /users/tpalmer/splicemutr_example/prep_references/DESCRIPTION, /users/tpalmer/splicemute/scripts, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.2bit
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p13
+    jobid: 5
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p13; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.2bit
+    resources: tmpdir=/tmp
+
+[Tue Dec 19 12:49:41 2023]
+Error in rule create_bsgenome:
+    jobid: 5
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references, /users/tpalmer/splicemutr_example/prep_references/DESCRIPTION, /users/tpalmer/splicemute/scripts, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/GRCh38.primary_assembly.genome.2bit
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p13
+    shell:
+        
+        cd /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references
+
+        /users/tpalmer/splicemute/scripts/forge_bsgenome.R -s /users/tpalmer/splicemutr_example/prep_references/DESCRIPTION
+        R CMD build /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p13
+        R CMD INSTALL /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/BSgenome.Hsapiens.GENCODE.GRCh38.p13_0.1.tar.gz
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: ../../../../../../../../users/tpalmer/splicemutr_example/prep_references/.snakemake/log/2023-12-19T121919.034721.snakemake.log

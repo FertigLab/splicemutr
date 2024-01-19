@@ -1,0 +1,3 @@
+KeyError in file /users/tpalmer/splicemutr_example/running_leafcutter/running_leafcutter.smk, line 86:
+'JUNC_DIR'
+  File "/users/tpalmer/splicemutr_example/running_leafcutter/running_leafcutter.smk", line 86, in <module>
