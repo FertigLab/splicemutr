@@ -155,8 +155,8 @@ def filter_kmers(kmers,groups_dframe):
     groups_unique=list(set(groups_dframe.groups.tolist()))
     for group in groups_unique:
         groups_dframe_small=groups_dframe[groups_dframe["groups"]==group]
-        normal_rows=groups_dframe_small[groups_dframe_small["deltapsi"]>0].rows.tolist()
-        tumor_rows=groups_dframe_small[groups_dframe_small["deltapsi"]<0].rows.tolist()
+        normal_rows=groups_dframe_small[groups_dframe_small["deltapsi"]<0].rows.tolist() # this was originally >0
+        tumor_rows=groups_dframe_small[groups_dframe_small["deltapsi"]>0].rows.tolist() # this was originally <0
         normal_kmers = set()
         [normal_kmers.update(kmers[i].split(":")) for i in normal_rows]
         tumor_kmers = set()

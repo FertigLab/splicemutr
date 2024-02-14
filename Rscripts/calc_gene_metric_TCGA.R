@@ -1,4 +1,3 @@
-#!/usr/bin/env Rscript
 
 library(dplyr)
 library(stringr)
