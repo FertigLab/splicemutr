@@ -85,7 +85,7 @@ def main(options):
     splicemutr_data_rows = range(len(splicemutr_data.gene.tolist()))
     splicemutr_data["rows_to_keep"] = list(splicemutr_data_rows)
     splicemutr_data_targets = splicemutr_data[splicemutr_data.gene.isin(target_genes_list) &
-                                              splicemutr_data.deltapsi.tolist() > 0]
+                                              splicemutr_data.deltapsi.tolist() < 0]
     rows_to_keep = splicemutr_data_targets.rows_to_keep.tolist()
     genes = splicemutr_data_targets.gene.tolist()
     juncs = splicemutr_data_targets.juncs.tolist()
