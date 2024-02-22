@@ -1,0 +1,51 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1 (use --cores to define parallelism)
+Rules claiming more threads will be scaled down.
+Job stats:
+job                   count
+------------------  -------
+all                       1
+running_leafcutter        1
+save_introns              1
+total                     3
+
+Select jobs to execute...
+
+[Wed Dec 20 16:03:01 2023]
+rule running_leafcutter:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt, /users/tpalmer/splicemute/scripts, /users/tpalmer/packages/leafcutter/scripts, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/annotations, /users/tpalmer/packages/leafcutter/leafviz, groups_file.txt, /users/tpalmer/packages/leafcutter/clustering
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/data.Rdata
+    jobid: 1
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/data.Rdata
+    resources: tmpdir=/tmp
+
+[Wed Dec 20 16:03:53 2023]
+Finished job 1.
+1 of 3 steps (33%) done
+Select jobs to execute...
+
+[Wed Dec 20 16:03:53 2023]
+rule save_introns:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/data.Rdata, /users/tpalmer/splicemute/scripts
+    output: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds
+    jobid: 4
+    reason: Missing output files: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds; Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/data.Rdata
+    resources: tmpdir=/tmp
+
+[Wed Dec 20 16:03:55 2023]
+Finished job 4.
+2 of 3 steps (67%) done
+Select jobs to execute...
+
+[Wed Dec 20 16:03:55 2023]
+localrule all:
+    input: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/data.Rdata, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/filenames.txt, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds
+    jobid: 0
+    reason: Input files updated by another job: /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/data.Rdata, /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds
+    resources: tmpdir=/tmp
+
+[Wed Dec 20 16:03:55 2023]
+Finished job 0.
+3 of 3 steps (100%) done
+Complete log: .snakemake/log/2023-12-20T160253.731192.snakemake.log
