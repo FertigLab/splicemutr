@@ -1,0 +1,3 @@
+KeyError in file /users/tpalmer/splicemutr_example/running_splicemutr/run_splicemutr.smk, line 43:
+'SPLICEMUTR_SCRIPTS'
+  File "/users/tpalmer/splicemutr_example/running_splicemutr/run_splicemutr.smk", line 43, in <module>
