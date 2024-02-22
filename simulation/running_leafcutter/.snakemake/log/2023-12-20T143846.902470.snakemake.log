@@ -1,2 +1,0 @@
-SyntaxError in file /users/tpalmer/splicemutr_example/running_leafcutter/running_leafcutter.smk, line 8:
-Unexpected keyword FILTERED_SJ_FILES in rule definition (running_leafcutter.smk, line 8)

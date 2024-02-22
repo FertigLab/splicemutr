@@ -1,3 +1,0 @@
-KeyError in file /users/tpalmer/splicemutr_example/running_splicemutr/run_splicemutr.smk, line 19:
-'JUNC_DIR'
-  File "/users/tpalmer/splicemutr_example/running_splicemutr/run_splicemutr.smk", line 19, in <module>

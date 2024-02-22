@@ -1,5 +1,0 @@
-Building DAG of jobs...
-MissingInputException in rule all in file /users/tpalmer/splicemutr_example/running_splicemutr/run_splicemutr.smk, line 24:
-Missing input files for rule all:
-    affected files:
-        /dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts/CHOL_introns_data_splicemutr.rds
