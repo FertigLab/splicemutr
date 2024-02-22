@@ -61,7 +61,6 @@ rule running_leafcutter:
     input:
         JUNC_DIR=config["FILTERED_SJ_FILES_OUT"],
         JUNCFILE_FILENAMES=config["JUNCFILE_FILENAMES"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
         LEAFCUTTER_SCRIPTS=config["LEAFCUTTER_SCRIPTS"],
         REF_DIR=config["REF_DIR"],
         LEAFVIZ_DIR=config["LEAFVIZ_DIR"],
@@ -74,21 +73,7 @@ rule running_leafcutter:
         echo "leafcutter_cluster_regtools"
         python {input.LEAFCUTTER_PYTHON}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
 
-        echo "leafcutter_ds"
-        {input.LEAFCUTTER_SCRIPTS}/leafcutter_ds.R -i 4 --num_threads 1 --exon_file={input.REF_DIR}/G039.exons.txt -o {input.JUNC_DIR}/leafcutter_ds {input.JUNC_DIR}/data_perind_numers.counts.gz {input.GROUPS_FILE}
+        echo "leafcutter_outlier"
+        $LEAF_SCRIPTS/leafcutterMD.R --num_threads $NSLOTS -o sample_01.filt sample_01.filt_perind_numers.counts.gz
 
-        echo "prepare_results"
-        {input.LEAFVIZ_DIR}/prepare_results.R -o {output.RDATA} -m {input.GROUPS_FILE} {input.JUNC_DIR}/data_perind_numers.counts.gz {input.JUNC_DIR}/leafcutter_ds_cluster_significance.txt {input.JUNC_DIR}/leafcutter_ds_effect_sizes.txt {input.REF_DIR}/G039
         """
-
-rule save_introns:
-    input:
-        RDATA=config["FILTERED_SJ_FILES_OUT"]+"/data.Rdata",
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
-    output:
-        OUT_FILE_FINAL=config["FILTERED_SJ_FILES_OUT"]+"/splicemutr_introns.rds"
-    shell:
-        """
-        {input.SPLICEMUTR_SCRIPTS}/save_introns.R -i {input.RDATA} -o splicemutr
-        """
-
