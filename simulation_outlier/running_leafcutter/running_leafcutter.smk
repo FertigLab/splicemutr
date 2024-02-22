@@ -74,6 +74,6 @@ rule running_leafcutter:
         python {input.LEAFCUTTER_PYTHON}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
 
         echo "leafcutter_outlier"
-        $LEAF_SCRIPTS/leafcutterMD.R --num_threads $NSLOTS -o sample_01.filt sample_01.filt_perind_numers.counts.gz
+        $LEAF_SCRIPTS/leafcutterMD.R --num_threads 1 -o sample_01.filt sample_01.filt_perind_numers.counts.gz
 
         """
