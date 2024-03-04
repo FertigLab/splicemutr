@@ -145,7 +145,7 @@ def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
 
 #-----------------------------------------------------#
 
-def filter_kmers(kmers,groups_dframe):
+def filter_kmers(kmers,groups_dframe,ref_kmers):
     # inputs:
      # kmers: the kmers list
      # groups_dframe: the groups dataframe with columns groups, deltapsi, and rows
@@ -162,9 +162,11 @@ def filter_kmers(kmers,groups_dframe):
         tumor_kmers = set()
         [tumor_kmers.update(kmers[i].split(":")) for i in tumor_rows]
         for row in tumor_rows:
-            kmers[row] = ":".join(list(set(kmers[row].split(":")).difference(normal_kmers)))
+            tumor_kmers_diff = set(kmers[row].split(":")).difference(normal_kmers)
+            kmers[row] = ":".join(list(tumor_kmers_diff.difference(ref_kmers)))
         for row in normal_rows:
-            kmers[row] = ":".join(list(set(kmers[row].split(":")).difference(tumor_kmers)))
+            normal_kmers_diff = set(kmers[row].split(":")).difference(tumor_kmers)
+            kmers[row] = ":".join(list(normal_kmers_diff.difference(ref_kmers)))
     return(kmers)
 
 #-----------------------------------------------------#
