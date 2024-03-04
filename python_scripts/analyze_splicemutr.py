@@ -15,7 +15,7 @@ def main(options, args):
     output_dir = options.output_dir
     summary_type = options.summary_type
     sample_num = int(options.sample_num)-1
-    fasta_file = int(options.fasta_file)
+    fasta_file = options.fasta_file
 
     ref_kmers = generate_ref_kmer_set(fasta_file)
     
