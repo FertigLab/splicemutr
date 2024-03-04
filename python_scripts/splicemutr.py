@@ -145,6 +145,46 @@ def assign_kmers(genotypes_file,rows,hla_dir,hla_file):
 
 #-----------------------------------------------------#
 
+def assign_kmers_TCGA(genotypes_file,rows,hla_dir,hla_file):
+    # assign_kmers(): assign kmers from mhc binding affinity data
+    # inputs:
+      # genotypes_file: the genotypes_file, including path
+      # rows: the specific_splice_dat rows
+      # hla_dir: the directory of the hla data
+      # hla_file: the specific hla file without path
+    # outputs:
+      # kmers: imm. kmers for specific sample
+      # sample_name: the specific sample name
+        
+    genotypes_file = genotypes_file.values.tolist()
+    all_kmers = {}
+    tumor_kmers = [set() for i in range(len(rows))]
+    normal_kmers = [set() for i in range(len(rows))]
+    kmers = [[] for i in range(len(rows))]
+    hlas = genotypes_file[0][0:6]
+    sample_name = genotypes_file[0][8]
+    #hlas = genotypes_file[0][0].split(",")
+    #sample_name = genotypes_file[0][1]
+    for hla in hlas:
+        if (type(hla) is float):
+            print("%s: break"%hla)
+            continue
+        else:
+            with open(hla_file%(hla_dir,hla)) as geno_file:
+                #print(hla_file%(hla_dir,hla))
+                geno_list = geno_file.read().splitlines()
+                geno_rows = [i.split('\t')[0] for i in geno_list]
+                geno_kmers = [i.split('\t')[1] for i in geno_list]
+                geno_dat = {int(geno_rows[i]):geno_kmers[i] for i in range(len(geno_rows))}
+            for j in range(len(rows)):
+                if rows[j] in geno_dat:
+                    kmers[j].append(geno_dat[rows[j]])
+        
+    kmers = [":".join(k) for k in kmers]
+    return(kmers,sample_name)
+
+#-----------------------------------------------------#
+
 def filter_kmers(kmers,groups_dframe,ref_kmers):
     # inputs:
      # kmers: the kmers list
