@@ -10,7 +10,7 @@ def main(options, args):
     
     # handling command line input
     genotypes_file = pd.read_csv(options.genotypes_file,header=None,sep="\t")
-    splice_dat = pd.read_csv(options.splice_dat,sep="\t") # change the save .txt files to have \t separator
+    splice_dat = pd.read_csv(options.splice_dat,sep=" ") # change the save .txt files to have \t separator
     hla_dir = options.summary_dir
     output_dir = options.output_dir
     summary_type = options.summary_type
