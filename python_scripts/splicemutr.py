@@ -181,3 +181,52 @@ def kmerize(pep,kmer_length):
         pep += "Z"*(kmer_length-pep_len)
         pep_len=len(pep)
     return([pep[i:i+kmer_length] for i in range(pep_len-kmer_length+1)])
+
+#-----------------------------------------------------#
+# generate_ref_kmer_set() :  generate the reference kmer set from a reference peptide fasta file
+# inputs:
+ # gencode_fasta: the fasta file input as a string
+# outputs:
+ # the full kmer set generated from the fasta file input
+
+class fasta_line:
+    def __init__(self, entry, header):
+        self.entry = entry
+        self.header=header
+
+def generate_ref_kmer_set(gencode_fasta):
+
+    with open(gencode_fasta,'r') as f:
+        lines = f.read()
+        line_split = lines.split("\n")
+        fasta_names = []
+        fasta_entry = []
+        fasta_entry_fill=""
+
+        fasta_names.append(line_split[0].replace(">",""))
+        line = line_split[1]
+        iter=1
+
+        while(">" not in line):
+            fasta_entry_fill+=line
+            iter+=1
+            line = line_split[iter]
+
+        fasta_entry.append(fasta_entry_fill)
+
+        for line in line_split[iter:]:
+            if (">" in line):
+                fasta_names.append(line.replace(">",""))
+                fasta_entry.append(fasta_entry_fill)
+                fasta_entry_fill=""
+            else:
+                fasta_entry_fill+=line
+        
+        fasta_objects = [fasta_line(fasta_entry[i],fasta_names[i]) for i in range(0,len(fasta_entry))]
+
+        kmers = set()
+        for fasta_obj in fasta_objects:
+            kmer_set = set(kmerize(fasta_obj.entry,9))
+            kmers.update(kmer_set)
+            
+    return(kmers)
