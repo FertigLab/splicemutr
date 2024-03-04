@@ -17,7 +17,7 @@ def main(options, args):
     sample_num = int(options.sample_num)-1
     fasta_file = options.fasta_file
 
-    ref_kmers = generate_ref_kmer_set(fasta_file)
+    ref_kmers = sp.generate_ref_kmer_set(fasta_file)
     
     # processing command line arguments
     rows = range(len(splice_dat.index))
