@@ -62,7 +62,8 @@ if __name__ == "__main__":
     parser.add_option("-t", "--summary_type", dest="summary_type",
                   help="either 'perc' (percentile) or something else")
     parser.add_option("-n", "--sample_num", dest="sample_num",
-                  help="the genotype row number")
+                  help="the genotype row number",
+                  type=str)
     parser.add_option("-f", "--fasta_file", dest="fasta_file",
                 help="the fasta file input")
     (options, args) = parser.parse_args()
