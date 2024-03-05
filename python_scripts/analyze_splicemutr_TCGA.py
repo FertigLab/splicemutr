@@ -14,7 +14,7 @@ def main(options, args):
     hla_dir = options.summary_dir
     output_dir = options.output_dir
     summary_type = options.summary_type
-    sample_num = int(options.sample_num)-1
+    sample_num = int(options.sample)-1
     fasta_file = options.fasta_file
 
     ref_kmers = sp.generate_ref_kmer_set(fasta_file)
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                   help="the output directory")
     parser.add_option("-t", "--summary_type", dest="summary_type",
                   help="either 'perc' (percentile) or something else")
-    parser.add_option("-n", "--sample_num", dest="sample_num",
+    parser.add_option("-n", "--sample", dest="sample",
                   help="the genotype row number",
                   type=str)
     parser.add_option("-f", "--fasta_file", dest="fasta_file",
