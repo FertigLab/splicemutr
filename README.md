@@ -38,7 +38,7 @@ To learn how to use SpliceMutr and to test SpliceMutr usage, please refer to the
 
 # Running the splicemutr simulation
 
-splicemutr_simulation.Rmd runs the polyester simulations generating the fasta files that will be processed.
+splicemutr_simulation.Rmd runs the polyester simulations generating the fasta files that will be processed. To run this Rmd, you will need to download a gencode transcripts fasta file
 
 Within the running_STAR folder there are two files, run_STAR.sh and buildSTARindex_human.sh. You will need to download the appropriate annotation and genome fasta files, but the buildSTARindex_human.sh SLURM script, once customized for your specific annotation and genome fasta file, will generate the STAR index necessary to run STAR. The run_STAR.sh SLURM script, once modified to fit your exact file structure, will run STAR on your fasta files. You will need to install an anaconda version of STAR to run this script properly. That or ensure STAR is installed on the machine you will be running this pipeline on.
 
