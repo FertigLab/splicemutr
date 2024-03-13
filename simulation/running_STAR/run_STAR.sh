@@ -1,5 +1,4 @@
 #!/bin/bash
-#SBATCH --mail-user=tpalme15@jhmi.edu
 #SBATCH --mail-type=end,fail
 #SBATCH --job-name=run_STAR
 #SBATCH --mem=50G
