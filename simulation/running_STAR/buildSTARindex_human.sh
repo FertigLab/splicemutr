@@ -1,5 +1,4 @@
 #!/bin/bash
-#SBATCH --mail-user=tpalme15@jhmi.edu
 #SBATCH --mail-type=end,fail
 #SBATCH --job-name=index_STAR
 #SBATCH --mem=50G
@@ -18,6 +17,13 @@ OUT_DIR=$REF_DIR/STAR_GRCh38.gencode.v39
 mkdir -p $OUT_DIR
 
 cd $OUT_DIR
+
+FASTA_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/GRCh38.primary_assembly.genome.fa.gz
+GFF3_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gff3.gz
+
+wget $FASTA_URL
+wget $GFF3_URL
+gunzip *
 
 FASTA=$REF_DIR/GRCh38.primary_assembly.genome.fa
 GFF3=$REF_DIR/gencode.v39.primary_assembly.annotation.gtf
