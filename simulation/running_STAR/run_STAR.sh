@@ -7,9 +7,7 @@
 #SBATCH --cpus-per-task 10
 #SBATCH --array=1-8
 
-module load conda
-
-source activate /users/tpalmer/miniconda3/envs/star
+module load star
 
 echo $(date)
 
