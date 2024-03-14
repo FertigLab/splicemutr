@@ -6,4 +6,4 @@
 
 module load R
 
-Rscript -e 'knitr::knit("splicemutr_simulation.Rmd")'
+Rscript -e 'knitr::knit("./splicemutr/simulation/splicemutr_simulation.Rmd")'
