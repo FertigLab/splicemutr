@@ -17,7 +17,7 @@ OUT_DIR=$REF_DIR/STAR_GRCh38.gencode.v39
 
 mkdir -p $OUT_DIR
 
-cd $OUT_DIR
+cd $REF_DIR
 
 FASTA=$REF_DIR/GRCh38.primary_assembly.genome.fa
 GFF3=$REF_DIR/gencode.v39.primary_assembly.annotation.gtf
