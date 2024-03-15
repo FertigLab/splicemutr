@@ -11,7 +11,7 @@ echo $(date)
 #module load sharedapps
 module load star
 
-REF_DIR=/GRCh38.gencode.v39
+REF_DIR=$(pwd)/GRCh38.gencode.v39
 OUT_DIR=$REF_DIR/STAR_GRCh38.gencode.v39
 
 mkdir -p $OUT_DIR

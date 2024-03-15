@@ -11,11 +11,11 @@ module load star
 
 echo $(date)
 
-FASTAFILES=/simulated_reads/fasta_files.txt
+FASTAFILES=$(pwd)/simulated_reads/fasta_files.txt
 FASTAFILE_1=$(sed -n ${SLURM_ARRAY_TASK_ID}p $FASTAFILES)
 FILENAME=$(basename ${FASTAFILE_1//'_1.fasta'/})
 FASTAFILE_2=${FASTAFILE_1//'1.fasta'/'2.fasta'}
-OUT_DIR=/simulated_reads/bams
+OUT_DIR=./simulated_reads/bams
 mkdir -p $OUT_DIR
 OUT_DIR=$OUT_DIR/$FILENAME
 
