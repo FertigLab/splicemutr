@@ -5,15 +5,12 @@ date: "2024-01-19"
 output: html_document
 ---
 
-Polyester simulations
-
-```{r}
-
+```{r setup, include=FALSE}
 cran_packages <- c("BiocManager", "tidyverse", "dplyr")
 
 lapply(cran_packages, function(x){
   if (!require(x, character.only = TRUE)) {
-    install.packages(x, dependencies = TRUE)
+    install.packages(x, dependencies = TRUE, repos = "https://cran.r-project.org")
     library(x, character.only = TRUE)
   }
 })
@@ -23,8 +20,16 @@ BiocManager::install(c("BiocFileCache", "polyester", "Biostrings"))
 library(Biostrings)
 library(polyester)
 
+knitr::opts_knit$set(root.dir = './')
 
 set.seed(27)
+```
+
+Polyester simulations
+
+```{r}
+
+
 
 # FASTA annotation
 bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
