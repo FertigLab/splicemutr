@@ -9,10 +9,19 @@ Polyester simulations
 
 ```{r}
 
-library(polyester)
+cran_packages <- c("BiocManager", "tidyverse", "dplyr")
+
+lapply(cran_packages, function(x){
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x, dependencies = TRUE)
+    library(x, character.only = TRUE)
+  }
+})
+
+BiocManager::install(c("BiocFileCache", "polyester", "Biostrings"))
+
 library(Biostrings)
-library(tidyverse)
-library(dplyr)
+library(polyester)
 
 
 set.seed(27)
