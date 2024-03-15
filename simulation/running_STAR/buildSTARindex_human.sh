@@ -19,16 +19,16 @@ mkdir -p $OUT_DIR
 cd $REF_DIR
 
 FASTA_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/GRCh38.primary_assembly.genome.fa.gz
-GFF3_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gff3.gz
+GTF_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.basic.annotation.gtf.gz
 
 wget $FASTA_URL
-wget $GFF3_URL
+wget $GTF_URL
 gunzip *
 
 FASTA=$REF_DIR/GRCh38.primary_assembly.genome.fa
-GFF3=$REF_DIR/gencode.v39.primary_assembly.annotation.gtf
+GTF=$REF_DIR/gencode.v39.primary_assembly.annotation.gtf
 OVERHANG=99
 
-STAR --runMode genomeGenerate --sjdbGTFtagExonParentTranscript Parent --genomeDir $OUT_DIR --genomeFastaFiles $FASTA --sjdbGTFfile $GFF3 --sjdbOverhang $OVERHANG
+STAR --runMode genomeGenerate --sjdbGTFtagExonParentTranscript Parent --genomeDir $OUT_DIR --genomeFastaFiles $FASTA --sjdbGTFfile $GTF --sjdbOverhang $OVERHANG
 
 echo $(date)
