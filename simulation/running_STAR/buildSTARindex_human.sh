@@ -19,7 +19,7 @@ mkdir -p $OUT_DIR
 cd $REF_DIR
 
 FASTA_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/GRCh38.primary_assembly.genome.fa.gz
-GTF_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.basic.annotation.gtf.gz
+GTF_URL=https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz
 
 wget $FASTA_URL
 wget $GTF_URL
