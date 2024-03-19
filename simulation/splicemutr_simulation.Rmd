@@ -171,7 +171,7 @@ sim_rep_file <- "./simulated_reads/sim_rep_info.txt"
 sim_rep <- read.table(sim_rep_file, sep = "\t", header = TRUE)
 
 fasta_directory <- sprintf("%s/simulated_reads",getwd())
-sim_rep$samples <- vapply(sim_rep$rep_id,function(sample){sprintf("%s/%s",fasta_directory,sample)},character(1))
+sim_rep$samples <- vapply(sim_rep$rep_id,function(sample){sprintf("%s/%s_01.fasta",fasta_directory,sample)},character(1))
 
 fasta_files <-  sim_rep %>% dplyr::select(samples)
 
