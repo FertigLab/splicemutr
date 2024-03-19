@@ -21,6 +21,7 @@ OUT_DIR=$OUT_DIR/$FILENAME
 
 THREADS=10
 
-REFERENCE=STAR_GRCh38.gencode.v39
+REF_DIR=$(pwd)/GRCh38.gencode.v39
+REFERENCE=$REF_DIR/STAR_GRCh38.gencode.v39
 
-STAR --genomeDir $GENOME_DIR --readFilesIn ${fastq1} ${fastq2} --twopassMode Basic --outSAMstrandField intronMotif --outFileNamePrefix $outprefix --runThreadN 6 --readFilesCommand zcat --outSAMtype BAM Unsorted --quantMode GeneCounts
+STAR --genomeDir $REFERENCE --readFilesIn ${FASTAFILE_1} ${FASTAFILE_2} --twopassMode Basic --outSAMstrandField intronMotif --outFileNamePrefix $OUT_DIR --runThreadN 6 --readFilesCommand zcat --outSAMtype BAM Unsorted --quantMode GeneCounts
