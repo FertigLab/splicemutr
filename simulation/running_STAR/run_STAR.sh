@@ -23,4 +23,4 @@ THREADS=10
 
 REFERENCE=STAR_GRCh38.gencode.v39
 
-STAR --genomeDir $GENOME_DIR --readFilesIn ${fastq1} ${fastq2} --twopassMode Basic --outSAMstrandField intronMotif --outFileNamePrefix $outprefix --runThreadN 6 --readFilesCommand zcat --outSAMtype BAM Unsorted --quantMode GeneCounts
+STAR --genomeDir $GENOME_DIR --readFilesIn ${fastq1} ${fastq2} --twopassMode Basic --outSAMstrandField intronMotif --outFileNamePrefix $FILENAME --runThreadN 6 --readFilesCommand zcat --outSAMtype BAM Unsorted --quantMode GeneCounts
