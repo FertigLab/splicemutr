@@ -109,6 +109,7 @@ simulate_experiment("./gencode.v39.pc_transcripts_small.fa",
                     num_reps = c(4, 4),
                     fold_changes = countmat_filt,
                     outdir = './simulated_reads')
+
 ```
 
 
@@ -137,6 +138,7 @@ HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_2
 HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_3
 
 ```{r}
+
 library(tidyverse)
 
 sim_rep_file <- "./simulated_reads/sim_rep_info.txt"
@@ -158,3 +160,29 @@ write.table(
   file = "./simulated_reads/genotypes_specific.txt"
 )
 ```
+
+# Forming fasta_files.txt
+
+```{r}
+
+library(dplyr)
+
+sim_rep_file <- "./simulated_reads/sim_rep_info.txt"
+sim_rep <- read.table(sim_rep_file, sep = "\t", header = TRUE)
+
+fasta_directory <- sprintf("%s/simulated_reads",getwd())
+sim_rep$samples <- vapply(sim_rep$rep_id,function(sample){sprintf("%s/%s",fasta_directory,sample)},character(1))
+
+fasta_files <-  sim_rep %>% dplyr::select(samples)
+
+write.table(
+  fasta_files,
+  sep = "\t",
+  quote = FALSE,
+  col.names = FALSE,
+  row.names = FALSE,
+  file = "./simulated_reads/fasta_files.txt"
+)
+
+```
+
