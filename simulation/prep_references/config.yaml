@@ -8,14 +8,21 @@ GTF_FILE : "gencode.v39.primary_assembly.annotation.gtf.gz"
 SPLICEMUTR_SCRIPTS : "/users/tpalmer/splicemute/scripts"
 OUT_FILE : "G039_txdb.sqlite"
 
+<<<<<<< HEAD
 LEAF_DIR : "leafcutter"
+=======
+LEAF_DIR : "/users/tpalmer/leafcutter"
+>>>>>>> 92f9811eea85e4024672859b87281ccd43f0bb59
 GTF : "splicemutr_references/gencode.v39.primary_assembly.annotation.gtf.gz"
 ANN_DIR : "splicemutr_references/annotations"
 
 FASTA_FILE : "GRCh38.primary_assembly.genome.fa"
 TWOBIT_FILE : "GRCh38.primary_assembly.genome.2bit"
 FA_TO_TWOBIT_EXEC : "faToTwoBit"
+<<<<<<< HEAD
 FA_TO_TWOBIT_URL : "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faToTwoBit"
+=======
+>>>>>>> 92f9811eea85e4024672859b87281ccd43f0bb59
 
-SEED_FILE : "/users/tpalmer/splicemutr_example/prep_references/DESCRIPTION"
+SEED_FILE : "DESCRIPTION"
 BSGENOME : "BSgenome.Hsapiens.GENCODE.GRCh38.p13"
