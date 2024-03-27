@@ -5,31 +5,131 @@ date: "2024-01-19"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-cran_packages <- c("BiocManager", "tidyverse", "dplyr")
+Polyester simulations
 
-lapply(cran_packages, function(x){
+
+```r
+packages <- c("BiocManager", "BiocFileCache", "polyester", "Biostrings", "tidyverse", "dplyr")
+lapply(packages, function(x){
   if (!require(x, character.only = TRUE)) {
-    install.packages(x, dependencies = TRUE, repos = "https://cran.r-project.org")
+    install.packages(x, dependencies = TRUE)
     library(x, character.only = TRUE)
   }
 })
-
-BiocManager::install(c("BiocFileCache", "polyester", "Biostrings"))
-
-library(Biostrings)
-library(polyester)
-
-knitr::opts_knit$set(root.dir = './')
-
-set.seed(27)
 ```
 
-Polyester simulations
+```
+## Loading required package: BiocManager
+```
 
-```{r}
+```
+## Loading required package: BiocFileCache
+```
 
+```
+## Loading required package: dbplyr
+```
 
+```
+## Loading required package: polyester
+```
+
+```
+## Loading required package: Biostrings
+```
+
+```
+## Loading required package: BiocGenerics
+```
+
+```
+## 
+## Attaching package: 'BiocGenerics'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     IQR, mad, sd, var, xtabs
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     anyDuplicated, aperm, append, as.data.frame, basename, cbind,
+##     colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+##     get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply,
+##     match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+##     Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort,
+##     table, tapply, union, unique, unsplit, which.max, which.min
+```
+
+```
+## Loading required package: S4Vectors
+```
+
+```
+## Loading required package: stats4
+```
+
+```
+## 
+## Attaching package: 'S4Vectors'
+```
+
+```
+## The following object is masked from 'package:utils':
+## 
+##     findMatches
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     expand.grid, I, unname
+```
+
+```
+## Loading required package: IRanges
+```
+
+```
+## Loading required package: XVector
+```
+
+```
+## Loading required package: GenomeInfoDb
+```
+
+```
+## 
+## Attaching package: 'Biostrings'
+```
+
+```
+## The following object is masked from 'package:base':
+## 
+##     strsplit
+```
+
+```
+## Loading required package: tidyverse
+```
+
+```
+## Error: package or namespace load failed for 'tidyverse':
+##  .onAttach failed in attachNamespace() for 'tidyverse', details:
+##   call: NULL
+##   error: package or namespace load failed for 'lubridate' in loadNamespace(j <- i[[1L]], c(lib.loc, .libPaths()), versionCheck = vI[[j]]):
+##  there is no package called 'timechange'
+```
+
+```
+## Error in contrib.url(repos, "source"): trying to use CRAN without setting a mirror
+```
+
+```r
+set.seed(27)
 
 # FASTA annotation
 bfc <- BiocFileCache::BiocFileCache(ask = FALSE)
@@ -55,6 +155,13 @@ genes_trans_map_target <- genes_trans_map %>% dplyr::filter(gene %in% gene_count
 
 gene_counts_filt[seq(1,200),"type"] <- "diff_splice" # isoform usage varies across groups
 rownames(gene_counts_filt) <- gene_counts_filt$gene
+```
+
+```
+## Warning: Setting row names on a tibble is deprecated.
+```
+
+```r
 genes_trans_map_target$type <- "diff_splice"
 
 # ~20x coverage ----> reads per transcript = transcriptlength/readlength * 20
@@ -109,14 +216,13 @@ simulate_experiment("./gencode.v39.pc_transcripts_small.fa",
                     num_reps = c(4, 4),
                     fold_changes = countmat_filt,
                     outdir = './simulated_reads')
-
 ```
 
 
 Forming groups file
 
-```{r}
 
+```r
 library(tidyverse)
 
 sim_rep_file <- "./simulated_reads/sim_rep_info.txt"
@@ -127,7 +233,6 @@ groups_file <-  sim_rep %>% select(rep_id, group)
 write.table(groups_file,
             file = "./groups_file.txt",
             sep = "\t", col.names = FALSE, quote = FALSE, row.names = FALSE)
-
 ```
 
 Forming genotypes_specific.txt file
@@ -137,8 +242,8 @@ HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_1
 HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_2
 HLA-A01-01,HLA-B02-01,HLA-C03-01  sample_3
 
-```{r}
 
+```r
 library(tidyverse)
 
 sim_rep_file <- "./simulated_reads/sim_rep_info.txt"
@@ -160,29 +265,3 @@ write.table(
   file = "./simulated_reads/genotypes_specific.txt"
 )
 ```
-
-# Forming fasta_files.txt
-
-```{r}
-
-library(dplyr)
-
-sim_rep_file <- "./simulated_reads/sim_rep_info.txt"
-sim_rep <- read.table(sim_rep_file, sep = "\t", header = TRUE)
-
-fasta_directory <- sprintf("%s/simulated_reads",getwd())
-sim_rep$samples <- vapply(sim_rep$rep_id,function(sample){sprintf("%s/%s_1.fasta",fasta_directory,sample)},character(1))
-
-fasta_files <-  sim_rep %>% dplyr::select(samples)
-
-write.table(
-  fasta_files,
-  sep = "\t",
-  quote = FALSE,
-  col.names = FALSE,
-  row.names = FALSE,
-  file = "./simulated_reads/fasta_files.txt"
-)
-
-```
-
