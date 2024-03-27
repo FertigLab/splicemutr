@@ -40,7 +40,6 @@ rule download_faToTwoBit:
         wget {input.FA_TO_TWOBIT_URL}
         """
 
-
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
