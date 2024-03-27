@@ -5,7 +5,7 @@ splicemutr_simulation.Rmd runs the polyester simulations generating the fasta fi
 
 run:
 ```
-prepare-simulation.slurm
+sbatch prepare-simulation.slurm
 ```
 
 ## run STAR
