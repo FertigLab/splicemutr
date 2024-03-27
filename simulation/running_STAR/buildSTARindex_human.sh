@@ -25,6 +25,7 @@ wget $FASTA_URL
 wget $GTF_URL
 gunzip *
 
+
 FASTA=$REF_DIR/GRCh38.primary_assembly.genome.fa
 GTF=$REF_DIR/gencode.v39.primary_assembly.annotation.gtf
 OVERHANG=99

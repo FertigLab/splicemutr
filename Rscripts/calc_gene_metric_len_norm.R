@@ -70,14 +70,6 @@ format_juncs <- function(juncs){
 }
 
 #------------------------------------------------------------------------------#
-# local play
-
-# gene_expression_file <- "F:/head_and_neck_DARIA/data/splicemutr_02_13_2022/calc_gene_expression/featurecounts_all_vst.rds"
-splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/neosplice_example/intermediates/splicemutr/combine_splicemutr_out/data_splicemutr_all_pep.rds"
-kmer_counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/neosplice_example/intermediates/splicemutr/kmer_counts_out/all_kmers_counts.txt"
-junc_expr_file <- "/Users/tpalme15/Desktop/splicemutr_paper/neosplice_example/intermediates/splicemutr/create_junc_expression_out/junc_expr_combined_vst.rds"
-
-#------------------------------------------------------------------------------#
 # reading in the files
 
 # if (str_detect(gene_expression_file,"vst")){
