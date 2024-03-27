@@ -20,7 +20,7 @@ sbatch splicemutr/simulation/running_STAR/run_STAR.sh
 ## prep references 
 ```
 srun --pty bash
-module load conda #not guaranteed to work - testing?
+module load conda
 conda env create -f environment.yml #takes time
 ```
 
