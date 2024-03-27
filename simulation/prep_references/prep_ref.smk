@@ -21,6 +21,26 @@ rule all:
         TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
         BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
 
+rule download_leafcutter:
+    input:
+        LEAF_URL=config["LEAF_URL"]
+    output:
+        LEAF_DIR=config["LEAF_DIR]
+    shell:
+        """
+        git clone {input.LEAF_URL}
+        """
+rule download_faToTwoBit:
+    input:
+        FA_TO_TWOBIT_URL=config["FA_TO_TWOBIT_URL"]
+    output:
+        FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"]
+    shell:
+        """
+        wget {input.FA_TO_TWOBIT_URL}
+        """
+
+
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
