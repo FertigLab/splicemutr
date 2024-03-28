@@ -33,13 +33,13 @@ rule download_leafcutter:
         """
 
 rule download_faToTwoBit:
-    input:
+    params:
         FA_TO_TWOBIT_URL=config["FA_TO_TWOBIT_URL"]
     output:
         FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"]
     shell:
         """
-        wget {input.FA_TO_TWOBIT_URL}
+        wget {params.FA_TO_TWOBIT_URL}
         """
 
 rule get_reference_data:
