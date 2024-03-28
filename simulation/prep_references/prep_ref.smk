@@ -7,7 +7,7 @@ if not os.path.exists(config["REF_DIR"]):
     os.chdir(config["REF_DIR"])
     os.system("wget %s"%config["GTF_URL"])
     os.system("wget %s"%config["FASTA_URL"])
-if not os.path.exists(config["ANN_DIR"]):
+if not os.path.exists(config["REF_DIR"]+/+config["ANN_DIR"]):
     os.chdir(config["REF_DIR"])
     os.mkdir(config["ANN_DIR"])
 if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
