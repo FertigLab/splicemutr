@@ -8,6 +8,7 @@ if not os.path.exists(config["REF_DIR"]):
     os.system("wget %s"%config["GTF_URL"])
     os.system("wget %s"%config["FASTA_URL"])
 if not os.path.exists(config["ANN_DIR"]):
+    os.chdir(config["REF_DIR"])
     os.mkdir(config["ANN_DIR"])
 if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
     os.system("rm -r %s"%(config["REF_DIR"]+"/"+config["BSGENOME"]))
@@ -17,7 +18,7 @@ rule all:
         FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"],
         GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"],
         OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"],
-        ANNOTATION=config["ANN_DIR"]+"/"+"G039.exons.txt",
+        ANNOTATION=config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt",
         TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
         BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
 
@@ -30,7 +31,7 @@ rule download_leafcutter:
         """
         git clone {input.LEAF_URL}
         """
-        
+
 rule download_faToTwoBit:
     input:
         FA_TO_TWOBIT_URL=config["FA_TO_TWOBIT_URL"]
@@ -71,7 +72,7 @@ rule prepare_leafcutter_references:
         LEAF_DIR=config["LEAF_DIR"],
         GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
-        ANNOTATION=config["ANN_DIR"]+"/"+"G039.exons.txt"
+        ANNOTATION=config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt"
     shell:
         """
         {input.LEAF_DIR}/scripts/gtf_to_exons.R {input.GTF_FILE} {output.ANNOTATION}
