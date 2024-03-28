@@ -23,10 +23,12 @@ Create the splicemutr environment first:
 module load conda
 conda env create -f splicemutr_packages.yml #takes time
 ```
-After the environment has been built, prep_references can be ran:
+After the environment has been built, prep_references can be ran, for example:
 ```
 conda activate splicemutr
-snakemake --snakefile ./splicemutr/simulation/prep_references/prep_ref.smk
+snakemake --snakefile ./splicemutr/simulation/prep_references/prep_ref.smk \
+          --configfile ./splicemutr/simulation/prep_references/config.yaml \
+          --cores 4
 ```
 
 
