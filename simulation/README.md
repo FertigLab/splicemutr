@@ -5,7 +5,7 @@ splicemutr_simulation.Rmd runs the polyester simulations generating the fasta fi
 
 run:
 ```
-prepare-simulation.slurm
+sbatch prepare-simulation.slurm
 ```
 
 ## run STAR
@@ -18,6 +18,20 @@ sbatch splicemutr/simulation/running_STAR/run_STAR.sh
 ```
 
 ## prep references 
+Create the splicemutr environment first:
+```
+module load conda
+conda env create -f splicemutr_packages.yml #takes time
+```
+After the environment has been built, prep_references can be ran, for example:
+```
+conda activate splicemutr
+snakemake --snakefile ./splicemutr/simulation/prep_references/prep_ref.smk \
+          --configfile ./splicemutr/simulation/prep_references/config.yaml \
+          --cores 4
+```
+
+
 Within the prep_references folder, you will find config, DESCRIPTION, and .smk files. The .smk file is a snakemake file that will prepare the referneces that will be used by SpliceMutr and LeafCutter for analysis. The DESCRIPTION file is a BSgenome file that will need to be modified to fit your BSgenome reference file. The specifications within the config file will need to be modified to fit your reference files that are to be downloaded and used by SpliceMutr. 
 
 You will need to activate the leafcutter_pacakge.yml conda environment within the envs folder in order to run this portion of the SpliceMutr pipeline. Within the running_leafcutter folder, you will find a config, a groups_file, and .smk file. Once the config file is modified to fit your personal specification, the snakemake file can be run which will modify and then run LeafCutter on your SJ.out.tab files output from the STAR alignment step. 
