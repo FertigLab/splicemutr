@@ -23,13 +23,13 @@ rule all:
         BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
 
 rule download_leafcutter:
-    input:
+    params:
         LEAF_URL=config["LEAF_URL"]
     output:
         LEAF_DIR=config["LEAF_DIR"]
     shell:
         """
-        git clone {input.LEAF_URL}
+        git clone {params.LEAF_URL}
         """
 
 rule download_faToTwoBit:
