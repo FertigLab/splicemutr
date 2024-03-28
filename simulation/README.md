@@ -18,10 +18,15 @@ sbatch splicemutr/simulation/running_STAR/run_STAR.sh
 ```
 
 ## prep references 
+Create the splicemutr environment first:
 ```
-srun --pty bash
 module load conda
-conda env create -f environment.yml #takes time
+conda env create -f splicemutr_packages.yml #takes time
+```
+After the environment has been built, prep_references can be ran:
+```
+conda activate splicemutr
+snakemake --snakefile ./splicemutr/simulation/prep_references/prep_ref.smk
 ```
 
 
