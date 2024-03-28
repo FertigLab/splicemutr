@@ -25,11 +25,12 @@ rule download_leafcutter:
     input:
         LEAF_URL=config["LEAF_URL"]
     output:
-        LEAF_DIR=config["LEAF_DIR]
+        LEAF_DIR=config["LEAF_DIR"]
     shell:
         """
         git clone {input.LEAF_URL}
         """
+        
 rule download_faToTwoBit:
     input:
         FA_TO_TWOBIT_URL=config["FA_TO_TWOBIT_URL"]
