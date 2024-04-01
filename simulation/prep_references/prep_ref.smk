@@ -42,6 +42,31 @@ rule download_faToTwoBit:
         wget {params.FA_TO_TWOBIT_URL}
         """
 
+rule create_description:
+    output:
+        SEED_FILE=config["SEED_FILE"]
+    shell:
+        """
+        echo "Package: BSgenome.Hsapiens.GENCODE.GRCh38.p13" >> {output.SEED_FILE}
+        echo "Title: Full genome sequences for Homo sapiens GRCh38.p13" >> {output.SEED_FILE}
+        echo "Description: Full genome sequences for Homo sapiens (human) as provided by GENCODE (Genome Reference Consortium Human Build 38 patch release 39)" >> {output.SEED_FILE}
+        echo "Version: 0.1" >> {output.SEED_FILE}
+        echo "Author: Theron Palmer" >> {output.SEED_FILE}
+        echo "Maintainer: Theron<tpalme15@jhmi.edu>" >> {output.SEED_FILE}
+        echo "Suggests:" >> {output.SEED_FILE}
+        echo "License: ?" >> {output.SEED_FILE}
+        echo "organism: Homo sapiens" >> {output.SEED_FILE}
+        echo "common_name: human" >> {output.SEED_FILE}
+        echo "seqs_srcdir: splicemutr_references" >> {output.SEED_FILE}
+        echo "seqfile_name: GRCh38.primary_assembly.genome.2bit" >> {output.SEED_FILE}
+        echo "provider: GENCODE" >> {output.SEED_FILE}
+        echo "genome: GRCh38.p13" >> {output.SEED_FILE}
+        echo "release_date: 12/2021" >> {output.SEED_FILE}
+        echo "source_url: ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/" >> {output.SEED_FILE}
+        echo "organism_biocview: AnnotationData, Genetics, BSgenome, Homo_sapiens" >> {output.SEED_FILE}
+        echo "BSgenomeObjname: Hsapiens" >> {output.SEED_FILE}
+        """
+
 rule get_reference_data:
     input:
         REF_DIR=config["REF_DIR"],
