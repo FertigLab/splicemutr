@@ -19,7 +19,7 @@ def main(options):
     
     epitopes_in_cancer = pd.read_csv(ieatlas_file,sep="\t")
     epitopes = epitopes_in_cancer.Sequence.tolist()
-
+    
     #------------------------------------------------------------------#
     ## g) preparing the per sample target data
         
