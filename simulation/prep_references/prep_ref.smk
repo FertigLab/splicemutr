@@ -68,14 +68,15 @@ rule create_description:
         """
 
 rule get_reference_data:
+    params:
+        REF_DIR=config["REF_DIR"]
     input:
-        REF_DIR=config["REF_DIR"],
         FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
     output:
-        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"],
+        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"]
     shell:
         """
-        cd {input.REF_DIR}
+        cd {params.REF_DIR}
         gunzip -k {input.FASTA_FILE_GZ}
         """
 

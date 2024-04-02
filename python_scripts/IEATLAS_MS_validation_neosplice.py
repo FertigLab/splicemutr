@@ -7,7 +7,8 @@ def main(options):
     neosplice_output_file = options.neosplice_output_file
     ieatlas_file = options.ieatlas_file
     out_dir = options.out_dir
-    
+    sample_id = options.sample_id
+
     #------------------------------------------------------------------#
     ## Loading in the neosplice output file
 
@@ -19,7 +20,7 @@ def main(options):
     
     epitopes_in_cancer = pd.read_csv(ieatlas_file,sep="\t")
     epitopes = epitopes_in_cancer.Sequence.tolist()
-    
+
     #------------------------------------------------------------------#
     ## g) preparing the per sample target data
         
@@ -44,6 +45,8 @@ if __name__ == "__main__":
             help="the neosplice output file")
     parser.add_option("-o", "--out_dir", dest="out_dir",
                       help="the output_directory")
+    parser.add_option("-s", "--sample_id", dest="sample_id",
+                help="the sample_id")
     (options, args) = parser.parse_args()
 
     main(options)
