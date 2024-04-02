@@ -1,32 +1,36 @@
 import os
+import platform
 
 configfile: "config.yaml"
 
 if not os.path.exists(config["REF_DIR"]):
     os.mkdir(config["REF_DIR"])
     os.chdir(config["REF_DIR"])
-    os.system("wget %s"%config["GTF_URL"])
-    os.system("wget %s"%config["FASTA_URL"])
-if not os.path.exists(config["REF_DIR"]+"/"+config["ANN_DIR"]):
-    os.chdir(config["REF_DIR"])
-    os.mkdir(config["ANN_DIR"])
-if os.path.exists(config["REF_DIR"]+"/"+config["BSGENOME"]):
-    os.system("rm -r %s"%(config["REF_DIR"]+"/"+config["BSGENOME"]))
+    if platform.system() == "Linux":
+        os.system("wget %s"%config["GTF_URL"])
+        os.system("wget %s"%config["FASTA_URL"])
+    elif platform.system() == "Darwin":
+        os.system("curl %s --output %s"%(config["GTF_URL"],config["GTF_FILE"]))
+        os.system("curl %s --output %s"%(config["FASTA_URL"],config["FASTA_FILE_GZ"]))
+if not os.path.exists(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]):
+    os.mkdir(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"])
+if os.path.exists(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]):
+    os.system("rm -r %s"%(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]))
 
 rule all:
     input:
-        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"],
-        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"],
-        OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"],
-        ANNOTATION=config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt",
-        TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
-        BSGENOME=config["REF_DIR"]+"/"+config["BSGENOME"]
+        FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
+        GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"],
+        OUT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["OUT_FILE"],
+        ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt",
+        TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
+        BSGENOME=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]
 
 rule download_leafcutter:
     params:
         LEAF_URL=config["LEAF_URL"]
     output:
-        LEAF_DIR=config["LEAF_DIR"]
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]
     shell:
         """
         git clone {params.LEAF_URL}
@@ -44,7 +48,7 @@ rule download_faToTwoBit:
 
 rule create_description:
     output:
-        SEED_FILE=config["SEED_FILE"]
+        SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"]
     shell:
         """
         echo "Package: BSgenome.Hsapiens.GENCODE.GRCh38.p13" >> {output.SEED_FILE}
@@ -69,11 +73,11 @@ rule create_description:
 
 rule get_reference_data:
     params:
-        REF_DIR=config["REF_DIR"]
+        REF_DIR=os.getcwd()+"/"+config["REF_DIR"]
     input:
-        FASTA_FILE_GZ=config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
+        FASTA_FILE_GZ=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE_GZ"]
     output:
-        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"]
+        FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"]
     shell:
         """
         cd {params.REF_DIR}
@@ -82,11 +86,11 @@ rule get_reference_data:
 
 rule make_txdb:
     input:
-        REF_DIR=config["REF_DIR"],
-        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"]
+        REF_DIR=os.getcwd()+"/"+config["REF_DIR"],
+        GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"],
+        SPLICEMUTR_SCRIPTS=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
     output:
-        OUT_FILE=config["REF_DIR"]+"/"+config["OUT_FILE"]
+        OUT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["OUT_FILE"]
     shell:
         """
 
@@ -95,10 +99,10 @@ rule make_txdb:
 
 rule prepare_leafcutter_references:
     input:
-        LEAF_DIR=config["LEAF_DIR"],
-        GTF_FILE=config["REF_DIR"]+"/"+config["GTF_FILE"]
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
+        GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
-        ANNOTATION=config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt"
+        ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt"
     shell:
         """
         {input.LEAF_DIR}/scripts/gtf_to_exons.R {input.GTF_FILE} {output.ANNOTATION}
@@ -111,9 +115,9 @@ rule prepare_leafcutter_references:
 rule convert_fasta_twobit:
     input:
         FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
-        FASTA_FILE=config["REF_DIR"]+"/"+config["FASTA_FILE"]
+        FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"]
     output:
-        TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
+        TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
     shell:
         """
         {input.FA_TO_TWOBIT_EXEC} {input.FASTA_FILE} {output.TWOBIT_FILE}
@@ -121,12 +125,12 @@ rule convert_fasta_twobit:
 
 rule create_bsgenome:
     input:
-        REF_DIR=config["REF_DIR"],
-        SEED_FILE=config["SEED_FILE"],
-        SPLICEMUTR_SCRIPTS=config["SPLICEMUTR_SCRIPTS"],
-        TWOBIT_FILE=config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
+        REF_DIR=os.getcwd()+"/"+config["REF_DIR"],
+        SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"],
+        SPLICEMUTR_SCRIPTS=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
+        TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
     output:
-        BSGENOME=directory(config["REF_DIR"]+"/"+config["BSGENOME"])
+        BSGENOME=directory(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"])
     shell:
         """
         cd {input.REF_DIR}
