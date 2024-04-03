@@ -44,7 +44,7 @@ rule download_faToTwoBit:
     shell:
         """
         wget {params.FA_TO_TWOBIT_URL}
-        chmod +x {output.FA_TO_TWOBIT}
+        chmod +x {output.FA_TO_TWOBIT_EXEC}
         """
 
 rule create_description:
