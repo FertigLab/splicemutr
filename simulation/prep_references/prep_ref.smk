@@ -38,7 +38,7 @@ rule download_leafcutter:
 
 rule download_faToTwoBit:
     params:
-        FA_TO_TWOBIT_URL=os.getcwd()+"/"+config["FA_TO_TWOBIT_URL"]
+        FA_TO_TWOBIT_URL=config["FA_TO_TWOBIT_URL"]
     output:
         FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"]
     shell:
