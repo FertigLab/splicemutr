@@ -40,10 +40,11 @@ rule download_faToTwoBit:
     params:
         FA_TO_TWOBIT_URL=os.getcwd()+"/"+config["FA_TO_TWOBIT_URL"]
     output:
-        FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"]
+        FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config""["FA_TO_TWOBIT_EXEC"]
     shell:
         """
         wget {params.FA_TO_TWOBIT_URL}
+        chmod +x {output.FA_TO_TWOBIT}
         """
 
 rule create_description:
