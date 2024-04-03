@@ -38,7 +38,7 @@ rule download_leafcutter:
 
 rule download_faToTwoBit:
     params:
-        FA_TO_TWOBIT_URL=config["FA_TO_TWOBIT_URL"]
+        FA_TO_TWOBIT_URL=os.getcwd()+"/"+config["FA_TO_TWOBIT_URL"]
     output:
         FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"]
     shell:
@@ -114,7 +114,7 @@ rule prepare_leafcutter_references:
 
 rule convert_fasta_twobit:
     input:
-        FA_TO_TWOBIT_EXEC=config["FA_TO_TWOBIT_EXEC"],
+        FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"]
     output:
         TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
