@@ -135,7 +135,7 @@ rule create_bsgenome:
     shell:
         """
         cd {input.REF_DIR}
-
+        chmod +x {input.SPLICEMUTR_SCRIPTS}+"/*"
         {input.SPLICEMUTR_SCRIPTS}/forge_bsgenome.R -s {input.SEED_FILE}
         R CMD build {output.BSGENOME}
         R CMD INSTALL {output.BSGENOME}_0.1.tar.gz
