@@ -31,7 +31,7 @@ rule download_leafcutter:
     params:
         LEAF_URL=config["LEAF_URL"]
     output:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]+"/scripts/bam2junc.sh"
     shell:
         """
         git clone {params.LEAF_URL}
