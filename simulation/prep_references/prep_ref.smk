@@ -24,7 +24,7 @@ rule all:
         OUT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["OUT_FILE"],
         ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt",
         TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
-        BSGENOME=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]
+        BSGENOME=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"],
         SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"]
 
 rule download_leafcutter:
