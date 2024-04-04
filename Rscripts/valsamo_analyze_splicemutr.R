@@ -4,6 +4,7 @@ library(dplyr)
 library(ggplot2)
 library(stringr)
 library(optparse)
+library(seqinr)
 
 #------------------------------------------------------------------------------#
 # handling command line input
@@ -28,7 +29,10 @@ arguments <- parse_args(OptionParser(usage = "",
                                help="output directory"),
                    make_option(c("-t","--summary_type"),
                                default = "",
-                               help="summary type"))))
+                               help="summary type"),
+                   make_option(c("-r","--reference_peptides"),
+                               default = "",
+                               help="reference_peptides"))))
 opt=arguments
 genotypes_file <- opt$genotypes_file
 summary_dir <- opt$summary_dir
@@ -36,14 +40,31 @@ splice_dat_file <- opt$splice_dat_file
 counts_file <- opt$counts_file
 out_dir <- opt$out_dir
 summary_type <- opt$summary_type
+reference_peptides <- opt$reference_peptides
+
+#------------------------------------------------------------------------------#
+# internal functions
+
+kmerize <- function(peptide,K){
+  diff <- nchar(peptide)-K
+  if (diff<0){
+    peptide<-paste(peptide,paste(rep("Z",abs(diff)),sep="",collapse=""),sep="",collapse="")
+  }
+  stringi::stri_sub(str = peptide,
+                    from = seq(1, nchar(peptide) - K + 1,
+                               by = 1),
+                    length = K)
+}
 
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-# genotypes_file <- "/Volumes/One_Touch/Valsamo/genotypes/genotypes.rds"
-# summary_dir <- "/Volumes/One_Touch/Valsamo/mhcnuggets_out/run_12072021/predictions_1"
-# splice_dat_file <- "/Volumes/One_Touch/Valsamo/analysis/splicemutr_output/run_12072021/data_splicemutr.txt"
-# counts_file <- "/Volumes/One_Touch/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
+# genotypes_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/genotypes.rds"
+# summary_dir <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/process_bindaff_out"
+# splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/data_splicemutr_all_pep.rds"
+# counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/Q21777-Plate-1-A01_L15.filt.junc"
+# summary_type=""
+# reference_peptides <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/gencode.v45.pc_translations.fa"
 
 #------------------------------------------------------------------------------#
 # reading in the data necessary for creating specific splicemutr data
@@ -51,6 +72,8 @@ summary_type <- opt$summary_type
 genotypes <- readRDS(genotypes_file)
 splice_dat <- readRDS(splice_dat_file)
 counts <- read.table(counts_file)
+ref_proteins <- lapply(read.fasta(reference_peptides),function(pep_row){toupper(paste(pep_row,sep="",collapse=""))})
+reference_peptides_kmers <- unique(unlist(lapply(ref_proteins,function(ref_pep){kmerize(ref_pep,9)})))
 
 #------------------------------------------------------------------------------#
 # formatting counts file
@@ -78,9 +101,9 @@ sample_kmers$kmers <- NA
 sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
   HLA<-sample_geno[geno_val]
   if (summary_type == "perc"){
-    HLA_summ_file <- sprintf("%s/%s_tx_dict_summary_perc.txt",summary_dir,HLA,summary_type)
+    HLA_summ_file <- sprintf("%s/%s_tx_dict_summary_perc.txt",summary_dir,HLA)
   } else {
-    HLA_summ_file <- sprintf("%s/%s_tx_dict_summary.txt",summary_dir,HLA,summary_type)
+    HLA_summ_file <- sprintf("%s/%s_tx_dict_summary.txt",summary_dir,HLA)
   }
   if (file.size(HLA_summ_file)!=0){
     HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
@@ -88,9 +111,12 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
     sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
       dat_row_val <- HLA_summ[row_val,"V1"]
       if (is.na(sample_kmers$kmers[dat_row_val])){
-        HLA_summ[row_val,"V2"]
+        kmers <- str_split(HLA_summ[row_val,"V2"],":")[[1]]
+        kmers_filt <- paste(kmers[!(kmers %in% reference_peptides_kmers)],collapse=":")
       } else {
-        paste(c(sample_kmers$kmers[dat_row_val],HLA_summ[row_val,"V2"]),collapse=":")
+        kmers <- str_split(HLA_summ[row_val,"V2"],":")[[1]]
+        kmers_filt <- paste(kmers[!kmers %in% reference_peptides_kmers],collapse=":")
+        paste(c(sample_kmers$kmers[dat_row_val],kmers_filt),collapse=":")
       }
     },character(1))
   }
