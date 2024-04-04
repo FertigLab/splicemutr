@@ -40,10 +40,10 @@ summary_type <- opt$summary_type
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-# genotypes_file <- "/media/theron/My_Passport/Valsamo/genotypes/genotypes.rds"
-# summary_dir <- "/media/theron/My_Passport/Valsamo/mhcnuggets_out/run_12072021/predictions_1"
-# splice_dat_file <- "/media/theron/My_Passport/Valsamo/analysis/splicemutr_output/run_12072021/data_splicemutr.txt"
-# counts_file <- "/media/theron/My_Passport/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
+genotypes_file <- "/Volumes/One_Touch/Valsamo/genotypes/genotypes.rds"
+summary_dir <- "/Volumes/One_Touch/Valsamo/mhcnuggets_out/run_12072021/predictions_1"
+splice_dat_file <- "/Volumes/One_Touch/Valsamo/analysis/splicemutr_output/run_12072021/data_splicemutr.txt"
+counts_file <- "/Volumes/One_Touch/Valsamo/juncs/Q21777-Plate-1-A01_L15.filt.junc"
 
 #------------------------------------------------------------------------------#
 # reading in the data necessary for creating specific splicemutr data

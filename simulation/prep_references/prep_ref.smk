@@ -25,6 +25,7 @@ rule all:
         ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt",
         TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
         BSGENOME=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]
+        SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"]
 
 rule download_leafcutter:
     params:
@@ -62,7 +63,7 @@ rule create_description:
         echo "License: ?" >> {output.SEED_FILE}
         echo "organism: Homo sapiens" >> {output.SEED_FILE}
         echo "common_name: human" >> {output.SEED_FILE}
-        echo "seqs_srcdir: splicemutr_references" >> {output.SEED_FILE}
+        echo "seqs_srcdir: $PWD/splicemutr_references" >> {output.SEED_FILE}
         echo "seqfile_name: GRCh38.primary_assembly.genome.2bit" >> {output.SEED_FILE}
         echo "provider: GENCODE" >> {output.SEED_FILE}
         echo "genome: GRCh38.p13" >> {output.SEED_FILE}
@@ -118,7 +119,7 @@ rule convert_fasta_twobit:
         FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"]
     output:
-        TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
+        d=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
     shell:
         """
         {input.FA_TO_TWOBIT_EXEC} {input.FASTA_FILE} {output.TWOBIT_FILE}
