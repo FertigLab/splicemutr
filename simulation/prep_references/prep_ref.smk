@@ -31,7 +31,7 @@ rule download_leafcutter:
     params:
         LEAF_URL=config["LEAF_URL"]
     output:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]+"/scripts/bam2junc.sh"
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]+"/scripts/bam2junc.sh"+
     shell:
         """
         git clone {params.LEAF_URL}
@@ -119,7 +119,7 @@ rule convert_fasta_twobit:
         FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"]
     output:
-        d=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
+        TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"]
     shell:
         """
         {input.FA_TO_TWOBIT_EXEC} {input.FASTA_FILE} {output.TWOBIT_FILE}
