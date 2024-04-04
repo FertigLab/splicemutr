@@ -12,10 +12,10 @@ if not os.path.exists(config["REF_DIR"]):
     elif platform.system() == "Darwin":
         os.system("curl %s --output %s"%(config["GTF_URL"],config["GTF_FILE"]))
         os.system("curl %s --output %s"%(config["FASTA_URL"],config["FASTA_FILE_GZ"]))
-if not os.path.exists(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]):
-    os.mkdir(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"])
-if os.path.exists(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]):
-    os.system("rm -r %s"%(os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]))
+if not os.path.exists(config["ANN_DIR"]):
+    os.mkdir(config["ANN_DIR"])
+if os.path.exists(config["BSGENOME"]):
+    os.system("rm -r %s"%(config["BSGENOME"]))
 
 rule all:
     input:
