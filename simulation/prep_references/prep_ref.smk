@@ -21,7 +21,7 @@ if (config["REF_DIR"] in os.getcwd()):
 
 rule all:
     input:
-        LEAF_DIR=directory(os.getcwd()+"/"+config["LEAF_DIR"]),
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
         FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
         SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
@@ -104,7 +104,7 @@ rule make_txdb:
 
 rule prepare_leafcutter_references:
     input:
-        LEAF_DIR=directory(os.getcwd()+"/"+config["LEAF_DIR"]),
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
         GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
         ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt"
