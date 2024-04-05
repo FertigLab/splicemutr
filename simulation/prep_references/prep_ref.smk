@@ -16,8 +16,9 @@ if not os.path.exists(config["ANN_DIR"]):
     os.mkdir(config["ANN_DIR"])
 if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
-os.chdir("..")
-
+if (config["REF_DIR"] in os.getcwd()):
+    os.chdir("..")
+    
 rule all:
     input:
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
