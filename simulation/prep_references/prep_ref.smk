@@ -18,10 +18,10 @@ if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
 if (config["REF_DIR"] in os.getcwd()):
     os.chdir("..")
-    
+
 rule all:
     input:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]+"/scripts/bam2junc.sh",
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
         FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
         SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
@@ -35,7 +35,7 @@ rule download_leafcutter:
     params:
         LEAF_URL=config["LEAF_URL"]
     output:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]+"/scripts/bam2junc.sh"
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]
     shell:
         """
         git clone {params.LEAF_URL}
