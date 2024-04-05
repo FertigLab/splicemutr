@@ -18,7 +18,7 @@ if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
 if (config["REF_DIR"] in os.getcwd()):
     os.chdir("..")
-    
+
 rule all:
     input:
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
@@ -106,7 +106,7 @@ rule prepare_leafcutter_references:
         LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
         GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
-        ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt"
+        ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]
     shell:
         """
         {input.LEAF_DIR}/scripts/gtf_to_exons.R {input.GTF_FILE} {output.ANNOTATION}
