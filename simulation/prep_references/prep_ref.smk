@@ -17,6 +17,7 @@ if not os.path.exists(config["ANN_DIR"]):
 if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
 if (config["REF_DIR"] in os.getcwd()):
+    os.chdir("..")
     
 rule all:
     input:
