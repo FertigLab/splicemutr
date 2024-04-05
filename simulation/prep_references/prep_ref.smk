@@ -16,6 +16,7 @@ if not os.path.exists(config["ANN_DIR"]):
     os.mkdir(config["ANN_DIR"])
 if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
+os.chdir("..")
 
 rule all:
     input:
