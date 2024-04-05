@@ -24,7 +24,7 @@ rule all:
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
         GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"],
         OUT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["OUT_FILE"],
-        ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]
+        ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"],
         TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
         BSGENOME=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"],
         SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"]
