@@ -22,7 +22,6 @@ if (config["REF_DIR"] in os.getcwd()):
 rule all:
     input:
         LEAF_DIR=directory(os.getcwd()+"/"+config["LEAF_DIR"]),
-        directory(expand("{fastqc_dir}/{{samples}}_fastqc/", fastqc_dir = FASTQC_DIR))
         FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
         SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
