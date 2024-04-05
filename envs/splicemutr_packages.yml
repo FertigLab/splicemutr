@@ -282,6 +282,7 @@ dependencies:
   - pyyaml=6.0.1=py311h459d7ec_1
   - pyzmq=25.1.2=py311h34ded2d_0
   - r-abind=1.4_5=r43hc72bb7e_1005
+  - r-ade4=1.7_22=r43h316c678_1
   - r-askpass=1.2.0=r43h57805ef_0
   - r-assertthat=0.2.1=r43hc72bb7e_4
   - r-backports=1.4.1=r43h57805ef_2
@@ -416,6 +417,7 @@ dependencies:
   - r-parallelly=1.36.0=r43hc72bb7e_1
   - r-pbdzmq=0.3_10=r43ha81a24b_0
   - r-pillar=1.9.0=r43hc72bb7e_1
+  - r-pixmap=0.4_12=r43hc72bb7e_2
   - r-pkgbuild=1.4.2=r43hc72bb7e_0
   - r-pkgconfig=2.0.3=r43hc72bb7e_3
   - r-plogr=0.2.0=r43hc72bb7e_1005
@@ -469,12 +471,15 @@ dependencies:
   - r-rvest=1.0.3=r43hc72bb7e_2
   - r-sass=0.4.7=r43ha503ecb_0
   - r-scales=1.2.1=r43hc72bb7e_2
+  - r-segmented=2.0_3=r43hc72bb7e_0
   - r-selectr=0.4_2=r43hc72bb7e_3
+  - r-seqinr=4.2_36=r43h57805ef_0
   - r-shape=1.4.6=r43ha770c72_2
   - r-shiny=1.7.5=r43h785f33e_0
   - r-shinycssloaders=0.2.0=r341hc0feee7_0
   - r-snow=0.4_4=r43hc72bb7e_2
   - r-sourcetools=0.1.7_1=r43ha503ecb_1
+  - r-sp=2.1_3=r43h57805ef_0
   - r-spatial=7.3_17=r43h57805ef_0
   - r-squarem=2021.1=r43hc72bb7e_2
   - r-stanheaders=2.26.28=r43hcf54a89_0
