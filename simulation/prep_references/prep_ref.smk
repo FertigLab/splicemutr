@@ -18,22 +18,24 @@ if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
 if (config["REF_DIR"] in os.getcwd()):
     os.chdir("..")
-    
+
 rule all:
     input:
+        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
+        FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
+        SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
         GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"],
         OUT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["OUT_FILE"],
         ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt",
         TWOBIT_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["TWOBIT_FILE"],
-        BSGENOME=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"],
-        SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"]
+        BSGENOME=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["BSGENOME"]
 
 rule download_leafcutter:
     params:
         LEAF_URL=config["LEAF_URL"]
     output:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]+"/scripts/bam2junc.sh"
+        LEAF_DIR=directory(os.getcwd()+"/"+config["LEAF_DIR"]),
     shell:
         """
         git clone {params.LEAF_URL}
@@ -90,7 +92,6 @@ rule get_reference_data:
 
 rule make_txdb:
     input:
-        REF_DIR=os.getcwd()+"/"+config["REF_DIR"],
         GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"],
         SPLICEMUTR_SCRIPTS=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
     output:
