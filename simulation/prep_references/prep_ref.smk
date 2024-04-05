@@ -21,7 +21,8 @@ if (config["REF_DIR"] in os.getcwd()):
 
 rule all:
     input:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
+        LEAF_DIR=directory(os.getcwd()+"/"+config["LEAF_DIR"]),
+        directory(expand("{fastqc_dir}/{{samples}}_fastqc/", fastqc_dir = FASTQC_DIR))
         FA_TO_TWOBIT_EXEC=os.getcwd()+"/"+config["FA_TO_TWOBIT_EXEC"],
         SEED_FILE=os.getcwd()+"/"+config["SEED_FILE"],
         FASTA_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["FASTA_FILE"],
@@ -35,7 +36,7 @@ rule download_leafcutter:
     params:
         LEAF_URL=config["LEAF_URL"]
     output:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"]
+        LEAF_DIR=directory(os.getcwd()+"/"+config["LEAF_DIR"]),
     shell:
         """
         git clone {params.LEAF_URL}
@@ -92,7 +93,6 @@ rule get_reference_data:
 
 rule make_txdb:
     input:
-        REF_DIR=os.getcwd()+"/"+config["REF_DIR"],
         GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"],
         SPLICEMUTR_SCRIPTS=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
     output:
@@ -105,7 +105,7 @@ rule make_txdb:
 
 rule prepare_leafcutter_references:
     input:
-        LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
+        LEAF_DIR=directory(os.getcwd()+"/"+config["LEAF_DIR"]),
         GTF_FILE=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["GTF_FILE"]
     output:
         ANNOTATION=os.getcwd()+"/"+config["REF_DIR"]+"/"+config["ANN_DIR"]+"/"+"G039.exons.txt"
