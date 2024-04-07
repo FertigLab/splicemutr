@@ -129,8 +129,8 @@ for (target in targets){
   }
 }
 for (comp in comparators){
-  if (file.size(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,comp))!=0){
-    comp_dat <- readRDS(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,comp))
+  if (file.size(sprintf("%s/%s_splicemutr_kmers.txt",junc_dir,comp))!=0){
+    comp_dat <- read.table(sprintf("%s/%s_splicemutr_kmers.txt",junc_dir,comp),sep="\t",header=T)
     psi_all[psi_dat$chrom,sprintf("%s_comp",comp)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(comp,"-","."),"[+]","."))])
     kmers[,comp]<-comp_dat$kmers
   } else {
