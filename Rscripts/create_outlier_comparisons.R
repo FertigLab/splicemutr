@@ -121,8 +121,8 @@ for (target in targets){
   psi_dat$juncs <- juncs
   psi_dat <- psi_dat %>% dplyr::filter(juncs %in% psi_all$comp_juncs_parsed)
   psi_all[psi_dat$chrom,target] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(target,"-","."),"[+]","."))])
-  if (file.size(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,target))!=0){
-    target_dat <- readRDS(sprintf("%s/%s_splicemutr_kmers.rds",junc_dir,target))
+  if (file.size(sprintf("%s/%s_splicemutr_kmers.txt",junc_dir,target))!=0){
+    target_dat <- read.table(sprintf("%s/%s_splicemutr_kmers.txt",junc_dir,target),sep="\t",header=T)
     kmers[,target]<-target_dat$kmers
   } else {
     kmers[,target]<-""
