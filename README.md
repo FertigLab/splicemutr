@@ -18,7 +18,7 @@ Requirements
 R >= 4.0.2\
 python >= 3.6.10
 
-To build the SpliceMutr environment, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr_packages.yml. You will also need to build the conda environment contained within leafcutter_package.yml in order to run the LeafCutter components of the SpliceMutr pipeline. Additionally, you will need to install the most recent version of BSgenome. You will need to start R in order to do this then install BiocManager, then use it to install BSgenome.
+To build the SpliceMutr environment, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr_packages.yml. You will also need to build the conda environment contained within leafcutter_package.yml in order to run the LeafCutter components of the SpliceMutr pipeline. Additionally, you will need to install the most recent version of BSgenome. You will need to start R in order to do this then install BiocManager, then use it to install BSgenome. Finally, you will need to install optparse in R. 
 
 ``` bash
 conda env create -f leafcutter_package.yml
@@ -28,6 +28,7 @@ R
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("BSgenome")
+install.packages("optparse")
 ```
 
 ------------------------------------------------------------------------
