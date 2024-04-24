@@ -23,6 +23,11 @@ To build the SpliceMutr environment, install [miniconda](https://docs.conda.io/p
 ``` bash
 conda env create -f leafcutter_package.yml
 conda env create -r splicemutr_packages.yml
+conda activate splicemutr
+R
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("BSgenome")
 ```
 
 ------------------------------------------------------------------------
