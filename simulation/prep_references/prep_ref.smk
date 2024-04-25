@@ -18,7 +18,7 @@ if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
 if (config["REF_DIR"] in os.getcwd()):
     os.chdir("..")
-
+    
 rule all:
     input:
         LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
