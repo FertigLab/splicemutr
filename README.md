@@ -18,11 +18,17 @@ Requirements
 R >= 4.0.2\
 python >= 3.6.10
 
-To build the SpliceMutr environment, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr_packages.yml. Additionally, you will need to build the conda environment contained within leafcutter_package.yml in order to run the LeafCutter components of the SpliceMutr pipeline. 
+To build the SpliceMutr environment, install [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), create a conda environment, and build the conda package contained within splicemutr_packages.yml. You will also need to build the conda environment contained within leafcutter_package.yml in order to run the LeafCutter components of the SpliceMutr pipeline. Additionally, you will need to install the most recent version of BSgenome. You will need to start R in order to do this then install BiocManager, then use it to install BSgenome. Finally, you will need to install optparse in R. 
 
 ``` bash
 conda env create -f leafcutter_package.yml
 conda env create -r splicemutr_packages.yml
+conda activate splicemutr
+R
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("BSgenome")
+install.packages("optparse")
 ```
 
 ------------------------------------------------------------------------
@@ -40,13 +46,13 @@ To learn how to use SpliceMutr and to test SpliceMutr usage, please refer to the
 
 splicemutr_simulation.Rmd runs the polyester simulations generating the fasta files that will be processed. To run this Rmd, you will need to download a gencode transcripts fasta file
 
-Within the running_STAR folder there are two files, run_STAR.sh and buildSTARindex_human.sh. You will need to download the appropriate annotation and genome fasta files, but the buildSTARindex_human.sh SLURM script, once customized for your specific annotation and genome fasta file, will generate the STAR index necessary to run STAR. The run_STAR.sh SLURM script, once modified to fit your exact file structure, will run STAR on your fasta files. You will need to install an anaconda version of STAR to run this script properly. That or ensure STAR is installed on the machine you will be running this pipeline on.
+Within the running_STAR folder there are two files, run_STAR.sh and buildSTARindex_human.sh. You will need to download the appropriate annotation and genome fasta files, but the buildSTARindex_human.sh SLURM script, once customized for your specific annotation and genome fasta file, will generate the STAR index necessary to run STAR. The run_STAR.sh SLURM script will run STAR on your fasta files. You will need to install an anaconda version of STAR to run this script properly. That or ensure STAR is installed on the machine you will be running this pipeline on.
 
-Within the prep_references folder, you will find config, DESCRIPTION, and .smk files. The .smk file is a snakemake file that will prepare the referneces that will be used by SpliceMutr and LeafCutter for analysis. The DESCRIPTION file is a BSgenome file that will need to be modified to fit your BSgenome reference file. The specifications within the config file will need to be modified to fit your reference files that are to be downloaded and used by SpliceMutr.
+Within the prep_references folder, you will find config, and .smk files. The .smk file is a snakemake file that will prepare the refereneces that will be used by SpliceMutr and LeafCutter for analysis. You will need to activate the splicemutr_packages.yml created conda envinronment, splicemutr, in order to run this portion of the SpliceMutr pipeline. 
 
 You will need to activate the leafcutter_pacakge.yml conda environment within the envs folder in order to run this portion of the SpliceMutr pipeline. Within the running_leafcutter folder, you will find a config, a groups_file, and .smk file. Once the config file is modified to fit your personal specification, the snakemake file can be run which will modify and then run LeafCutter on your SJ.out.tab files output from the STAR alignment step.
 
-You will need to activate the splicemutr_packages.yml conda environment within the envs folder in order to run this portion of the SpliceMutr pipeline. Within the running_splicemutr folder, you will find a config file and .smk file. Once the config file is modified to fit your personal file structure, the snakemake file can be run. This snakemake will run the SpliceMutr pipeline.
+You will need to activate the splicemutr_packages.yml created conda envinronment, splicemutr, in order to run this portion of the SpliceMutr pipeline. Within the running_splicemutr folder, you will find a config file and .smk file. This snakemake will run the SpliceMutr pipeline.
 
 The genotyping_samples directory is not necessary to run this SpliceMutr simulation. It is necessary if you are choosing to run your own samples though and specifically want to use arcasHLA to genotype your samples. The config and genotype_samples.smk file have been included within this directory for your reference.
 
