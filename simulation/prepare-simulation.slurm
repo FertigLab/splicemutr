@@ -4,6 +4,7 @@
 #SBATCH --mem=8GB
 #SBATCH --output=prepare-simulation.out
 
-module load R
+module load conda
+source activate /users/tpalmer/miniconda3/envs/splicemutr
 
 Rscript -e 'knitr::knit("./splicemutr/simulation/splicemutr_simulation.Rmd")'
