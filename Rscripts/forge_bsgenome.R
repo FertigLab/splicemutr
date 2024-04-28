@@ -28,4 +28,4 @@ opt=arguments
 
 seed_file <- opt$seed_file
 
-forgeBSgenomeDataPkg(seed_file)
+forgeBSgenomeDataPkg(seed_file,replace=TRUE)

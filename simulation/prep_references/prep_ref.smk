@@ -18,7 +18,7 @@ if os.path.exists(config["BSGENOME"]):
     os.system("rm -r %s"%(config["BSGENOME"]))
 if (config["REF_DIR"] in os.getcwd()):
     os.chdir("..")
-
+    
 rule all:
     input:
         LEAF_DIR=os.getcwd()+"/"+config["LEAF_DIR"],
@@ -140,6 +140,8 @@ rule create_bsgenome:
         """
         cd {input.REF_DIR}
         chmod +x {input.SPLICEMUTR_SCRIPTS}/*
+        mkdir -p {output.BSGENOME}/inst/extdata
+
         {input.SPLICEMUTR_SCRIPTS}/forge_bsgenome.R -s {input.SEED_FILE}
         R CMD build {output.BSGENOME}
         R CMD INSTALL {output.BSGENOME}_0.1.tar.gz

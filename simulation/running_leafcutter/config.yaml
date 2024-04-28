@@ -1,15 +1,11 @@
-SPLICEMUTR_SCRIPTS : "/users/tpalmer/splicemute/scripts"
-SJ_FILES : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/bams/junc_files.txt"
-FILT_SJ_FILES : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/filenames.txt"
-FILTERED_SJ_FILES_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT"
+SPLICEMUTR_SCRIPTS : "/splicemutr/Rscripts"
+SIMULATED_READS : "simulated_reads"
+SPLICEMUTR : "splicemutr"
 NUM_SAMPLES : 8
-SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
-
-JUNCFILE_FILENAMES : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt"
-LEAFCUTTER_SCRIPTS : "/users/tpalmer/packages/leafcutter/scripts"
-REF_DIR : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/annotations"
-
-LEAFVIZ_DIR : "/users/tpalmer/packages/leafcutter/leafviz"
+SPLICEMUTR_FUNCTIONS : "/splicemutr/Rfunctions/functions.R"
+LEAFCUTTER_SCRIPTS : "leafcutter/scripts"
+REF_DIR : "splicemutr_references/annotations"
+LEAFVIZ_DIR : "leafcutter/leafviz"
 GROUPS_FILE : "groups_file.txt"
-LEAFCUTTER_PYTHON : "/users/tpalmer/packages/leafcutter/clustering"
+LEAFCUTTER_PYTHON : "splicemutr/python_scripts"
 
