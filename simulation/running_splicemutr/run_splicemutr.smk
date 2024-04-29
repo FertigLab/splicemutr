@@ -160,7 +160,7 @@ rule extract_data:
         KMER_SIZE_MIN=config["KMER_SIZE_MIN"],
         KMER_SIZE_MAX=config["KMER_SIZE_MAX"],
     input:
-        ALLELE_FILES=os.getcwd()+"/"+config["MHC_ALLELE_FILE"],
+        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt",,
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_PYTHON"],
         PICKLE_DIR=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"],
         EXTRACT_DATA_DIR=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"],
@@ -172,7 +172,7 @@ rule extract_data:
             START=1
             for ((VAR=$START; VAR<={params.NUM_ALLELE_FILES}; VAR++))
             do
-                ALLELE=$(sed -n ${{VAR}}p {input.ALLELE_FILES})
+                ALLELE=$(sed -n ${{VAR}}p {input.CLASS_1_ALLELES})
 
                 {input.SCRIPT_DIR}/extract_data.py -a $ALLELE -p {input.PICKLE_DIR} -b {params.KMER_SIZE_MIN} -e {params.KMER_SIZE_MAX}
 
