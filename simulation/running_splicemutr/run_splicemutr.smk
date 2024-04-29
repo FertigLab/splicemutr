@@ -23,17 +23,17 @@ if not os.path.exists(os.getcwd()+"/"+config["KMER_COUNTS_OUT"]):
 
 rule all:
     input:
-        FORMED_TRANSCRIPTS=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/splicemutr_introns_data_splicemutr.rds"
-        FORMED_TRANSCRIPTS_CP=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt"
+        FORMED_TRANSCRIPTS=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/splicemutr_introns_data_splicemutr.rds",
+        FORMED_TRANSCRIPTS_CP=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
         OUTPUT_FILE=os.getcwd()+"/"+config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
-        SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"]
-        OUT_FILE=os.getcwd()+"/"+config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt"
-        OUT_FILE_MHCNUGGETS=os.getcwd()+"/"+config["MHCNUGGETS_OUT"]+"/allele_files.txt"
-        PROCESS_BINDAFF_FILES=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/filenames.txt"
-        EXTRACT_DATA_FILE=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/summaries.txt"
-        ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
-        KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt"
-        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
+        SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
+        OUT_FILE=os.getcwd()+"/"+config["PROCESS_PEPTIDES_OUT"]+"/peps_9.txt",
+        OUT_FILE_MHCNUGGETS=os.getcwd()+"/"+config["MHCNUGGETS_OUT"]+"/allele_files.txt",
+        PROCESS_BINDAFF_FILES=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
+        EXTRACT_DATA_FILE=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
+        ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
+        KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
+        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         SPLICING_ANTIGENICITY_FILE=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
 
 rule form_transcripts:
