@@ -3,7 +3,7 @@ import os
 configfile: "config.yaml"
 
 if not os.path.exists(config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT"):
-    os.makedirs(config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT")
+    os.makedirs(config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT")
 
 rule all:
      input:
