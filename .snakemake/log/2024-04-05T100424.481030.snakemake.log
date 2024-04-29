@@ -1,0 +1,3 @@
+WorkflowError in file /dcs04/fertig/data/theron/run-splicemutr/splicemutr/simulation/prep_references/prep_ref.smk, line 3:
+Workflow defines configfile config.yaml but it is not present or accessible (full checked path: /dcs04/fertig/data/theron/run-splicemutr/splicemutr/config.yaml).
+  File "/dcs04/fertig/data/theron/run-splicemutr/splicemutr/simulation/prep_references/prep_ref.smk", line 3, in <module>
