@@ -14,7 +14,6 @@ SPLICEMUTR_PYTHON : "splicemutr/python_scripts"
 
 TYPE : "I"
 INPUT_KMERS : "simulated_reads/splicemutr/process_peptides_out/peps_9.txt"
-MHC_ALLELE_FILE : "simulated_reads/splicemutr/class1_alleles.txt"
 MHCNUGGETS_OUT : "simulated_reads/splicemutr/mhcnuggets_out"
 
 NUM_ALLELE_FILES : 1
@@ -36,6 +35,5 @@ KMER_COUNTS_OUT : "simulated_reads/splicemutr/kmer_counts_out"
 JUNCFILES : "simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt"
 CREATE_JUNC_EXPRESSION_OUT : "simulated_reads/splicemutr/create_junc_expression_out"
 KMER_COUNTS_FILE : "simulated_reads/splicemutr/kmer_counts_out/all_kmers_counts.txt"
-JUNC_EXPRESSSION_FILE : "simulated_reads/splicemutr/create_junc_expression_out/junc_expr_combined_vst.rds"
 CREATE_SPLICING_ANTIGENICITY_OUT : "simulated_reads/splicemutr/create_splicing_antigenicity_out"
 

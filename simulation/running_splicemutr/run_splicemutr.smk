@@ -240,14 +240,14 @@ rule calculate_gene_metric:
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"],
-        JUNC_EXPR_FILE=os.getcwd()+"/"+config["JUNC_EXPRESSSION_FILE"],
+        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
         CREATE_SPLICING_ANTIGENICITY_OUT=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]
     output:
         SPLICING_ANTIGENICITY_FILE=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
     shell:
         """
         mkdir -p {input.CREATE_SPLICING_ANTIGENICITY_OUT}
-        {input.SCRIPT_DIR}/calc_gene_metric_len_norm.R  -s {input.SPLICE_DAT_FILE} -k {input.KMER_COUNTS_FILE} -j {input.JUNC_EXPR_FILE} -o {input.CREATE_SPLICING_ANTIGENICITY_OUT}/splicemutr
+        {input.SCRIPT_DIR}/calc_gene_metric_len_norm.R  -s {input.SPLICE_DAT_FILE} -k {input.KMER_COUNTS_FILE} -j {input.CREATE_JUNC_EXPRESSION_FILE} -o {input.CREATE_SPLICING_ANTIGENICITY_OUT}/splicemutr
         cd {input.CREATE_SPLICING_ANTIGENICITY_OUT}
         ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm_tumor.rds > filenames.txt
         """
