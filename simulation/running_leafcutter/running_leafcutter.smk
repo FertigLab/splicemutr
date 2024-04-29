@@ -74,7 +74,7 @@ rule STAR_to_leaf:
 
 rule create_groups_file:
     output:
-        GROUPS_FILE=config["GROUPS_FILE"]
+        GROUPS_FILE=os.getcwd()+"/"+config["GROUPS_FILE"]
     shell:
     """
         echo "sample_01.filt  1" >> {output.GROUPS_FILE}
