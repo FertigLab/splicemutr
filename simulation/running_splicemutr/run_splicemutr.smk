@@ -160,7 +160,7 @@ rule extract_data:
         KMER_SIZE_MIN=config["KMER_SIZE_MIN"],
         KMER_SIZE_MAX=config["KMER_SIZE_MAX"],
     input:
-        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt",,
+        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt",
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_PYTHON"],
         PICKLE_DIR=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"],
         EXTRACT_DATA_DIR=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"],
