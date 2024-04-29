@@ -1,8 +1,8 @@
-SPLICEMUTR_SCRIPTS : "/splicemutr/Rscripts"
+SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
 SIMULATED_READS : "simulated_reads"
 SPLICEMUTR : "splicemutr"
 NUM_SAMPLES : 8
-SPLICEMUTR_FUNCTIONS : "/splicemutr/Rfunctions/functions.R"
+SPLICEMUTR_FUNCTIONS : "splicemutr/Rfunctions/functions.R"
 LEAFCUTTER_SCRIPTS : "leafcutter/scripts"
 REF_DIR : "splicemutr_references/annotations"
 LEAFVIZ_DIR : "leafcutter/leafviz"
