@@ -240,7 +240,7 @@ rule calculate_gene_metric:
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"],
-        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds"
+        CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         CREATE_SPLICING_ANTIGENICITY_OUT=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]
     output:
         SPLICING_ANTIGENICITY_FILE=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
