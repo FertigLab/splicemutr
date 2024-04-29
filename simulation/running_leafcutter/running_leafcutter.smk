@@ -10,7 +10,7 @@ rule all:
         FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/filenames.txt",
         RDATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/data.Rdata",
         JUNC_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/juncfiles.txt",
-        GROUPS_FILE=config["GROUPS_FILE"],
+        GROUPS_FILE=os.getcwd()+"/"+config["GROUPS_FILE"],
         OUT_FILE_FINAL=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/splicemutr_introns.rds"
 
 rule prepare_for_leafcutter:
@@ -93,10 +93,10 @@ rule running_leafcutter:
         JUNCFILE_FILENAMES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/juncfiles.txt",
         SPLICEMUTR_SCRIPTS=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         LEAFCUTTER_SCRIPTS=os.getcwd()+"/"+config["LEAFCUTTER_SCRIPTS"],
-        REF_DIR=config["REF_DIR"],
-        LEAFVIZ_DIR=config["LEAFVIZ_DIR"],
-        GROUPS_FILE=config["GROUPS_FILE"],
-        LEAFCUTTER_PYTHON=config["LEAFCUTTER_PYTHON"],
+        REF_DIR=os.getcwd()+"/"+config["REF_DIR"],
+        LEAFVIZ_DIR=os.getcwd()+"/"+config["LEAFVIZ_DIR"],
+        GROUPS_FILE=os.getcwd()+"/"+config["GROUPS_FILE"],
+        LEAFCUTTER_PYTHON=os.getcwd()+"/"+config["LEAFCUTTER_PYTHON"]
     output:
         RDATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/data.Rdata"
     shell:
