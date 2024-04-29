@@ -31,9 +31,9 @@ rule filtering_sj_files:
     input:
         SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/bams/junc_files.txt"
     output:
-        FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/filenames.txt"
+        FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/filenames.txt"
     params:
-        FILTERED_SJ_FILES_OUT=directory(os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT"),
+        FILTERED_SJ_FILES_OUT=directory(os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT"),
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         NUM_SAMPLES=config["NUM_SAMPLES"]
     shell:
