@@ -60,7 +60,7 @@ rule calcualte_coding_potential:
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         FORMED_TRANSCRIPTS_DIR=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]
     output:
-        FORMED_TRANSCRIPTS_CP=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt"
+        SPLICE_FILES=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt"
     shell:
         """
         TRANSCRIPT_FILE=$(echo {input.SPLICE_FILE} | sed s/'_data_splicemutr.rds'/'_sequences.fa'/g)
@@ -74,7 +74,7 @@ rule calcualte_coding_potential:
 
 rule combine_splicemutr:
     input:
-        SPLICE_FILES=os.getcwd()+"/"+config["SPLICEMUTR_FILES"],
+        SPLICE_FILES=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         OUTPUT_DIR=os.getcwd()+"/"+config["COMBINE_SPLICEMUTR_OUT"]
     output:
