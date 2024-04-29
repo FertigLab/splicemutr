@@ -23,6 +23,7 @@ if not os.path.exists(os.getcwd()+"/"+config["KMER_COUNTS_OUT"]):
 
 rule all:
     input:
+        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt"
         FORMED_TRANSCRIPTS=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/splicemutr_introns_data_splicemutr.rds",
         FORMED_TRANSCRIPTS_CP=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
         OUTPUT_FILE=os.getcwd()+"/"+config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
@@ -35,6 +36,14 @@ rule all:
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         SPLICING_ANTIGENICITY_FILE=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
+
+rule create_groups_file:
+    output:
+        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt"
+    shell:
+        """
+        echo "HLA-A01-01" >> {output.CLASS_1_ALLELES}
+        """
 
 rule form_transcripts:
     input:
