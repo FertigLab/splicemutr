@@ -7,11 +7,11 @@ if not os.path.exists(config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FI
 
 rule all:
      input:
-        FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/filenames.txt",
-        RDATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/data.Rdata",
+        FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/filenames.txt",
+        RDATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/data.Rdata",
         JUNC_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/juncfiles.txt",
         GROUPS_FILE=config["GROUPS_FILE"],
-        OUT_FILE_FINAL=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/splicemutr_introns.rds"
+        OUT_FILE_FINAL=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/splicemutr_introns.rds"
 
 rule prepare_for_leafcutter:
     params:
