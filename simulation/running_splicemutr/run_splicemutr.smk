@@ -113,14 +113,14 @@ rule run_mhcnuggets:
         TYPE=config["TYPE"]
     input:
         INPUT_KMERS=os.getcwd()+"/"+config["INPUT_KMERS"],
-        MHC_ALLELE_FILE=os.getcwd()+"/"+config["MHC_ALLELE_FILE"],
+        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt",
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_PYTHON"],
         OUT_DIR_MHCNUGGETS=os.getcwd()+"/"+config["MHCNUGGETS_OUT"]
     output:
         OUT_FILE_MHCNUGGETS=os.getcwd()+"/"+config["MHCNUGGETS_OUT"]+"/allele_files.txt"
     shell:
         """
-        {input.SCRIPT_DIR}/runMHCnuggets.py -t {params.TYPE} -k {input.INPUT_KMERS} -m {input.MHC_ALLELE_FILE} -o {input.OUT_DIR_MHCNUGGETS}
+        {input.SCRIPT_DIR}/runMHCnuggets.py -t {params.TYPE} -k {input.INPUT_KMERS} -m {input.CLASS_1_ALLELES} -o {input.OUT_DIR_MHCNUGGETS}
 
         cd {input.OUT_DIR_MHCNUGGETS}
         ls $PWD/*_peps_9.txt > {output.OUT_FILE_MHCNUGGETS}
