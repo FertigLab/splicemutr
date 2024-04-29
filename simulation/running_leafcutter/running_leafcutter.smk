@@ -113,7 +113,7 @@ rule running_leafcutter:
 
 rule save_introns:
     input:
-        RDATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/data.Rdata"
+        RDATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/data.Rdata",
         SPLICEMUTR_SCRIPTS=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
     output:
         OUT_FILE_FINAL=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/splicemutr_introns.rds"
