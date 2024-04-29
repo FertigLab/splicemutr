@@ -51,12 +51,12 @@ rule filtering_sj_files:
 
 rule STAR_to_leaf:
     input:
-        FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT/filenames.txt"
+        FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/filenames.txt"
     output:
         JUNC_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/juncfiles.txt"	
     params:
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
-        FILTERED_SJ_FILES_OUT=directory(os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["splicemutr"]+"/SJ_FILES_OUT"),
+        FILTERED_SJ_FILES_OUT=directory(os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT"),
         FUNCTIONS=config["SPLICEMUTR_FUNCTIONS"],
         NUM_SAMPLES=config["NUM_SAMPLES"]
     shell:
