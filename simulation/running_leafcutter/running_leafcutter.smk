@@ -18,7 +18,7 @@ rule prepare_for_leafcutter:
         SPLICEMUTR_SCRIPTS=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         SIMULATED_READS=os.getcwd()+"/"+config["SIMULATED_READS"]
     output:
-        SJ_FILES=os.getcwd()+"/"+config["simulated_reads"]+"/bams/junc_files.txt"
+        SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/bams/junc_files.txt"
     shell:
         """
         cd {params.SPLICEMUTR_SCRIPTS}
