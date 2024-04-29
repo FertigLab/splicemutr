@@ -158,7 +158,7 @@ rule extract_data:
     params:
         NUM_ALLELE_FILES=config["NUM_ALLELE_FILES"],
         KMER_SIZE_MIN=config["KMER_SIZE_MIN"],
-        KMER_SIZE_MAX=config["KMER_SIZE_MAX"],
+        KMER_SIZE_MAX=config["KMER_SIZE_MAX"]
     input:
         CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt",
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_PYTHON"],
