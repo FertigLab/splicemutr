@@ -47,7 +47,7 @@ rule filtering_sj_files:
 
         cd {params.FILTERED_SJ_FILES_OUT}
         ls $PWD/*filt > filenames.txt
-	"""
+	    """
 
 rule STAR_to_leaf:
     input:
@@ -70,13 +70,13 @@ rule STAR_to_leaf:
         
         cd {params.FILTERED_SJ_FILES_OUT}
         ls $PWD/*.junc > juncfiles.txt	
-	""" 
+	    """ 
 
 rule create_groups_file:
     output:
         GROUPS_FILE=os.getcwd()+"/"+config["GROUPS_FILE"]
     shell:
-    """
+        """
         echo "sample_01.filt  1" >> {output.GROUPS_FILE}
         echo "sample_02.filt  1" >> {output.GROUPS_FILE}
         echo "sample_03.filt  1" >> {output.GROUPS_FILE}
@@ -85,7 +85,7 @@ rule create_groups_file:
         echo "sample_06.filt  2" >> {output.GROUPS_FILE}
         echo "sample_07.filt  2" >> {output.GROUPS_FILE}
         echo "sample_08.filt  2" >> {output.GROUPS_FILE}
-    """
+        """
 
 rule running_leafcutter:
     input:
