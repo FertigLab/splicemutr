@@ -5,6 +5,6 @@
 #SBATCH --output=prepare-simulation.out
 
 module load conda
-source activate /users/tpalmer/miniconda3/envs/splicemutr
+source activate $0
 
 Rscript -e 'knitr::knit("./splicemutr/simulation/splicemutr_simulation.Rmd")'
