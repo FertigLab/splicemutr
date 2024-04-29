@@ -65,7 +65,7 @@ rule combine_splicemutr:
     input:
         SPLICE_FILES=os.getcwd()+"/"+config["SPLICEMUTR_FILES"],
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
-        OUTPUT_DIR=cos.getcwd()+"/"+onfig["COMBINE_SPLICEMUTR_OUT"]
+        OUTPUT_DIR=os.getcwd()+"/"+onfig["COMBINE_SPLICEMUTR_OUT"]
     output:
         OUTPUT_FILE=os.getcwd()+"/"+config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"]
