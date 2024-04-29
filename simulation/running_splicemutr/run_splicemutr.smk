@@ -23,7 +23,7 @@ if not os.path.exists(os.getcwd()+"/"+config["KMER_COUNTS_OUT"]):
 
 rule all:
     input:
-        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt"
+        CLASS_1_ALLELES=os.getcwd()+"/class1_alleles.txt",
         FORMED_TRANSCRIPTS=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/splicemutr_introns_data_splicemutr.rds",
         FORMED_TRANSCRIPTS_CP=os.getcwd()+"/"+config["FORMED_TRANSCRIPTS_DIR"]+"/filenames_cp.txt",
         OUTPUT_FILE=os.getcwd()+"/"+config["COMBINE_SPLICEMUTR_OUT"]+"/proteins.txt",
