@@ -1,4 +1,4 @@
-dSPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
+SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
 FORMED_TRANSCRIPTS_DIR : "splicemutr/formed_transcripts"
 INTRON_FILE : "simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds"
 TXDB : "splicemutr_references/G039_txdb.sqlite"
