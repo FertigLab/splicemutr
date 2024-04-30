@@ -23,6 +23,17 @@ Create the splicemutr environment first:
 module load conda
 conda env create -f ./splicemutr/envs/splicemutr_packages.yml #takes time
 ```
+
+N.B. There is a known limitation that results in errors during the prep_ref.smk run unless addressed with a workaround. The workaround is mannuall installation of `optparse` and `BSgenome`.
+
+```
+R
+install.packages("optparse")
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("BSgenome")
+```
+
 After the environment has been built, prep_references can be ran, for example:
 ```
 conda activate splicemutr
