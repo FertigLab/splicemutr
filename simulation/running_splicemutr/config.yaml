@@ -1,4 +1,4 @@
-SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
+dSPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
 FORMED_TRANSCRIPTS_DIR : "splicemutr/formed_transcripts"
 INTRON_FILE : "simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds"
 TXDB : "splicemutr_references/G039_txdb.sqlite"
@@ -25,6 +25,8 @@ KMER_SIZE_MAX : 10
 
 NUM_SAMPLES : 8
 SUMMARY_TYPE : "IC50"
+PROTEIN_FASTA_HTML : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.pc_translations.fa.gz"
+PROTEIN_FASTA : "gencode.v39.pc_translations.fa"
 ANALYZE_SPLICEMUTR_OUT : "simulated_reads/splicemutr/analyze_splicemutr_out"
 GENOTYPES_REFORMATTED : "simulated_reads/genotypes_specific.txt"
 SUMMARY_DIR : "simulated_reads/splicemutr/process_bindaff_out"

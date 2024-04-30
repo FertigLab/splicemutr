@@ -182,6 +182,15 @@ rule extract_data:
             ls $PWD/*summary.txt > summaries.txt
         """
 
+rule obtai_reference_fasta:
+    input:
+        PROTEIN_FASTA_HTML=config["PROTEIN_FASTA_HTML"]
+    shell:
+        """
+        wget {input.PROTEIN_FASTA_HTML}
+        gunzip *fa.gz
+        """
+
 rule analyze_splicemutr:
     params:
         SUMMARY_TYPE=config["SUMMARY_TYPE"],
@@ -194,7 +203,8 @@ rule analyze_splicemutr:
         EXTRACT_DATA_FILE=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         GENOTYPES=os.getcwd()+"/"+config["GENOTYPES_REFORMATTED"],
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
-        ANALYZE_SPLICEMUTR_OUT=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]
+        ANALYZE_SPLICEMUTR_OUT=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
+        PROTEIN_FASTA=os.getcwd()+/+config["PROTEIN_FASTA"]
     output:
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
@@ -202,7 +212,7 @@ rule analyze_splicemutr:
             START=1
             for ((VAR=$START; VAR<={params.NUM_SAMPLES}; VAR++))
             do
-                {params.SCRIPT_DIR}/analyze_splicemutr.py -g {input.GENOTYPES} -s {params.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {input.ANALYZE_SPLICEMUTR_OUT} -t {params.SUMMARY_TYPE} -n $VAR
+                {params.SCRIPT_DIR}/analyze_splicemutr.py -f {input.PROTEIN_FASTA} -g {input.GENOTYPES} -s {params.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -o {input.ANALYZE_SPLICEMUTR_OUT} -t {params.SUMMARY_TYPE} -n $VAR
             done
 
             cd {input.ANALYZE_SPLICEMUTR_OUT}
