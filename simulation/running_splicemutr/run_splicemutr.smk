@@ -32,6 +32,7 @@ rule all:
         OUT_FILE_MHCNUGGETS=os.getcwd()+"/"+config["MHCNUGGETS_OUT"]+"/allele_files.txt",
         PROCESS_BINDAFF_FILES=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
         EXTRACT_DATA_FILE=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
+        PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"],
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
@@ -182,9 +183,11 @@ rule extract_data:
             ls $PWD/*summary.txt > summaries.txt
         """
 
-rule obtai_reference_fasta:
+rule obtain_reference_fasta:
     input:
         PROTEIN_FASTA_HTML=config["PROTEIN_FASTA_HTML"]
+    output:
+        PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"]
     shell:
         """
         wget {input.PROTEIN_FASTA_HTML}
