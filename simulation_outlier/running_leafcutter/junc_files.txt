@@ -1,5 +1,0 @@
-sample_01.filt.junc
-sample_05.filt.junc
-sample_06.filt.junc
-sample_07.filt.junc
-sample_08.filt.junc
