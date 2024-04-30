@@ -184,13 +184,13 @@ rule extract_data:
         """
 
 rule obtain_reference_fasta:
-    input:
+    params:
         PROTEIN_FASTA_HTML=config["PROTEIN_FASTA_HTML"]
     output:
         PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"]
     shell:
         """
-        wget {input.PROTEIN_FASTA_HTML}
+        wget {params.PROTEIN_FASTA_HTML}
         gunzip *fa.gz
         """
 
