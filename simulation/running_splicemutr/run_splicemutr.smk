@@ -204,7 +204,7 @@ rule analyze_splicemutr:
         GENOTYPES=os.getcwd()+"/"+config["GENOTYPES_REFORMATTED"],
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
         ANALYZE_SPLICEMUTR_OUT=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
-        PROTEIN_FASTA=os.getcwd()+/+config["PROTEIN_FASTA"]
+        PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"]
     output:
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
