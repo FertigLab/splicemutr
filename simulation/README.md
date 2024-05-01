@@ -1,11 +1,38 @@
 # Running the splicemutr simulation
 
+Installing the 
+
+Create the splicemutr environment first:
+```
+module load conda
+conda env create -f ./splicemutr/envs/splicemutr_packages.yml #takes time
+```
+
+N.B. There is a known limitation that results in errors during the prep_ref.smk run unless addressed with a workaround. The workaround is mannuall installation of `optparse` and `BSgenome`.
+
+```
+conda activate splicemutr
+R
+install.packages("optparse")
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("BSgenome")
+```
+
+Create the leafcutter environment next:
+```
+module load conda
+conda env create -f ./splicemutr/envs/leafcutter_package.yml #takes time
+```
+
 ## prepare simulation data
 splicemutr_simulation.Rmd runs the polyester simulations generating the fasta files that will be processed. 
 
 run:
 ```
+conda activate splicemutr
 sbatch splicemutr/simulation/prepare-simulation.slurm
+conda deactivate
 ```
 
 ## run STAR
@@ -18,21 +45,6 @@ sbatch splicemutr/simulation/running_STAR/run_STAR.sh
 ```
 
 ## prep references 
-Create the splicemutr environment first:
-```
-module load conda
-conda env create -f ./splicemutr/envs/splicemutr_packages.yml #takes time
-```
-
-N.B. There is a known limitation that results in errors during the prep_ref.smk run unless addressed with a workaround. The workaround is mannuall installation of `optparse` and `BSgenome`.
-
-```
-R
-install.packages("optparse")
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install("BSgenome")
-```
 
 After the environment has been built, prep_references can be ran, for example:
 ```
