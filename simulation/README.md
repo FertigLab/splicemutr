@@ -59,8 +59,26 @@ Within the prep_references folder, you will find config, DESCRIPTION, and .smk f
 
 ## leafcutter
 
-You will need to activate the leafcutter_pacakge.yml conda environment within the envs folder in order to run this portion of the SpliceMutr pipeline. Within the running_leafcutter folder, you will find a config, a groups_file, and .smk file. Once the config file is modified to fit your personal specification, the snakemake file can be run which will modify and then run LeafCutter on your SJ.out.tab files output from the STAR alignment step. 
+You will need to activate the leafcutter_package conda environment in order to run this portion of the SpliceMutr pipeline.
 
-You will need to activate the splicemutr_packages.yml conda environment within the envs folder in order to run this portion of the SpliceMutr pipeline. Within the running_splicemutr folder, you will find a config file and .smk file. Once the config file is modified to fit your personal file structure, the snakemake file can be run. This snakemake will run the SpliceMutr pipeline. 
+```
+module load conda
+conda activate leafcutter_package
+```
+
+Within the running_leafcutter folder, you will find a config, a groups_file, and .smk file. The snakemake file can be run which will then run LeafCutter on your SJ.out.tab files output from the STAR alignment step. 
+
+## SpliceMutr
+
+You will need to activate the splicmutr conda environment in order to run this portion of the SpliceMutr pipeline.
+
+```
+module load conda
+conda activate splicemutr
+```
+
+Within the running_splicemutr folder, you will find a config file and .smk file. The snakemake file will run the remainder of the SpliceMutr pipeline.
+
+## Genotyping samples
 
 The genotyping_samples directory is not necessary to run this SpliceMutr simulation. It is necessary if you are choosing to run your own samples though and specifically want to use arcasHLA to genotype your samples. The config and genotype_samples.smk file have been included within this directory for your reference.  
