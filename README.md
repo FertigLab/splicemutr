@@ -1,5 +1,4 @@
-#
-SpliceMutr: Calculating splicing-derived neoantigen burden from splice-junctions affecting protein-coding transcripts in RNA-seq data.
+#SpliceMutr: Calculating splicing-derived neoantigen burden from splice-junctions affecting protein-coding transcripts in RNA-seq data.
 
 ------------------------------------------------------------------------
 
