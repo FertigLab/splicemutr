@@ -57,7 +57,7 @@ snakemake --snakefile ./splicemutr/simulation/prep_references/prep_ref.smk \
 
 Within the prep_references folder, you will find config, DESCRIPTION, and .smk files. The .smk file is a snakemake file that will prepare the referneces that will be used by SpliceMutr and LeafCutter for analysis. The DESCRIPTION file is a BSgenome file that will need to be modified to fit your BSgenome reference file. The specifications within the config file will need to be modified to fit your reference files that are to be downloaded and used by SpliceMutr. 
 
-## leafcutter
+## LeafCutter
 
 You will need to activate the leafcutter_package conda environment in order to run this portion of the SpliceMutr pipeline.
 
