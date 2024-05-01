@@ -66,6 +66,15 @@ module load conda
 conda activate leafcutter_package
 ```
 
+After activating the LeafCutter package conda environment you can run the leafcutter snakemake using:
+
+```
+conda activate leafcutter_package
+snakemake --snakefile ./splicemutr/simulation/running_leafcutter/running_leafcutter.smk \
+          --configfile ./splicemutr/simulation/running_leafcutter/config.yaml \
+          --cores 4
+```
+
 Within the running_leafcutter folder, you will find a config, a groups_file, and .smk file. The snakemake file can be run which will then run LeafCutter on your SJ.out.tab files output from the STAR alignment step. 
 
 ## SpliceMutr
@@ -75,6 +84,15 @@ You will need to activate the splicmutr conda environment in order to run this p
 ```
 module load conda
 conda activate splicemutr
+```
+
+After activating the splicemutr package conda environment you can run the splicemutr snakemake using:
+
+```
+conda activate splicemutr
+snakemake --snakefile ./splicemutr/simulation/running_splicemutr/run_splicemutr.smk \
+          --configfile ./splicemutr/simulation/running_splicemutr/config.yaml \
+          --cores 4
 ```
 
 Within the running_splicemutr folder, you will find a config file and .smk file. The snakemake file will run the remainder of the SpliceMutr pipeline.
