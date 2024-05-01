@@ -4,6 +4,4 @@
 #SBATCH --mem=8GB
 #SBATCH --output=prepare-simulation.out
 
-module load R
-
 Rscript -e 'knitr::knit("./splicemutr/simulation/splicemutr_simulation.Rmd")'

@@ -1,8 +1,0 @@
-sample_01.filt	1
-sample_02.filt	1
-sample_03.filt	1
-sample_04.filt	1
-sample_05.filt	2
-sample_06.filt	2
-sample_07.filt	2
-sample_08.filt	2
