@@ -120,6 +120,7 @@ if (str_detect(samples[1],".filt")){
   samples<-str_remove_all(samples,".filt")
 }
 samples <- samples[which(samples %in% colnames(junc_expr_comb))]
+colnames(kmer_counts_filt) <- samples
 # gene_expression_filt <- gene_expression[,samples,drop=F]
 
 splice_dat_filt <- splice_dat_filt[splice_dat_filt$juncs %in% rownames(junc_expr_comb),]
