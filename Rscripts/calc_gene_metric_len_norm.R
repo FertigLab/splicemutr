@@ -71,10 +71,10 @@ format_juncs <- function(juncs){
 
 #------------------------------------------------------------------------------#
 # local testing
-# 
-splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/data_splicemutr_all_pep.txt"
-kmer_counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/all_kmers_counts.txt"
-junc_expr_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/junc_expr_combined_vst.rds"
+# # 
+# splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/data_splicemutr_all_pep.txt"
+# kmer_counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/all_kmers_counts.txt"
+# junc_expr_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/junc_expr_combined_vst.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
