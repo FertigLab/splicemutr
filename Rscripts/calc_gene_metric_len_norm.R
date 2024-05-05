@@ -116,7 +116,7 @@ kmer_counts_filt <- kmer_counts[splice_dat_filt$rows,]
 
 samples <- colnames(kmer_counts_filt)
 
-if (str_detect(sample[1],".filt")){
+if (str_detect(samples[1],".filt")){
   samples<-str_remove_all(samples,".filt")
 }
 samples <- samples[which(samples %in% colnames(junc_expr_comb))]
