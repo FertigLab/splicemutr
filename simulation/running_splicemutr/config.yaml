@@ -1,41 +1,41 @@
-SPLICEMUTR_SCRIPTS : "/users/tpalmer/splicemute/scripts"
-FORMED_TRANSCRIPTS_DIR : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts"
-INTRON_FILE : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds"
-TXDB : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/splicemutr_references/G039_txdb.sqlite"
-SPLICEMUTR_FUNCTIONS : "/users/tpalmer/splicemute/R/functions.R"
+SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
+FORMED_TRANSCRIPTS_DIR : "simulated_reads/splicemutr/formed_transcripts"
+INTRON_FILE : "simulated_reads/splicemutr/SJ_FILES_OUT/splicemutr_introns.rds"
+TXDB : "splicemutr_references/G039_txdb.sqlite"
+SPLICEMUTR_FUNCTIONS : "splicemutr/Rfunctions/functions.R"
 
-SPLICEMUTR_FILES : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/formed_transcripts/filenames_cp.txt"
-COMBINE_SPLICEMUTR_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out"
-SPLICE_DAT_FILE : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/data_splicemutr_all_pep.txt"
+SPLICEMUTR_FILES : "simulated_reads/splicemutr/formed_transcripts/filenames_cp.txt"
+COMBINE_SPLICEMUTR_OUT : "simulated_reads/splicemutr/combine_splicemutr_out"
+SPLICE_DAT_FILE : "simulated_reads/splicemutr/combine_splicemutr_out/data_splicemutr_all_pep.txt"
 
-PROTEINS : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/combine_splicemutr_out/proteins.txt"
-PROCESS_PEPTIDES_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out"
-SPLICEMUTR_PYTHON : "/users/tpalmer/splicemute/inst"
+PROTEINS : "simulated_reads/splicemutr/combine_splicemutr_out/proteins.txt"
+PROCESS_PEPTIDES_OUT : "simulated_reads/splicemutr/process_peptides_out"
+SPLICEMUTR_PYTHON : "splicemutr/python_scripts"
 
 TYPE : "I"
-INPUT_KMERS : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out/peps_9.txt"
-MHC_ALLELE_FILE : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/class1_alleles.txt"
-MHCNUGGETS_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/mhcnuggets_out"
+INPUT_KMERS : "simulated_reads/splicemutr/process_peptides_out/peps_9.txt"
+MHCNUGGETS_OUT : "simulated_reads/splicemutr/mhcnuggets_out"
 
 NUM_ALLELE_FILES : 1
 KMER_LENGTH : 9
-PROCESS_BINDAFF_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_bindaff_out"
-PICKLE_DIR : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_peptides_out"
+PROCESS_BINDAFF_OUT : "simulated_reads/splicemutr/process_bindaff_out"
+PICKLE_DIR : "simulated_reads/splicemutr/process_peptides_out"
 KMER_SIZE_MIN : 9
 KMER_SIZE_MAX : 10
 
 NUM_SAMPLES : 8
 SUMMARY_TYPE : "IC50"
-ANALYZE_SPLICEMUTR_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/analyze_splicemutr_out"
-GENOTYPES_REFORMATTED : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/genotypes_specific.txt"
-SUMMARY_DIR : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/process_bindaff_out"
+PROTEIN_FASTA_HTML : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.pc_translations.fa.gz"
+PROTEIN_FASTA : "gencode.v39.pc_translations.fa"
+ANALYZE_SPLICEMUTR_OUT : "simulated_reads/splicemutr/analyze_splicemutr_out"
+GENOTYPES_REFORMATTED : "simulated_reads/genotypes_specific.txt"
+SUMMARY_DIR : "simulated_reads/splicemutr/process_bindaff_out"
 
-KMER_COUNTS_FILES : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/analyze_splicemutr_out/filenames.txt"
-KMER_COUNTS_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/kmer_counts_out"
+KMER_COUNTS_FILES : "simulated_reads/splicemutr/analyze_splicemutr_out/filenames.txt"
+KMER_COUNTS_OUT : "simulated_reads/splicemutr/kmer_counts_out"
 
-JUNCFILES : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt"
-CREATE_JUNC_EXPRESSION_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/create_junc_expression_out"
-KMER_COUNTS_FILE : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/kmer_counts_out/all_kmers_counts.txt"
-JUNC_EXPRESSSION_FILE : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/create_junc_expression_out/junc_expr_combined_vst.rds"
-CREATE_SPLICING_ANTIGENICITY_OUT : "/dcs04/fertig/data/theron/splicemutr_paper/simulated_reads/splicemutr/create_splicing_antigenicity_out"
+JUNCFILES : "simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt"
+CREATE_JUNC_EXPRESSION_OUT : "simulated_reads/splicemutr/create_junc_expression_out"
+KMER_COUNTS_FILE : "simulated_reads/splicemutr/kmer_counts_out/all_kmers_counts.txt"
+CREATE_SPLICING_ANTIGENICITY_OUT : "simulated_reads/splicemutr/create_splicing_antigenicity_out"
 

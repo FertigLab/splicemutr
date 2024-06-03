@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
 import pandas as pd
-import numpy as np
-import os
 import splicemutr as sp
-import sys
 
 def main(options, args):
     
@@ -14,9 +11,8 @@ def main(options, args):
     hla_dir = options.summary_dir
     output_dir = options.output_dir
     summary_type = options.summary_type
-    sample_num = int(options.sample)-1
+    sample_num = int(options.sample_num)-1
     fasta_file = options.fasta_file
-
     ref_kmers = sp.generate_ref_kmer_set(fasta_file)
     
     # processing command line arguments
@@ -30,16 +26,10 @@ def main(options, args):
     if sample_num > geno_length:
         print("sample_num > number of samples")
     else:
-        genotypes_file_small = genotypes_file[sample_num:sample_num+1]
         try:
-            splice_kmers,sample_name = sp.assign_kmers_TCGA(genotypes_file_small,rows,hla_dir,hla_file)
-            if "cluster" in splice_dat.columns.values: # determining whether the groups are leafcutter cluster or not
-                groups=splice_dat.cluster.tolist()
-            else:
-                groups=splice_dat.groups.tolist()
-            deltapsi=[float(i) for i in splice_dat.deltapsi.tolist()]
-            groups_deltapsi_rows=pd.DataFrame({'groups':groups,'deltapsi':deltapsi,'rows':rows})
-            splice_kmers_filt = sp.filter_kmers(splice_kmers,groups_deltapsi_rows,ref_kmers) # filtering by tumor and normal kmers
+            genotypes_file_small = genotypes_file[sample_num:sample_num+1]
+            splice_kmers,sample_name = sp.assign_kmers(genotypes_file_small,rows,hla_dir,hla_file)
+            splice_kmers_filt = [":".join(list(set(i.split(":")).difference(ref_kmers))) for i in splice_kmers]
             splice_dat_frame = pd.DataFrame({"rows":rows,"kmers":splice_kmers_filt})
             splice_dat_frame.to_csv("%s/%s_splicemutr_kmers.txt"%(output_dir,sample_name),sep='\t',index=False)
         except:
@@ -61,9 +51,8 @@ if __name__ == "__main__":
                   help="the output directory")
     parser.add_option("-t", "--summary_type", dest="summary_type",
                   help="either 'perc' (percentile) or something else")
-    parser.add_option("-n", "--sample", dest="sample",
-                  help="the genotype row number",
-                  type=str)
+    parser.add_option("-n", "--sample_num", dest="sample_num",
+                  help="the genotype row number")
     parser.add_option("-f", "--fasta_file", dest="fasta_file",
                 help="the fasta file input")
     (options, args) = parser.parse_args()

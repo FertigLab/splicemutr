@@ -613,37 +613,43 @@ data_canon_unan <- data_canon %>% dplyr::filter(annotated=="unannotated")
 sequences_unan <- sequences[data_canon_unan$rows]
 sequences_ann <- sequences[data_canon_ann$rows]
 
-data_canon_unan$rows <- seq(nrow(data_canon_unan))
-unique_juncs <- unique(data_canon_unan$juncs)
-locs <- lapply(seq(length(unique_juncs)),function(junc_val){
-  junc <- unique_juncs[junc_val]
-  if (junc_val==1){
-    data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
-    sequences_small <- sequences_unan[data_canon_unan_small$rows]
-    a<-which(data_canon_unan_small$priority=="Yes")
-    if (length(a)==0){
-      data_canon_fill<<-data_canon_unan_small
-      sequences_fill<<-sequences_small
+if (nrow(data_canon_unan)>0){
+
+  data_canon_unan$rows <- seq(nrow(data_canon_unan))
+  unique_juncs <- unique(data_canon_unan$juncs)
+  locs <- lapply(seq(length(unique_juncs)),function(junc_val){
+    junc <- unique_juncs[junc_val]
+    if (junc_val==1){
+      data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
+      sequences_small <- sequences_unan[data_canon_unan_small$rows]
+      a<-which(data_canon_unan_small$priority=="Yes")
+      if (length(a)==0){
+        data_canon_fill<<-data_canon_unan_small
+        sequences_fill<<-sequences_small
+      } else {
+        data_canon_fill<<-data_canon_unan_small[a,]
+        sequences_fill<<-sequences_small[a]
+      }
     } else {
-      data_canon_fill<<-data_canon_unan_small[a,]
-      sequences_fill<<-sequences_small[a]
+      data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
+      a<-which(data_canon_unan_small$priority=="Yes")
+      sequences_small <- sequences_unan[data_canon_unan_small$rows]
+      if (length(a)==0){
+        data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small)
+        sequences_fill<<-c(sequences_fill,sequences_small)
+      } else {
+        data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small[a,])
+        sequences_fill<<-c(sequences_fill,sequences_small[a])
+      }
     }
-  } else {
-    data_canon_unan_small <- data_canon_unan %>% dplyr::filter(juncs == junc)
-    a<-which(data_canon_unan_small$priority=="Yes")
-    sequences_small <- sequences_unan[data_canon_unan_small$rows]
-    if (length(a)==0){
-      data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small)
-      sequences_fill<<-c(sequences_fill,sequences_small)
-    } else {
-      data_canon_fill<<-rbind(data_canon_fill,data_canon_unan_small[a,])
-      sequences_fill<<-c(sequences_fill,sequences_small[a])
-    }
-  }
-  return(T)
-})
-data_canon <- rbind(data_canon_ann,data_canon_fill[,seq(ncol(data_canon_ann))])
-sequences <- c(sequences_ann,sequences_fill)
+    return(T)
+  })
+  data_canon <- rbind(data_canon_ann,data_canon_fill[,seq(ncol(data_canon_ann))])
+  sequences <- c(sequences_ann,sequences_fill)
+} else {
+  data_canon <- data_canon_ann
+  sequences <- sequences_ann
+}
 #data_canon$coding_potential_LGC<-vapply(sequences,calc_coding_potential_LGC,numeric(1))
 data_canon$coding_potential_LGC<-NA
 #data_canon$coding_potential<-vapply(sequences,calc_coding_potential,numeric(1))

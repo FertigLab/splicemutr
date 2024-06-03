@@ -70,6 +70,13 @@ format_juncs <- function(juncs){
 }
 
 #------------------------------------------------------------------------------#
+# local testing
+# # 
+# splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/data_splicemutr_all_pep.txt"
+# kmer_counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/all_kmers_counts.txt"
+# junc_expr_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/junc_expr_combined_vst.rds"
+
+#------------------------------------------------------------------------------#
 # reading in the files
 
 # if (str_detect(gene_expression_file,"vst")){
@@ -108,7 +115,12 @@ splice_dat_filt <- splice_dat_filt %>% dplyr::filter(nchar(peptide)-1>50)
 kmer_counts_filt <- kmer_counts[splice_dat_filt$rows,]
 
 samples <- colnames(kmer_counts_filt)
+
+if (str_detect(samples[1],".filt")){
+  samples<-str_remove_all(samples,".filt")
+}
 samples <- samples[which(samples %in% colnames(junc_expr_comb))]
+colnames(kmer_counts_filt) <- c(samples,"rows")
 # gene_expression_filt <- gene_expression[,samples,drop=F]
 
 splice_dat_filt <- splice_dat_filt[splice_dat_filt$juncs %in% rownames(junc_expr_comb),]
