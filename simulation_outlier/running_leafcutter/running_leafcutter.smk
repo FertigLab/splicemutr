@@ -100,5 +100,6 @@ rule save_introns:
         OUT_FILE_FINAL=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/comparison_juncs_linear.rds"
     shell:
         """
+        chmod +x {input.SPLICEMUTR_SCRIPTS}/*
         {input.SPLICEMUTR_SCRIPTS}/create_outlier_linear_juncs.R -o {input.DATA}
         """
