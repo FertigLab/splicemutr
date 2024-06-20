@@ -248,7 +248,7 @@ rule create_comparisons:
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
         JUNC_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
     output:
-        COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds"
+        COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"]
     shell:
         """
