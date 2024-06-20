@@ -36,6 +36,6 @@ COMPARISONS_FILE : "comparisons.rds"
 
 JUNCFILES : "simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt"
 CREATE_JUNC_EXPRESSION_OUT : "simulated_reads/splicemutr/create_junc_expression_out"
-KMER_COUNTS_FILE : "simulated_reads/spicemutr/create_comparisons_out_cp/kmers_specific_baseline_vs_post_treatment.rds"
+KMER_COUNTS_FILE : "simulated_reads/spicemutr/create_comparisons_out_cp/kmers_specific_data.rds"
 CREATE_SPLICING_ANTIGENICITY_OUT : "simulated_reads/splicemutr/create_splicing_antigenicity_out"
 

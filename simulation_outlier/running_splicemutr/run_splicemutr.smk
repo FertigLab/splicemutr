@@ -34,6 +34,7 @@ rule all:
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
         COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
+        KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"],
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         SPLICING_ANTIGENICITY_FILE=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
 
@@ -248,6 +249,7 @@ rule create_comparisons:
         JUNC_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
     output:
         COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds"
+        KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"]
     shell:
         """
             mkdir -p {params.OUT_DIR}
@@ -271,7 +273,7 @@ rule calculate_gene_metric:
         CREATE_SPLICING_ANTIGENICITY_OUT=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]
     input:
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
-        SPLICE_DAT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_baseline_vs_post_treatment.rds",
+        SPLICE_DAT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"],
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         CREATE_SPLICING_ANTIGENICITY_OUT=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]
