@@ -1,0 +1,11 @@
+SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
+SIMULATED_READS : "simulated_reads"
+SPLICEMUTR : "splicemutr"
+NUM_SAMPLES : 8
+SPLICEMUTR_FUNCTIONS : "splicemutr/Rfunctions/functions.R"
+LEAFCUTTER_SCRIPTS : "leafcutter/scripts"
+REF_DIR : "splicemutr_references/annotations"
+LEAFVIZ_DIR : "leafcutter/leafviz"
+OUTLIER_FILE : "outlier_file.txt"
+LEAFCUTTER_PYTHON : "splicemutr/python_scripts"
+

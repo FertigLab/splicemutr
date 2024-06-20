@@ -1,0 +1,21 @@
+REF_DIR : "splicemutr_references"
+GTF_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.primary_assembly.annotation.gtf.gz"
+FASTA_URL : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/GRCh38.primary_assembly.genome.fa.gz"
+FASTA_FILE_GZ : "GRCh38.primary_assembly.genome.fa.gz"
+
+GTF_FILE : "gencode.v39.primary_assembly.annotation.gtf.gz"
+SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
+OUT_FILE : "G039_txdb.sqlite"
+
+LEAF_URL : "https://github.com/davidaknowles/leafcutter"
+LEAF_DIR : "leafcutter"
+GTF : "splicemutr_references/gencode.v39.primary_assembly.annotation.gtf.gz"
+ANN_DIR : "annotations"
+
+FASTA_FILE : "GRCh38.primary_assembly.genome.fa"
+TWOBIT_FILE : "GRCh38.primary_assembly.genome.2bit"
+FA_TO_TWOBIT_EXEC : "faToTwoBit"
+FA_TO_TWOBIT_URL : "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/faToTwoBit"
+
+SEED_FILE : "DESCRIPTION"
+BSGENOME : "BSgenome.Hsapiens.GENCODE.GRCh38.p13"
