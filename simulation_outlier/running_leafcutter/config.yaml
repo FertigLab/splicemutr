@@ -1,3 +1,4 @@
+SPLICEMUTR_PYTHON : "splicemutr/python_scripts"
 SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
 SIMULATED_READS : "simulated_reads"
 SPLICEMUTR : "splicemutr"
