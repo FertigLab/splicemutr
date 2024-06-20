@@ -207,6 +207,7 @@ rule analyze_splicemutr:
     params:
         SUMMARY_DIR=os.getcwd()+"/"+config["SUMMARY_DIR"],
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
+        OUT_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]
     input:
         OUT_FILE_MHCNUGGETS=os.getcwd()+"/"+config["MHCNUGGETS_OUT"]+"/allele_files.txt",
         PROCESS_BINDAFF_FILES=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
@@ -215,7 +216,6 @@ rule analyze_splicemutr:
         COUNTS_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/sample_01.filt.junc",
         ANALYZE_SPLICEMUTR_OUT=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
         PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"],
-        OUT_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]
     output:
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
