@@ -215,7 +215,7 @@ rule analyze_splicemutr:
         PROCESS_BINDAFF_FILES=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
         GENOTYPES=os.getcwd()+"/"+config["GENOTYPES"],
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
-        COUNTS_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/sample_01.filt.junc,
+        COUNTS_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/sample_01.filt.junc",
         ANALYZE_SPLICEMUTR_OUT=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
         PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"]
         OUT_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]
