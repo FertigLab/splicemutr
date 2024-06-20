@@ -1,0 +1,43 @@
+SPLICEMUTR_SCRIPTS : "splicemutr/Rscripts"
+FORMED_TRANSCRIPTS_DIR : "simulated_reads/splicemutr/formed_transcripts"
+INTRON_FILE : "simulated_reads/splicemutr/SJ_FILES_OUT/comparison_juncs_linear.rds"
+TXDB : "splicemutr_references/G039_txdb.sqlite"
+SPLICEMUTR_FUNCTIONS : "splicemutr/Rfunctions/functions.R"
+
+SPLICEMUTR_FILES : "simulated_reads/splicemutr/formed_transcripts/filenames_cp.txt"
+COMBINE_SPLICEMUTR_OUT : "simulated_reads/splicemutr/combine_splicemutr_out"
+SPLICE_DAT_FILE : "simulated_reads/splicemutr/combine_splicemutr_out/data_splicemutr_all_pep.rds"
+
+PROTEINS : "simulated_reads/splicemutr/combine_splicemutr_out/proteins.txt"
+PROCESS_PEPTIDES_OUT : "simulated_reads/splicemutr/process_peptides_out"
+SPLICEMUTR_PYTHON : "splicemutr/python_scripts"
+
+TYPE : "I"
+INPUT_KMERS : "simulated_reads/splicemutr/process_peptides_out/peps_9.txt"
+MHCNUGGETS_OUT : "simulated_reads/splicemutr/mhcnuggets_out"
+
+NUM_ALLELE_FILES : 1
+KMER_LENGTH : 9
+PROCESS_BINDAFF_OUT : "simulated_reads/splicemutr/process_bindaff_out"
+PICKLE_DIR : "simulated_reads/splicemutr/process_peptides_out"
+KMER_SIZE_MIN : 9
+KMER_SIZE_MAX : 10
+
+NUM_SAMPLES : 8
+SUMMARY_TYPE : "IC50"
+PROTEIN_FASTA_HTML : "https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_39/gencode.v39.pc_translations.fa.gz"
+PROTEIN_FASTA : "gencode.v39.pc_translations.fa"
+GENOTYPES : "genotypes.rds"
+ANALYZE_SPLICEMUTR_OUT : "simulated_reads/splicemutr/analyze_splicemutr_out"
+SUMMARY_DIR : "simulated_reads/splicemutr/process_bindaff_out"
+SPLICEMUTR : "splicemutr"
+SIMULATED_READS : "simulated_reads"
+
+KMER_COUNTS_FILES : "simulated_reads/splicemutr/analyze_splicemutr_out/filenames.txt"
+KMER_COUNTS_OUT : "simulated_reads/splicemutr/kmer_counts_out"
+
+JUNCFILES : "simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt"
+CREATE_JUNC_EXPRESSION_OUT : "simulated_reads/splicemutr/create_junc_expression_out"
+KMER_COUNTS_FILE : "simulated_reads/splicemutr/kmer_counts_out/all_kmers_counts.txt"
+CREATE_SPLICING_ANTIGENICITY_OUT : "simulated_reads/splicemutr/create_splicing_antigenicity_out"
+
