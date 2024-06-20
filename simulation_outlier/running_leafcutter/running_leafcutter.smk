@@ -79,7 +79,6 @@ rule running_leafcutter:
         SPLICEMUTR_PYTHON=os.getcwd()+"/"+config["SPLICEMUTR_PYTHON"],
         LEAFCUTTER_SCRIPTS=os.getcwd()+"/"+config["LEAFCUTTER_SCRIPTS"],
         REF_DIR=os.getcwd()+"/"+config["REF_DIR"],
-        OUTLIER_FILE=os.getcwd()+"/"+config["OUTLIER_FILE"],
         LEAFCUTTER_PYTHON=os.getcwd()+"/"+config["LEAFCUTTER_PYTHON"]
     output:
         DATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/data_pVals.txt"
