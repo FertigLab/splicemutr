@@ -230,7 +230,7 @@ rule create_comparisons_file:
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"]
     shell:
         """
-            chmod +x {input.SCRIPT_DIR}/*
+            chmod +x {params.SCRIPT_DIR}/*
             {params.SCRIPT_DIR}/create_comparisons_file.R
         """
 
