@@ -231,7 +231,7 @@ rule create_comparisons_file:
     shell:
         """
             chmod +x {input.SCRIPT_DIR}/*
-            {input.SCRIPT_DIR}/create_comparisons_file.R
+            {params.SCRIPT_DIR}/create_comparisons_file.R
         """
 
 rule create_comparisons:
