@@ -220,7 +220,7 @@ rule analyze_splicemutr:
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
     shell:
         """
-            {params.SCRIPT_DIR}/valsamo_analyze_splicemutr.R -g {input.GENOTYPES} -s {params.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -c {input.COUNTS_FILE} -o {params.OUT_DIR}
+            {params.SCRIPT_DIR}/valsamo_analyze_splicemutr.R -g {input.GENOTYPES} -s {params.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -c {input.COUNTS_FILE} -o {params.OUT_DIR} -r {input.PROTEIN_FASTA}
         """
 
 rule create_comparisons_file:
