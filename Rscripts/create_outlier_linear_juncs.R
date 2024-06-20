@@ -13,10 +13,10 @@ arguments <- parse_args(OptionParser(usage = "",
                  option_list=list(
                    make_option(c("-o","--outlier_file"),
                                default = sprintf("%s",getwd()),
-                               help="the genotypes file"))),
-                 make_option(c("-s","--significance_level"),
-                             default = sprintf("%s",getwd()),
-                             help="the significance level"))
+                               help="the genotypes file"),
+                   make_option(c("-s","--significance_level"),
+                               default = sprintf("%s",getwd()),
+                               help="the significance level"))))
 opt=arguments
 outlier_file <- opt$outlier_file
 significance_level <- as.numeric(opt$significance_level)
