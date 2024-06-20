@@ -13,9 +13,13 @@ arguments <- parse_args(OptionParser(usage = "",
                  option_list=list(
                    make_option(c("-o","--outlier_file"),
                                default = sprintf("%s",getwd()),
-                               help="the genotypes file"))))
+                               help="the genotypes file"))),
+                 make_option(c("-s","--significance_level"),
+                             default = sprintf("%s",getwd()),
+                             help="the significance level"))
 opt=arguments
 outlier_file <- opt$outlier_file
+significance_level <- as.numeric(opt$significance_level)
 
 #------------------------------------------------------------------------------#
 # creating the leafcutter comparison juncs list file
@@ -26,7 +30,7 @@ outlier_junc_cols <- str_replace_all(colnames(outlier_juncs),".filt","")
 colnames(outlier_juncs) <- str_replace_all(outlier_junc_cols,"[-_+.]","_")
 file_split <- strsplit(basename(outlier_file),"_")[[1]]
 sample <- basename(file_split[1])
-sig_juncs <- rownames(outlier_juncs)[as.numeric(outlier_juncs[,1]) <=0.05]
+sig_juncs <- rownames(outlier_juncs)[as.numeric(outlier_juncs[,1]) <= significance_level]
 comparison_junctions[[sample]] <- unique(c(comparison_junctions[[sample]],sig_juncs))
 
 #------------------------------------------------------------------------------#
