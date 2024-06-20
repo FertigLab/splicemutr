@@ -240,8 +240,8 @@ rule create_comparisons_file:
 rule create_comparisons:
     params:
         COMP_NUM=1
-        OUT_DIR=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp"
-        LEAF_DIR=config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT"
+        OUT_DIR=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp",
+        LEAF_DIR=config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT",
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
     input:
         COMPS_JUNCS_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/comparison_juncs.rds",
