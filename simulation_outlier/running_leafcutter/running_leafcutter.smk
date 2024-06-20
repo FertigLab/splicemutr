@@ -85,6 +85,8 @@ rule running_leafcutter:
         echo "leafcutter_cluster_regtools"
         python {input.SPLICEMUTR_PYTHON}/splicemutr_leafcutter_cluster_regtools.py -j {input.JUNCFILE_FILENAMES} -r {input.JUNC_DIR} -o data -l 500000
 
+        cd {input.JUNC_DIR}
+
         echo "leafcutter_outlier"
         {input.LEAFCUTTER_SCRIPTS}/leafcutterMD.R --num_threads 1 -o data data_perind_numers.counts.gz
 
