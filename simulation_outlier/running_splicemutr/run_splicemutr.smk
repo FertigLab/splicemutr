@@ -206,7 +206,7 @@ rule create_genotypes:
 rule analyze_splicemutr:
     params:
         SUMMARY_DIR=os.getcwd()+"/"+config["SUMMARY_DIR"],
-        SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
+        SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         OUT_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]
     input:
         OUT_FILE_MHCNUGGETS=os.getcwd()+"/"+config["MHCNUGGETS_OUT"]+"/allele_files.txt",
