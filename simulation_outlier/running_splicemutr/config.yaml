@@ -32,12 +32,10 @@ ANALYZE_SPLICEMUTR_OUT : "simulated_reads/splicemutr/analyze_splicemutr_out"
 SUMMARY_DIR : "simulated_reads/splicemutr/process_bindaff_out"
 SPLICEMUTR : "splicemutr"
 SIMULATED_READS : "simulated_reads"
-
-KMER_COUNTS_FILES : "simulated_reads/splicemutr/analyze_splicemutr_out/filenames.txt"
-KMER_COUNTS_OUT : "simulated_reads/splicemutr/kmer_counts_out"
+COMPARISONS_FILE : "comparisons.rds"
 
 JUNCFILES : "simulated_reads/splicemutr/SJ_FILES_OUT/juncfiles.txt"
 CREATE_JUNC_EXPRESSION_OUT : "simulated_reads/splicemutr/create_junc_expression_out"
-KMER_COUNTS_FILE : "simulated_reads/splicemutr/kmer_counts_out/all_kmers_counts.txt"
+KMER_COUNTS_FILE : "simulated_reads/spicemutr/create_comparisons_out_cp/kmers_specific_baseline_vs_post_treatment.rds"
 CREATE_SPLICING_ANTIGENICITY_OUT : "simulated_reads/splicemutr/create_splicing_antigenicity_out"
 
