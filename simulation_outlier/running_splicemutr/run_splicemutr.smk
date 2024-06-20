@@ -237,7 +237,7 @@ rule create_comparisons_file:
             {input.SCRIPT_DIR}/create_comparisons_file.R
         """
 
-rule_create_comparisons:
+rule create_comparisons:
     params:
         COMP_NUM=1
         OUT_DIR=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp"
