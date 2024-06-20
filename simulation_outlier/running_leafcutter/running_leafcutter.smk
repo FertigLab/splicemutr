@@ -10,7 +10,6 @@ rule all:
         FILTERED_SJ_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/filenames.txt",
         DATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/data_pVals.txt",
         JUNC_FILES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/juncfiles.txt",
-        OUTLIER_FILE=os.getcwd()+"/"+config["OUTLIER_FILE"],
         OUT_FILE_FINAL=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/comparison_juncs_linear.rds"
 
 rule prepare_for_leafcutter:
@@ -78,7 +77,6 @@ rule running_leafcutter:
         JUNCFILE_FILENAMES=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/juncfiles.txt",
         SPLICEMUTR_PYTHON=os.getcwd()+"/"+config["SPLICEMUTR_PYTHON"],
         LEAFCUTTER_SCRIPTS=os.getcwd()+"/"+config["LEAFCUTTER_SCRIPTS"],
-        REF_DIR=os.getcwd()+"/"+config["REF_DIR"],
         LEAFCUTTER_PYTHON=os.getcwd()+"/"+config["LEAFCUTTER_PYTHON"]
     output:
         DATA=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/data_pVals.txt"
