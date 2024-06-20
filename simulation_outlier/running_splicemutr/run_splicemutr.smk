@@ -247,7 +247,7 @@ rule create_comparisons:
         JUNC_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
     shell:
         """
-            {input.SCRIPT_DIR}/create_outlier_comparisons.R -c {input.COMPS_JUNCS_FILE} -d {input.SPLICE_DAT_FILE} -e {input.COMPARISONS_FILE} -n {params.COMP_NUM} -j {params.JUNC_DIR} -o {params.OUT_DIR} -l {params.LEAF_DIR}
+            {input.SCRIPT_DIR}/create_outlier_single_comparisons.R -c {input.COMPS_JUNCS_FILE} -d {input.SPLICE_DAT_FILE} -e {input.COMPARISONS_FILE} -n {params.COMP_NUM} -j {params.JUNC_DIR} -o {params.OUT_DIR} -l {params.LEAF_DIR}
         """
 
 rule create_junction_expression:
