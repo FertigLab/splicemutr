@@ -18,8 +18,6 @@ if not os.path.exists(os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]
     os.mkdir(os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"])
 if not os.path.exists(os.getcwd()+"/"+config["CREATE_JUNC_EXPRESSION_OUT"]):
     os.mkdir(os.getcwd()+"/"+config["CREATE_JUNC_EXPRESSION_OUT"])
-if not os.path.exists(os.getcwd()+"/"+config["KMER_COUNTS_OUT"]):
-    os.mkdir(os.getcwd()+"/"+config["KMER_COUNTS_OUT"])
 
 rule all:
     input:
