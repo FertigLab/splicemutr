@@ -122,8 +122,8 @@ data_canon<-data.frame()
 sequences<-c()
 cds_storage <- list()
 intron_length<-nrow(introns)
-for (i in seq(intron_length)){
-#for (i in seq(100)){
+#for (i in seq(intron_length)){
+for (i in seq(50)){
   print(sprintf("%d introns out of %d total introns",i,intron_length))
   curr_introns<-introns[i,] # get the current intron
   ann<-curr_introns$ann # whether annotated or not, determined in the previous step
