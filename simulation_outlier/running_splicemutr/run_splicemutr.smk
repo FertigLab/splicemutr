@@ -245,8 +245,11 @@ rule create_comparisons:
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
         JUNC_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
+    output:
+        COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds"
     shell:
         """
+            mkdir -p {params.OUT_DIR}
             {input.SCRIPT_DIR}/create_outlier_single_comparisons.R -c {input.COMPS_JUNCS_FILE} -d {input.SPLICE_DAT_FILE} -e {input.COMPARISONS_FILE} -n {params.COMP_NUM} -j {params.JUNC_DIR} -o {params.OUT_DIR} -l {params.LEAF_DIR}
         """
 
