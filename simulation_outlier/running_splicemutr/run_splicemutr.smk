@@ -34,7 +34,7 @@ rule all:
         EXTRACT_DATA_FILE=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"],
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
-        COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"]
+        COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_OUT"]+"/all_kmers_counts.txt",
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         SPLICING_ANTIGENICITY_FILE=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
