@@ -6,14 +6,14 @@
 genotypes <- list()
 hlas <- c("HLA-A01-01")
 names(hlas) <- "A*01:01"
-genotypes["sample_01.filt"] <- hlas
-genotypes["sample_02.filt"] <- hlas
-genotypes["sample_03.filt"] <- hlas
-genotypes["sample_04.filt"] <- hlas
-genotypes["sample_05.filt"] <- hlas
-genotypes["sample_06.filt"] <- hlas
-genotypes["sample_07.filt"] <- hlas
-genotypes["sample_08.filt"] <- hlas
+genotypes["sample_01"] <- hlas
+genotypes["sample_02"] <- hlas
+genotypes["sample_03"] <- hlas
+genotypes["sample_04"] <- hlas
+genotypes["sample_05"] <- hlas
+genotypes["sample_06"] <- hlas
+genotypes["sample_07"] <- hlas
+genotypes["sample_08"] <- hlas
 
 #------------------------------------------------------------------------------#
 # saving the genotypes file
