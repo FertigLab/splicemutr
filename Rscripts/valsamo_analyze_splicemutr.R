@@ -108,7 +108,8 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
   if (file.size(HLA_summ_file)!=0){
     HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
     HLA_summ$V1 <- as.numeric(HLA_summ$V1)+1
-    sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
+    #sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
+    sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(10),function(row_val){
       dat_row_val <- HLA_summ[row_val,"V1"]
       if (is.na(sample_kmers$kmers[dat_row_val])){
         kmers <- str_split(HLA_summ[row_val,"V2"],":")[[1]]
