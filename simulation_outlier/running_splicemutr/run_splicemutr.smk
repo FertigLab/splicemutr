@@ -241,12 +241,13 @@ rule create_comparisons:
         COMP_NUM=1,
         OUT_DIR=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp",
         LEAF_DIR=config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT",
-        SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"]
+        SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
+        JUNC_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]
+
     input:
         COMPS_JUNCS_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/comparison_juncs.rds",
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
-        JUNC_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
     output:
         COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"]
