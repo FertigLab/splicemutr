@@ -128,15 +128,7 @@ for (target in targets){
     kmers[,target]<-""
   }
 }
-for (comp in comparators){
-  if (file.size(sprintf("%s/%s_splicemutr_kmers.txt",junc_dir,comp))!=0){
-    comp_dat <- read.table(sprintf("%s/%s_splicemutr_kmers.txt",junc_dir,comp),sep="\t",header=T)
-    psi_all[psi_dat$chrom,sprintf("%s_comp",comp)] <- parse_fraction(psi_dat[,sprintf("%s.filt",str_replace_all(str_replace_all(comp,"-","."),"[+]","."))])
-    kmers[,comp]<-comp_dat$kmers
-  } else {
-    kmers[,comp]<-""
-  }
-}
+
 psi_all[is.na(psi_all)]<-0
 splice_dat$rows <- seq(nrow(splice_dat))
 splice_dat_specific <- splice_dat %>% dplyr::filter(juncs %in% comp_juncs_parsed)

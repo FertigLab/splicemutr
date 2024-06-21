@@ -219,7 +219,7 @@ rule analyze_splicemutr:
         ANALYZE_SPLICEMUTR_OUT=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"],
         PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"],
     output:
-        ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt"
+        ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/sample_01_splicemutr_kmers.rds"
     shell:
         """
             {params.SCRIPT_DIR}/valsamo_analyze_splicemutr.R -g {input.GENOTYPES} -s {params.SUMMARY_DIR} -d {input.SPLICE_DAT_FILE} -c {input.COUNTS_FILE} -o {params.OUT_DIR} -r {input.PROTEIN_FASTA}
@@ -243,11 +243,11 @@ rule create_comparisons:
         LEAF_DIR=config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT",
         SCRIPT_DIR=os.getcwd()+"/"+config["SPLICEMUTR_SCRIPTS"],
         JUNC_DIR=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]
-
     input:
         COMPS_JUNCS_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/SJ_FILES_OUT/comparison_juncs.rds",
         SPLICE_DAT_FILE=os.getcwd()+"/"+config["SPLICE_DAT_FILE"],
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
+        ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/sample_01_splicemutr_kmers.rds"
     output:
         COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"]
