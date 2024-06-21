@@ -288,5 +288,5 @@ rule calculate_gene_metric:
         {input.SCRIPT_DIR}/calc_gene_metric_len_norm.R -s {input.SPLICE_DAT} -k {input.KMER_COUNTS_FILE} -j {input.CREATE_JUNC_EXPRESSION_FILE} -o {params.CREATE_SPLICING_ANTIGENICITY_OUT}/splicemutr
 
         cd {input.CREATE_SPLICING_ANTIGENICITY_OUT}
-        ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm_tumor.rds > filenames.txt
+        ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm.rds > filenames.txt
         """
