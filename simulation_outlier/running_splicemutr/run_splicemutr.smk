@@ -254,7 +254,7 @@ rule create_comparisons:
     shell:
         """
             mkdir -p {params.OUT_DIR}
-            {params.SCRIPT_DIR}/create_outlier_single_comparisons.R -c {input.COMPS_JUNCS_FILE} -d {input.SPLICE_DAT_FILE} -e {input.COMPARISONS_FILE} -n {params.COMP_NUM} -j {params.JUNC_DIR} -o {params.OUT_DIR} -l {params.LEAF_DIR}
+            {params.SCRIPT_DIR}/create_outlier_single_comparison.R -c {input.COMPS_JUNCS_FILE} -d {input.SPLICE_DAT_FILE} -e {input.COMPARISONS_FILE} -n {params.COMP_NUM} -j {params.JUNC_DIR} -o {params.OUT_DIR} -l {params.LEAF_DIR}
         """
 
 rule create_junction_expression:
