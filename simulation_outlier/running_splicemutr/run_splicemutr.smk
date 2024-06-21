@@ -31,7 +31,7 @@ rule all:
         PROCESS_BINDAFF_FILES=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/filenames.txt",
         EXTRACT_DATA_FILE=os.getcwd()+"/"+config["PROCESS_BINDAFF_OUT"]+"/summaries.txt",
         PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"],
-        ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/filenames.txt",
+        ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/sample_01_splicemutr_kmers.rds"
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
         COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"],
