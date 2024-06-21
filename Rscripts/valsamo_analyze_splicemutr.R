@@ -59,12 +59,12 @@ kmerize <- function(peptide,K){
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-# genotypes_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/genotypes.rds"
-# summary_dir <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/process_bindaff_out"
-# splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/data_splicemutr_all_pep.rds"
-# counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/Q21777-Plate-1-A01_L15.filt.junc"
-# summary_type=""
-# reference_peptides <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/gencode.v45.pc_translations.fa"
+genotypes_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/genotypes.rds"
+summary_dir <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/process_bindaff_out"
+splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/data_splicemutr_all_pep.rds"
+counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/Q21777-Plate-1-A01_L15.filt.junc"
+summary_type=""
+reference_peptides <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/gencode.v45.pc_translations.fa"
 
 #------------------------------------------------------------------------------#
 # reading in the data necessary for creating specific splicemutr data
@@ -108,8 +108,8 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
   if (file.size(HLA_summ_file)!=0){
     HLA_summ <- read.table(HLA_summ_file,header=F,sep="\t")
     HLA_summ$V1 <- as.numeric(HLA_summ$V1)+1
-    #sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
-    sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(10),function(row_val){
+    sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(nrow(HLA_summ)),function(row_val){
+    #sample_kmers[HLA_summ$V1,"kmers"] <<- vapply(seq(10),function(row_val){
       dat_row_val <- HLA_summ[row_val,"V1"]
       if (is.na(sample_kmers$kmers[dat_row_val])){
         kmers <- str_split(HLA_summ[row_val,"V2"],":")[[1]]

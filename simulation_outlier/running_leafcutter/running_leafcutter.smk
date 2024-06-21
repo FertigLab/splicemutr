@@ -101,5 +101,5 @@ rule save_introns:
     shell:
         """
         chmod +x {input.SPLICEMUTR_SCRIPTS}/*
-        {input.SPLICEMUTR_SCRIPTS}/create_outlier_linear_juncs.R -o {input.DATA} -s 1
+        {input.SPLICEMUTR_SCRIPTS}/create_outlier_linear_juncs.R -o {input.DATA} -s 0.2
         """
