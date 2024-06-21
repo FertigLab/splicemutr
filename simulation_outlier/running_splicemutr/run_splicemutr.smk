@@ -285,7 +285,7 @@ rule calculate_gene_metric:
         mkdir -p {input.CREATE_SPLICING_ANTIGENICITY_OUT}
         OUT_PREFIX=/dcs04/fertig/data/theron/share/run_20230320/calc_gene_metric_out/baseline_POST
 
-        {input.SCRIPT_DIR}/calc_gene_metric_len_norm.R -s {input.SPLICE_DAT} -k {input.KMER_COUNTS} -j {input.CREATE_JUNC_EXPRESSION_FILE} -o {params.CREATE_SPLICING_ANTIGENICITY_OUT}/splicemutr
+        {input.SCRIPT_DIR}/calc_gene_metric_len_norm.R -s {input.SPLICE_DAT} -k {input.KMER_COUNTS_FILE} -j {input.CREATE_JUNC_EXPRESSION_FILE} -o {params.CREATE_SPLICING_ANTIGENICITY_OUT}/splicemutr
 
         cd {input.CREATE_SPLICING_ANTIGENICITY_OUT}
         ls $PWD/*_gene_metric_mean_len_norm_no_gene_norm_tumor.rds > filenames.txt
