@@ -80,9 +80,9 @@ format_juncs <- function(juncs){
 # kmer_counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/kmers_specific_baseline_vs_post_treatment.rds"
 # junc_expr_file <- "/Users/tpalme15/Desktop/splicemutr_paper/simulated_reads/junc_expr_combined_vst.rds"
 
-splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/splice_dat_data.rds"
-kmer_counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/kmers_specific_data.rds"
-junc_expr_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/junc_expr_combined_vst.rds"
+# splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/splice_dat_data.rds"
+# kmer_counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/kmers_specific_data.rds"
+# junc_expr_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/junc_expr_combined_vst.rds"
 
 #------------------------------------------------------------------------------#
 # reading in the files
