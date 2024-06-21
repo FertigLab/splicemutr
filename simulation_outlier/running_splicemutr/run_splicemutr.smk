@@ -33,7 +33,7 @@ rule all:
         PROTEIN_FASTA=os.getcwd()+"/"+config["PROTEIN_FASTA"],
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/sample_01_splicemutr_kmers.rds",
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
-        COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
+        SPLICE_DAT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"],
         CREATE_JUNC_EXPRESSION_FILE=config["CREATE_JUNC_EXPRESSION_OUT"]+"/junc_expr_combined_vst.rds",
         SPLICING_ANTIGENICITY_FILE=os.getcwd()+"/"+config["CREATE_SPLICING_ANTIGENICITY_OUT"]+"/filenames.txt"
@@ -249,7 +249,7 @@ rule create_comparisons:
         COMPARISONS_FILE=os.getcwd()+"/"+config["COMPARISONS_FILE"],
         ANALYZE_SPLICEMUTR_OUT_FILE=os.getcwd()+"/"+config["ANALYZE_SPLICEMUTR_OUT"]+"/sample_01_splicemutr_kmers.rds"
     output:
-        #COMPARISONS_OUT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
+        SPLICE_DAT_FILE=os.getcwd()+"/"+config["SIMULATED_READS"]+"/"+config["SPLICEMUTR"]+"/create_comparisons_out_cp/splice_dat_data.rds",
         KMER_COUNTS_FILE=os.getcwd()+"/"+config["KMER_COUNTS_FILE"]
     shell:
         """
