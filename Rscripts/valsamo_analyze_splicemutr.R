@@ -59,12 +59,12 @@ kmerize <- function(peptide,K){
 #------------------------------------------------------------------------------#
 # local directories and file inputs for testing
 
-genotypes_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/genotypes.rds"
-summary_dir <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/process_bindaff_out"
-splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/data_splicemutr_all_pep.rds"
-counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/Q21777-Plate-1-A01_L15.filt.junc"
-summary_type=""
-reference_peptides <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/gencode.v45.pc_translations.fa"
+# genotypes_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/genotypes.rds"
+# summary_dir <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/process_bindaff_out"
+# splice_dat_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/data_splicemutr_all_pep.rds"
+# counts_file <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/Q21777-Plate-1-A01_L15.filt.junc"
+# summary_type=""
+# reference_peptides <- "/Users/tpalme15/Desktop/splicemutr_paper/melanoma_cohort/input_data/valsamo/gencode.v45.pc_translations.fa"
 
 #------------------------------------------------------------------------------#
 # reading in the data necessary for creating specific splicemutr data
