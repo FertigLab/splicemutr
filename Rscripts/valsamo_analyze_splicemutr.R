@@ -69,6 +69,8 @@ kmerize <- function(peptide,K){
 #------------------------------------------------------------------------------#
 # reading in the data necessary for creating specific splicemutr data
 
+print("reading in the data necessary for creating specific splicemutr data")
+
 genotypes <- readRDS(genotypes_file)
 splice_dat <- readRDS(splice_dat_file)
 counts <- read.table(counts_file)
@@ -78,6 +80,8 @@ reference_peptides_kmers <- unique(unlist(lapply(ref_proteins,function(ref_pep){
 #------------------------------------------------------------------------------#
 # formatting counts file
 
+print("formatting counts file")
+
 counts$V2 <- as.numeric(counts$V2)
 counts$V3 <- as.numeric(counts$V3)
 counts$V5 <- as.numeric(counts$V5)
@@ -85,6 +89,8 @@ counts$juncs <- sprintf("%s:%s:%s:%s",counts$V1,counts$V2,counts$V3,counts$V6)
 
 #------------------------------------------------------------------------------#
 # reading in the genotype for the specific sample
+
+print("reading in the genotype for the specific sample")
 
 sample <- basename(str_replace(counts_file,".filt.junc",""))
 sample_geno <- unname(genotypes[[which(names(genotypes) == sample)]])
@@ -127,6 +133,8 @@ sample_kmers_ret <- vapply(seq(length(sample_geno)),function(geno_val){
 #------------------------------------------------------------------------------#
 # annotating sample_kmers with junctions
 
+print("annotating sample_kmers with junctions")
+
 juncs <- sprintf("%s:%s:%s:%s",splice_dat$chr,splice_dat$start,splice_dat$end,splice_dat$strand)
 splice_dat$juncs <- juncs
 sample_kmers$juncs <- juncs
@@ -135,6 +143,8 @@ sample_kmers$counts <- counts[sample_kmers$juncs,"V5"]
 
 #------------------------------------------------------------------------------#
 # saving samples_kmers file
+
+print("saving samples_kmers file")
 
 sample_kmers_file <- sprintf("%s/%s_splicemutr_kmers.rds",out_dir,sample)
 saveRDS(sample_kmers,file=sample_kmers_file)
