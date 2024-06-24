@@ -1,7 +1,5 @@
 # Running the splicemutr simulation
 
-Installing the 
-
 Create the splicemutr environment first:
 ```
 module load conda
