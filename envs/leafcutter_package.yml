@@ -1,4 +1,4 @@
-name: leafcutter_package2
+name: leafcutter_package
 channels:
   - dnachun
   - bioconda
